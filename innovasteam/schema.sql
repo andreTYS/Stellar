@@ -1,17 +1,31 @@
--- ============================================================
--- INNOVA-STEAM v2 — Schema + Seed Data
--- Base académica: Saborio-Taylor & Garcia-Borbon (2021)
--- Moquegua, Perú — Ciclo V (5.° y 6.° primaria)
--- ============================================================
+-- =============================================================================
+-- INNOVA-STEAM Educational Platform
+-- Database Schema + Seed Data
+-- Project: Primary Schools, Moquegua, Peru
+-- Generated: 2026-04-08
+-- =============================================================================
+-- NOTE: The password_hash below is bcrypt for 'password' (Laravel default test hash).
+-- To generate the correct hash for '1234', run in PHP:
+--   echo password_hash('1234', PASSWORD_BCRYPT);
+-- Then replace all occurrences of the hash below.
+-- =============================================================================
 
-CREATE DATABASE IF NOT EXISTS innovasteam CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- ---------------------------------------------------------------------------
+-- 1. DATABASE CREATION
+-- ---------------------------------------------------------------------------
+CREATE DATABASE IF NOT EXISTS innovasteam
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
 USE innovasteam;
 SET NAMES utf8mb4;
 
--- Drop en orden inverso de dependencias
-DROP TABLE IF EXISTS certificados;
+-- ---------------------------------------------------------------------------
+-- 2. DROP TABLES (reverse FK order)
+-- ---------------------------------------------------------------------------
 DROP TABLE IF EXISTS asistencia;
 DROP TABLE IF EXISTS sesiones;
+DROP TABLE IF EXISTS certificados;
 DROP TABLE IF EXISTS entregables;
 DROP TABLE IF EXISTS quiz_respuestas;
 DROP TABLE IF EXISTS progreso_estudiante;
@@ -26,556 +40,694 @@ DROP TABLE IF EXISTS aulas;
 DROP TABLE IF EXISTS usuarios;
 DROP TABLE IF EXISTS colegios;
 
--- ============================================================
--- TABLAS
--- ============================================================
+-- ---------------------------------------------------------------------------
+-- 3. CREATE TABLES
+-- ---------------------------------------------------------------------------
 
+-- colegios
 CREATE TABLE colegios (
-  id         INT AUTO_INCREMENT PRIMARY KEY,
-  nombre     VARCHAR(200) NOT NULL,
-  distrito   VARCHAR(100) NOT NULL,
-  ugel_codigo VARCHAR(20),
-  director   VARCHAR(150),
-  telefono   VARCHAR(20),
-  activo     TINYINT(1) DEFAULT 1,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
+  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  nombre      VARCHAR(200)  NOT NULL,
+  distrito    VARCHAR(100)  NOT NULL,
+  ugel_codigo VARCHAR(30)   NOT NULL,
+  director    VARCHAR(150),
+  telefono    VARCHAR(30),
+  activo      TINYINT(1)    NOT NULL DEFAULT 1,
+  created_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- usuarios
 CREATE TABLE usuarios (
-  id              INT AUTO_INCREMENT PRIMARY KEY,
+  id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   nombre          VARCHAR(100) NOT NULL,
   apellido        VARCHAR(100) NOT NULL,
-  email           VARCHAR(150) UNIQUE,
-  codigo_acceso   VARCHAR(20) UNIQUE,
+  email           VARCHAR(180) UNIQUE,
+  codigo_acceso   VARCHAR(30)  UNIQUE,
   password_hash   VARCHAR(255) NOT NULL,
   rol             ENUM('admin','admin_colegio','docente','practicante','estudiante') NOT NULL,
-  colegio_id      INT,
-  universidad     VARCHAR(150),
-  telefono_tutor  VARCHAR(20),
-  activo          TINYINT(1) DEFAULT 1,
-  created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (colegio_id) REFERENCES colegios(id)
-) ENGINE=InnoDB;
+  colegio_id      INT UNSIGNED,
+  universidad     VARCHAR(200),
+  telefono_tutor  VARCHAR(30),
+  activo          TINYINT(1)   NOT NULL DEFAULT 1,
+  created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_usuarios_colegio FOREIGN KEY (colegio_id) REFERENCES colegios(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- aulas
 CREATE TABLE aulas (
-  id           INT AUTO_INCREMENT PRIMARY KEY,
-  colegio_id   INT NOT NULL,
-  grado        ENUM('5to','6to') NOT NULL,
-  seccion      VARCHAR(5) NOT NULL,
-  anio_escolar YEAR NOT NULL,
-  docente_id   INT,
-  FOREIGN KEY (colegio_id) REFERENCES colegios(id),
-  FOREIGN KEY (docente_id) REFERENCES usuarios(id)
-) ENGINE=InnoDB;
+  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  colegio_id    INT UNSIGNED NOT NULL,
+  grado         ENUM('5to','6to') NOT NULL,
+  seccion       VARCHAR(10)  NOT NULL,
+  anio_escolar  YEAR         NOT NULL,
+  docente_id    INT UNSIGNED,
+  CONSTRAINT fk_aulas_colegio  FOREIGN KEY (colegio_id) REFERENCES colegios(id)  ON DELETE CASCADE,
+  CONSTRAINT fk_aulas_docente  FOREIGN KEY (docente_id) REFERENCES usuarios(id)  ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- practicante_aula
 CREATE TABLE practicante_aula (
-  practicante_id INT NOT NULL,
-  aula_id        INT NOT NULL,
-  asignado_en    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  practicante_id INT UNSIGNED NOT NULL,
+  aula_id        INT UNSIGNED NOT NULL,
+  asignado_en    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (practicante_id, aula_id),
-  FOREIGN KEY (practicante_id) REFERENCES usuarios(id),
-  FOREIGN KEY (aula_id) REFERENCES aulas(id)
-) ENGINE=InnoDB;
+  CONSTRAINT fk_pa_practicante FOREIGN KEY (practicante_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+  CONSTRAINT fk_pa_aula        FOREIGN KEY (aula_id)        REFERENCES aulas(id)    ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- estudiante_aula
 CREATE TABLE estudiante_aula (
-  estudiante_id INT NOT NULL,
-  aula_id       INT NOT NULL,
-  inscrito_en   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  estudiante_id INT UNSIGNED NOT NULL,
+  aula_id       INT UNSIGNED NOT NULL,
+  inscrito_en   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (estudiante_id, aula_id),
-  FOREIGN KEY (estudiante_id) REFERENCES usuarios(id),
-  FOREIGN KEY (aula_id) REFERENCES aulas(id)
-) ENGINE=InnoDB;
+  CONSTRAINT fk_ea_estudiante FOREIGN KEY (estudiante_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+  CONSTRAINT fk_ea_aula       FOREIGN KEY (aula_id)       REFERENCES aulas(id)    ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- cursos
 CREATE TABLE cursos (
-  id               INT AUTO_INCREMENT PRIMARY KEY,
-  nombre           VARCHAR(100) NOT NULL,
-  slug             VARCHAR(50) NOT NULL UNIQUE,
-  color_hex        VARCHAR(7) NOT NULL,
-  icono            VARCHAR(10),
-  descripcion      TEXT,
-  competencias_cneb TEXT,
-  activo           TINYINT(1) DEFAULT 1
-) ENGINE=InnoDB;
+  id                  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  nombre              VARCHAR(100) NOT NULL,
+  slug                VARCHAR(80)  NOT NULL UNIQUE,
+  color_hex           VARCHAR(10),
+  icono               VARCHAR(10),
+  descripcion         TEXT,
+  competencias_cneb   TEXT,
+  activo              TINYINT(1)   NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- modulos
 CREATE TABLE modulos (
-  id                INT AUTO_INCREMENT PRIMARY KEY,
-  curso_id          INT NOT NULL,
-  titulo            VARCHAR(200) NOT NULL,
-  descripcion       TEXT,
-  grado_ciclo       ENUM('ciclo_v','ambos') DEFAULT 'ciclo_v',
-  minutos_estimados INT DEFAULT 45,
-  orden             INT DEFAULT 0,
-  activo            TINYINT(1) DEFAULT 1,
-  created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (curso_id) REFERENCES cursos(id)
-) ENGINE=InnoDB;
+  id                  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  curso_id            INT UNSIGNED NOT NULL,
+  titulo              VARCHAR(200) NOT NULL,
+  descripcion         TEXT,
+  grado_ciclo         ENUM('ciclo_v','ambos') NOT NULL DEFAULT 'ciclo_v',
+  minutos_estimados   INT          NOT NULL DEFAULT 45,
+  orden               INT          NOT NULL DEFAULT 0,
+  activo              TINYINT(1)   NOT NULL DEFAULT 1,
+  created_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_modulos_curso FOREIGN KEY (curso_id) REFERENCES cursos(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- modulo_pasos
 CREATE TABLE modulo_pasos (
-  id          INT AUTO_INCREMENT PRIMARY KEY,
-  modulo_id   INT NOT NULL,
-  numero_paso TINYINT NOT NULL,
-  tipo        ENUM('historia','actividad','quiz','entregable') NOT NULL,
-  contenido   JSON NOT NULL,
-  UNIQUE KEY unique_paso (modulo_id, numero_paso),
-  FOREIGN KEY (modulo_id) REFERENCES modulos(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+  id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  modulo_id    INT UNSIGNED NOT NULL,
+  numero_paso  TINYINT      NOT NULL,
+  tipo         ENUM('historia','actividad','quiz','entregable') NOT NULL,
+  contenido    JSON         NOT NULL,
+  UNIQUE KEY uk_modulo_paso (modulo_id, numero_paso),
+  CONSTRAINT fk_pasos_modulo FOREIGN KEY (modulo_id) REFERENCES modulos(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- quiz_preguntas
 CREATE TABLE quiz_preguntas (
-  id       INT AUTO_INCREMENT PRIMARY KEY,
-  paso_id  INT NOT NULL,
-  texto    TEXT NOT NULL,
-  opciones JSON NOT NULL,
-  orden    INT DEFAULT 0,
-  FOREIGN KEY (paso_id) REFERENCES modulo_pasos(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+  id       INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  paso_id  INT UNSIGNED NOT NULL,
+  texto    TEXT         NOT NULL,
+  opciones JSON         NOT NULL,
+  orden    INT          NOT NULL DEFAULT 0,
+  CONSTRAINT fk_quiz_paso FOREIGN KEY (paso_id) REFERENCES modulo_pasos(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- aula_modulos
 CREATE TABLE aula_modulos (
-  aula_id           INT NOT NULL,
-  modulo_id         INT NOT NULL,
+  aula_id           INT UNSIGNED NOT NULL,
+  modulo_id         INT UNSIGNED NOT NULL,
   fecha_planificada DATE,
-  asignado_por      INT,
+  asignado_por      INT UNSIGNED,
   PRIMARY KEY (aula_id, modulo_id),
-  FOREIGN KEY (aula_id)       REFERENCES aulas(id),
-  FOREIGN KEY (modulo_id)     REFERENCES modulos(id),
-  FOREIGN KEY (asignado_por)  REFERENCES usuarios(id)
-) ENGINE=InnoDB;
+  CONSTRAINT fk_am_aula         FOREIGN KEY (aula_id)      REFERENCES aulas(id)    ON DELETE CASCADE,
+  CONSTRAINT fk_am_modulo       FOREIGN KEY (modulo_id)    REFERENCES modulos(id)  ON DELETE CASCADE,
+  CONSTRAINT fk_am_asignado_por FOREIGN KEY (asignado_por) REFERENCES usuarios(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- progreso_estudiante
 CREATE TABLE progreso_estudiante (
-  id              INT AUTO_INCREMENT PRIMARY KEY,
-  estudiante_id   INT NOT NULL,
-  modulo_id       INT NOT NULL,
-  paso_actual     TINYINT DEFAULT 1,
-  estrellas_quiz  TINYINT DEFAULT 0,
-  intentos_quiz   TINYINT DEFAULT 0,
-  completado      TINYINT(1) DEFAULT 0,
-  completado_en   TIMESTAMP NULL,
-  UNIQUE KEY (estudiante_id, modulo_id),
-  FOREIGN KEY (estudiante_id) REFERENCES usuarios(id),
-  FOREIGN KEY (modulo_id)     REFERENCES modulos(id)
-) ENGINE=InnoDB;
+  id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  estudiante_id   INT UNSIGNED NOT NULL,
+  modulo_id       INT UNSIGNED NOT NULL,
+  paso_actual     TINYINT      NOT NULL DEFAULT 1,
+  estrellas_quiz  TINYINT      NOT NULL DEFAULT 0,
+  intentos_quiz   TINYINT      NOT NULL DEFAULT 0,
+  completado      TINYINT(1)   NOT NULL DEFAULT 0,
+  completado_en   TIMESTAMP    NULL,
+  UNIQUE KEY uk_progreso (estudiante_id, modulo_id),
+  CONSTRAINT fk_prog_estudiante FOREIGN KEY (estudiante_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+  CONSTRAINT fk_prog_modulo     FOREIGN KEY (modulo_id)     REFERENCES modulos(id)  ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- quiz_respuestas
 CREATE TABLE quiz_respuestas (
-  id              INT AUTO_INCREMENT PRIMARY KEY,
-  estudiante_id   INT NOT NULL,
-  pregunta_id     INT NOT NULL,
-  opcion_elegida  INT NOT NULL,
+  id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  estudiante_id   INT UNSIGNED NOT NULL,
+  pregunta_id     INT UNSIGNED NOT NULL,
+  opcion_elegida  INT,
   es_correcta     TINYINT(1),
-  respondido_en   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (estudiante_id) REFERENCES usuarios(id),
-  FOREIGN KEY (pregunta_id)   REFERENCES quiz_preguntas(id)
-) ENGINE=InnoDB;
+  respondido_en   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_qr_estudiante FOREIGN KEY (estudiante_id) REFERENCES usuarios(id)       ON DELETE CASCADE,
+  CONSTRAINT fk_qr_pregunta   FOREIGN KEY (pregunta_id)   REFERENCES quiz_preguntas(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- entregables
 CREATE TABLE entregables (
-  id                 INT AUTO_INCREMENT PRIMARY KEY,
-  estudiante_id      INT NOT NULL,
-  modulo_id          INT NOT NULL,
-  formato            ENUM('dibujo_cientifico','mural_digital','cuento_ilustrado','prototipo','ficha','otro') NOT NULL,
-  archivo_url        VARCHAR(500) NOT NULL,
-  comentario_docente TEXT,
-  comentado_por      INT,
-  calificacion       TINYINT,
-  subido_en          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (estudiante_id)  REFERENCES usuarios(id),
-  FOREIGN KEY (modulo_id)      REFERENCES modulos(id),
-  FOREIGN KEY (comentado_por)  REFERENCES usuarios(id)
-) ENGINE=InnoDB;
+  id                  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  estudiante_id       INT UNSIGNED NOT NULL,
+  modulo_id           INT UNSIGNED NOT NULL,
+  formato             ENUM('dibujo_cientifico','mural_digital','cuento_ilustrado','prototipo','ficha','otro') NOT NULL,
+  archivo_url         VARCHAR(500),
+  comentario_docente  TEXT,
+  comentado_por       INT UNSIGNED NULL,
+  calificacion        TINYINT,
+  subido_en           TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_ent_estudiante FOREIGN KEY (estudiante_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+  CONSTRAINT fk_ent_modulo     FOREIGN KEY (modulo_id)     REFERENCES modulos(id)  ON DELETE CASCADE,
+  CONSTRAINT fk_ent_comentado  FOREIGN KEY (comentado_por) REFERENCES usuarios(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- sesiones
 CREATE TABLE sesiones (
-  id              INT AUTO_INCREMENT PRIMARY KEY,
-  practicante_id  INT NOT NULL,
-  aula_id         INT NOT NULL,
-  modulo_id       INT NOT NULL,
-  fecha_sesion    DATE NOT NULL,
-  asistentes      INT DEFAULT 0,
-  notas           TEXT,
-  fotos_actividad JSON,
-  created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (practicante_id) REFERENCES usuarios(id),
-  FOREIGN KEY (aula_id)        REFERENCES aulas(id),
-  FOREIGN KEY (modulo_id)      REFERENCES modulos(id)
-) ENGINE=InnoDB;
+  id               INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  practicante_id   INT UNSIGNED NOT NULL,
+  aula_id          INT UNSIGNED NOT NULL,
+  modulo_id        INT UNSIGNED NOT NULL,
+  fecha_sesion     DATE         NOT NULL,
+  asistentes       INT          NOT NULL DEFAULT 0,
+  notas            TEXT,
+  fotos_actividad  JSON,
+  created_at       TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_ses_practicante FOREIGN KEY (practicante_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+  CONSTRAINT fk_ses_aula        FOREIGN KEY (aula_id)        REFERENCES aulas(id)    ON DELETE CASCADE,
+  CONSTRAINT fk_ses_modulo      FOREIGN KEY (modulo_id)      REFERENCES modulos(id)  ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- asistencia
 CREATE TABLE asistencia (
-  sesion_id     INT NOT NULL,
-  estudiante_id INT NOT NULL,
-  presente      TINYINT(1) DEFAULT 1,
+  sesion_id     INT UNSIGNED NOT NULL,
+  estudiante_id INT UNSIGNED NOT NULL,
+  presente      TINYINT(1)   NOT NULL DEFAULT 1,
   PRIMARY KEY (sesion_id, estudiante_id),
-  FOREIGN KEY (sesion_id)     REFERENCES sesiones(id),
-  FOREIGN KEY (estudiante_id) REFERENCES usuarios(id)
-) ENGINE=InnoDB;
+  CONSTRAINT fk_asis_sesion     FOREIGN KEY (sesion_id)     REFERENCES sesiones(id) ON DELETE CASCADE,
+  CONSTRAINT fk_asis_estudiante FOREIGN KEY (estudiante_id) REFERENCES usuarios(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- certificados
 CREATE TABLE certificados (
-  id            INT AUTO_INCREMENT PRIMARY KEY,
-  estudiante_id INT NOT NULL,
-  modulo_id     INT NOT NULL,
+  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  estudiante_id INT UNSIGNED NOT NULL,
+  modulo_id     INT UNSIGNED NOT NULL,
   pdf_url       VARCHAR(500),
-  emitido_en    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY (estudiante_id, modulo_id),
-  FOREIGN KEY (estudiante_id) REFERENCES usuarios(id),
-  FOREIGN KEY (modulo_id)     REFERENCES modulos(id)
-) ENGINE=InnoDB;
+  emitido_en    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_cert (estudiante_id, modulo_id),
+  CONSTRAINT fk_cert_estudiante FOREIGN KEY (estudiante_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+  CONSTRAINT fk_cert_modulo     FOREIGN KEY (modulo_id)     REFERENCES modulos(id)  ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ===========================================================================
+-- 4. SEED DATA
+-- ===========================================================================
 
--- ============================================================
--- SEED: Colegio, Cursos, Usuarios, Aula
--- ============================================================
-
+-- ---------------------------------------------------------------------------
+-- colegios
+-- ---------------------------------------------------------------------------
 INSERT INTO colegios (nombre, distrito, ugel_codigo, director, telefono) VALUES
 ('GUE Mariscal Nieto', 'Moquegua', 'UGEL-MQ-001', 'Prof. Roberto Quispe Mamani', '053-462100');
 
+-- ---------------------------------------------------------------------------
+-- cursos  (id 1-5 in insertion order)
+-- ---------------------------------------------------------------------------
 INSERT INTO cursos (nombre, slug, color_hex, icono, descripcion) VALUES
 ('Matemática',   'matematica',   '#f5c842', '📐', 'Números, operaciones, estadística y geometría desde el entorno moqueguano'),
 ('Comunicación', 'comunicacion', '#4a9eff', '📖', 'Lectura, escritura y expresión oral conectadas con la cultura local'),
 ('Arte',         'arte',         '#3ecf8e', '🎨', 'Creación artística, apreciación cultural y expresión visual'),
-('Ingeniería',   'ingenieria',   '#a78bfa', '⚙️',  'Diseño, construcción y resolución de problemas tecnológicos'),
+('Ingeniería',   'ingenieria',   '#a78bfa', '⚙️', 'Diseño, construcción y resolución de problemas tecnológicos'),
 ('Inglés',       'ingles',       '#ff6b6b', '🌍', 'Comunicación básica en inglés conectada con el mundo global');
 
--- Contraseña para todos: 'password' (bcrypt). En producción ejecutar: password_hash('1234', PASSWORD_BCRYPT)
+-- ---------------------------------------------------------------------------
+-- usuarios  (password_hash = bcrypt of 'password' — replace with hash of '1234')
+-- id: 1=admin, 2=admin_colegio, 3=docente, 4=practicante, 5=estudiante
+-- ---------------------------------------------------------------------------
 INSERT INTO usuarios (nombre, apellido, email, codigo_acceso, password_hash, rol, colegio_id) VALUES
-('Admin',    'Sistema',  'admin@innovasteam.edu.pe',       NULL,      '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin',         NULL),
-('Carlos',   'Vargas',   'admincol@innovasteam.edu.pe',    NULL,      '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin_colegio', 1),
-('María',    'Flores',   'docente@innovasteam.edu.pe',     NULL,      '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'docente',       1),
-('Jorge',    'Quispe',   'practicante@innovasteam.edu.pe', NULL,      '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'practicante',   1),
-('Sofía',    'Mamani',   NULL,                              'EST-001', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'estudiante',    1);
+('Admin',   'Sistema', 'admin@innovasteam.edu.pe',        NULL,      '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin',         NULL),
+('Carlos',  'Vargas',  'admin_col@innovasteam.edu.pe',    NULL,      '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin_colegio', 1),
+('María',   'Flores',  'docente@innovasteam.edu.pe',      NULL,      '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'docente',       1),
+('Jorge',   'Quispe',  'practicante@innovasteam.edu.pe',  NULL,      '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'practicante',   1),
+('Sofía',   'Mamani',  NULL,                              'EST-001', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'estudiante',    1);
 
-INSERT INTO aulas (colegio_id, grado, seccion, anio_escolar, docente_id) VALUES (1, '5to', 'A', 2026, 3);
+-- ---------------------------------------------------------------------------
+-- aulas  (id=1)
+-- ---------------------------------------------------------------------------
+INSERT INTO aulas (colegio_id, grado, seccion, anio_escolar, docente_id) VALUES
+(1, '5to', 'A', 2026, 3);
 
+-- ---------------------------------------------------------------------------
+-- practicante_aula / estudiante_aula
+-- ---------------------------------------------------------------------------
 INSERT INTO practicante_aula (practicante_id, aula_id) VALUES (4, 1);
 INSERT INTO estudiante_aula  (estudiante_id,  aula_id) VALUES (5, 1);
 
-
--- ============================================================
--- SEED: 15 Módulos
--- ============================================================
-
+-- ---------------------------------------------------------------------------
+-- modulos  (15 modules, 3 per course; id 1-15 in insertion order)
+-- ---------------------------------------------------------------------------
 INSERT INTO modulos (curso_id, titulo, descripcion, orden, minutos_estimados) VALUES
-(1, 'El mercado de Moquegua',    'Registra y compara precios con gráficos de barras.',            1, 45),
-(1, 'Construyendo terrazas',     'Mide y divide áreas en fracciones como los Incas.',             2, 45),
-(1, 'El aguaymanto y los kilos', 'Multiplicación con precios reales de productos moqueguanos.',  3, 45),
-(2, 'El río Moquegua habla',     'Escribe una carta narrativa desde la perspectiva del río.',    1, 45),
-(2, 'Leyendas de Torata',        'Reescribe y crea tu propia leyenda moqueguana.',               2, 45),
-(2, 'Noticias de mi barrio',     'Redacta noticias del periódico escolar.',                      3, 45),
-(3, 'Colores de Moquegua',       'Mezcla colores primarios para capturar el desierto moqueguano.',1, 45),
-(3, 'Mural del barrio',          'Diseña y crea arte colectivo para la comunidad.',              2, 45),
-(3, 'Tejidos y patrones',        'Reproduce y crea patrones geométricos andinos.',               3, 45),
-(4, 'Puentes con papel',         'Diseña un puente resistente con solo papel.',                  1, 45),
-(4, 'Filtro de agua',            'Construye un filtro de agua natural.',                         2, 45),
-(4, 'Torre sísmica',             'Construye una torre que resista los temblores de Moquegua.',  3, 45),
-(5, 'My Moquegua',               'Crea una tarjeta de bienvenida bilingüe para turistas.',      1, 45),
-(5, 'The market',                'Practica diálogos de compra y venta en inglés.',              2, 45),
-(5, 'Nature around us',          'Aprende vocabulario de colores y naturaleza en inglés.',      3, 45);
+-- Matemática (curso_id=1)
+(1, 'El mercado de Moquegua',    'Don Aurelio no sabe si su precio es justo. Aprende a registrar y comparar precios con gráficos.',      1, 45),
+(1, 'Construyendo terrazas',     'Las terrazas incas usaban fracciones para irrigar. Mide y divide áreas en fracciones.',                2, 45),
+(1, 'El aguaymanto y los kilos', 'Productores de Torata calculan su ganancia. Multiplicación con precios reales.',                       3, 45),
+-- Comunicación (curso_id=2)
+(2, 'El río Moquegua habla',     'Sofía escucha al río contarle su historia. Aprende a escribir cartas narrativas.',                     1, 45),
+(2, 'Leyendas de Torata',        'El abuelo Aurelio narra la leyenda del volcán. Reescribe y crea tu propia leyenda.',                   2, 45),
+(2, 'Noticias de mi barrio',     'El periódico escolar de 5to A necesita redactores. Aprende a escribir noticias.',                      3, 45),
+-- Arte (curso_id=3)
+(3, 'Colores de Moquegua',       'El pintor Víctor quiere capturar el desierto. Mezcla colores primarios para crear paletas.',           1, 45),
+(3, 'Mural del barrio',          'La junta vecinal pide un mural para la plaza. Diseña y crea arte colectivo.',                          2, 45),
+(3, 'Tejidos y patrones',        'Las mamás del mercado tejen patrones andinos. Reproduce y crea patrones geométricos.',                 3, 45),
+-- Ingeniería (curso_id=4)
+(4, 'Puentes con papel',         'El puente de la comunidad de Elena necesita reparación. Diseña un puente resistente de papel.',        1, 45),
+(4, 'Filtro de agua',            'El pozo del pueblo tiene sedimentos. Construye un filtro de agua natural.',                            2, 45),
+(4, 'Torre sísmica',             'Moquegua tiene sismos frecuentes. Construye una torre que resista temblores.',                         3, 45),
+-- Inglés (curso_id=5)
+(5, 'My Moquegua',               'Tim, un turista, llega a Moquegua y no entiende nada. Crea una tarjeta de bienvenida en inglés.',     1, 45),
+(5, 'The market',                'Sara visits the Moquegua market. Practica diálogos de compra y venta en inglés.',                     2, 45),
+(5, 'Nature around us',          'Los colores de la naturaleza en inglés. Aprende vocabulario de colores y naturaleza bilingüe.',        3, 45);
 
 
--- ============================================================
--- SEED: modulo_pasos (60 filas — 4 por módulo)
--- ============================================================
+-- ===========================================================================
+-- 5. modulo_pasos — 4 pasos × 15 módulos = 60 filas
+-- ===========================================================================
 
--- Módulo 1: El mercado de Moquegua
+-- ---- Módulo 1: El mercado de Moquegua (modulo_id=1) ----------------------
 INSERT INTO modulo_pasos (modulo_id, numero_paso, tipo, contenido) VALUES
-(1,1,'historia','{"narrativa":"Don Aurelio tiene un puesto en el mercado central de Moquegua donde vende papa, chuño, maíz morado y orégano de la región. Lleva 15 años vendiendo los mismos productos, pero últimamente sus vecinos del mercado le dicen que sus precios son más bajos que los de los otros puestos. El problema es que don Aurelio nunca ha llevado un registro de los precios. Cuando llega la mañana, fija sus precios de memoria sin comparar con nadie. Su hija Lucía, que estudia en la GUE Mariscal Nieto, le propone una idea: visitar cinco puestos del mercado, anotar los precios de un mismo producto y hacer un gráfico para comparar. Así don Aurelio podrá saber si sus precios son justos o si necesita ajustarlos para no perder clientes ni ganancias.","pregunta_disparadora":"¿Cómo crees que podría don Aurelio descubrir si sus precios son justos sin tener que preguntarle directamente a sus competidores?"}'),
-(1,2,'actividad','{"materiales":["Hoja de papel cuadriculado o blanco","Lápiz y colores","Regla"],"instrucciones":["Piensa en un producto que se venda en tu barrio o mercado (puede ser papa, limón, naranja u otro).","Imagina o pregunta el precio de ese producto en 5 lugares diferentes (tiendas, mercado, bodega).","Anota los 5 precios en una tabla con dos columnas: Lugar y Precio en soles.","Dibuja un gráfico de barras: en el eje horizontal pon los lugares y en el vertical los precios.","Colorea cada barra con un color diferente y ponle título a tu gráfico."],"minutos":20}'),
-(1,3,'quiz','{"info":"Ver tabla quiz_preguntas para modulo 1"}'),
-(1,4,'entregable','{"consigna":"Muestra la tabla de precios que registraste y el gráfico de barras que dibujaste.","formatos":["dibujo_cientifico","ficha"],"instrucciones":"Toma una foto clara de tu tabla y gráfico. Sube la imagen. Máx 5 MB."}');
+(1, 1, 'historia',
+ '{"narrativa":"Don Aurelio Condori lleva más de treinta años vendiendo papas, cebollas y limones en el mercado central de Moquegua. Cada mañana llega con su carretilla antes del amanecer, cuando las calles todavía huelen a neblina y tierra mojada. Pero últimamente algo lo preocupa: sus vecinos de puesto parecen vender más que él, aunque ofrecen los mismos productos. ¿Será que sus precios no son los correctos? Un día, su nieta Valeria llega de visita y le pregunta: ¿Abuelo, cuánto cuesta el kilo de papa aquí? Y él responde: Dos soles con cincuenta. Valeria saca su cuaderno y empieza a anotar los precios de todos los puestos del mercado. Al terminar le muestra a Don Aurelio una lista con números y le dice: Abuelo, con un gráfico de barras puedo mostrarte quién vende más barato y quién más caro. Don Aurelio la mira sorprendido. No sabía que los números podían contar esa historia. Juntos descubren que hay tres puestos que venden la papa más barata, y que la cebolla en el puesto de la señora Rosa cuesta el doble que en otros mercados del distrito. Don Aurelio entiende entonces que registrar y comparar precios es una herramienta poderosa para tomar decisiones justas, tanto para los vendedores como para las familias que compran cada semana.","pregunta_disparadora":"¿Cómo podrías ayudar a Don Aurelio a saber si sus precios son justos comparados con los de otros vendedores del mercado?"}'),
+(1, 2, 'actividad',
+ '{"materiales":["Hoja de papel o cuaderno","Lápiz o lapicero","Regla","Lápices de colores (opcional)"],"instrucciones":["Visita un mercado de tu barrio o imagina uno con al menos 5 productos típicos de Moquegua (papa, cebolla, limón, aguaymanto, queso).","Registra el nombre del producto y su precio por kilo o por unidad en una tabla de dos columnas: Producto | Precio.","Dibuja un gráfico de barras donde el eje horizontal tenga los nombres de los productos y el eje vertical los precios en soles.","Colorea cada barra con un color diferente y ponle título a tu gráfico: Precios en el mercado de Moquegua.","Escribe debajo del gráfico: ¿Cuál es el producto más caro? ¿Cuál es el más barato? ¿Por qué crees que hay esa diferencia?"],"minutos":20}'),
+(1, 3, 'quiz',
+ '{"info":"Ver tabla quiz_preguntas para las preguntas de este paso"}'),
+(1, 4, 'entregable',
+ '{"consigna":"Presenta tu tabla de 5 productos con sus precios y el gráfico de barras que dibujaste. Asegúrate de que el gráfico tenga título, etiquetas en los ejes y que cada barra esté claramente diferenciada.","formatos":["dibujo_cientifico","ficha"],"instrucciones":"Sube una foto de tu trabajo terminado. Máx 5 MB."}');
 
--- Módulo 2: Construyendo terrazas
+-- ---- Módulo 2: Construyendo terrazas (modulo_id=2) -----------------------
 INSERT INTO modulo_pasos (modulo_id, numero_paso, tipo, contenido) VALUES
-(2,1,'historia','{"narrativa":"En las laderas de los cerros de Torata, cerca de Moquegua, todavía se pueden ver las antiguas terrazas que construyeron los incas hace más de 600 años. Estas terrazas no eran simples escalones: estaban diseñadas con gran precisión matemática para aprovechar el agua de riego de manera exacta. El ingeniero inca Huanca explicaba a los jóvenes constructores que cada terraza debía tener exactamente la mitad del ancho de la terraza inferior para que el agua fluyera correctamente. Si la terraza de abajo medía 4 metros, la siguiente debía medir 2 metros, es decir, un medio. Esta idea de dividir espacios en partes iguales es lo que hoy llamamos fracciones. El joven aprendiz Tupac aprendió que las fracciones no eran solo números en un papel, sino herramientas para construir un sistema de irrigación que alimentó a miles de personas durante siglos.","pregunta_disparadora":"¿Puedes imaginar cómo se usarían las fracciones para dividir un terreno en partes iguales para sembrar diferentes cultivos?"}'),
-(2,2,'actividad','{"materiales":["Papel cuadriculado o blanco tamaño A4","Lápices de colores (mínimo 3)","Regla","Tijeras (opcional)"],"instrucciones":["Dibuja un rectángulo grande en tu hoja que represente un terreno de 8 cuadrados de ancho.","Divide el rectángulo en 4 terrazas horizontales iguales (cada una tendrá 2 cuadrados de alto).","Colorea cada terraza con un color diferente y escribe la fracción que representa: 1/4, 2/4, 3/4, 4/4.","En cada terraza escribe qué cultivo sembraría: maíz, papa, chuño u orégano.","Al costado de tu dibujo escribe: ¿cuánto es 1/2 del terreno total? ¿Y 1/4?"],"minutos":20}'),
-(2,3,'quiz','{"info":"Ver tabla quiz_preguntas para modulo 2"}'),
-(2,4,'entregable','{"consigna":"Muestra tu dibujo de terrazas con las fracciones marcadas en cada nivel.","formatos":["dibujo_cientifico","mural_digital"],"instrucciones":"Fotografía tu dibujo bien iluminado. Asegúrate de que se vean los colores y los números de fracciones claramente. Máx 5 MB."}');
+(2, 1, 'historia',
+ '{"narrativa":"En las laderas de los cerros que rodean Moquegua, si uno mira con atención, puede ver rastros de antiguas terrazas construidas por los pueblos que vivieron aquí hace cientos de años. Pedro, un estudiante de quinto grado, va de excursión con su clase al cerro Baúl y queda fascinado con esas plataformas escalonadas de piedra. Su profesora le explica que los antiguos agricultores las llamaban andenes y que las usaban para cultivar en las laderas sin que la tierra se erosionara. Pero lo más sorprendente es lo que viene después: la profesora le muestra que para dividir el agua de irrigación entre los andenes, los ingenieros del pasado usaban fracciones. Si tenían un canal con cierta cantidad de agua, la distribuían en partes iguales entre cada terraza. Pedro no puede creerlo: ¿Las fracciones existen desde antes de que yo naciera? La profesora sonríe y le dice que las matemáticas no se inventaron en los libros, sino que nacieron de la necesidad de resolver problemas reales como regar campos, construir casas y comerciar productos. Esa tarde Pedro llega a su casa y le cuenta todo a su mamá, quien le dice que su bisabuelo también cultivaba en andenes cerca de Torata. Pedro decide dibujar sus propias terrazas y aprender a dividir áreas usando fracciones, como los ingenieros de antes.","pregunta_disparadora":"¿Cómo usarías fracciones para dividir de manera justa el agua de riego entre cuatro terrazas de diferente tamaño?"}'),
+(2, 2, 'actividad',
+ '{"materiales":["Papel cuadriculado","Lápices de colores","Regla","Lápiz"],"instrucciones":["Dibuja una ladera de cerro con al menos 4 terrazas escalonadas usando papel cuadriculado. Cada terraza debe tener una forma rectangular.","Decide el área total de tu ladera (por ejemplo, 24 cuadraditos) y divídela en fracciones entre las terrazas: 1/4 para la terraza de arriba, 1/4 para la segunda, 1/2 para las dos de abajo.","Colorea cada terraza con un color diferente y escribe la fracción que le corresponde dentro de ella.","Suma todas las fracciones y verifica que den 1 (el total de la ladera).","Escribe al lado de tu dibujo: ¿Qué fracción del total corresponde a las terrazas superiores? ¿Y a las inferiores?"],"minutos":20}'),
+(2, 3, 'quiz',
+ '{"info":"Ver tabla quiz_preguntas para las preguntas de este paso"}'),
+(2, 4, 'entregable',
+ '{"consigna":"Entrega tu dibujo de las terrazas con las fracciones marcadas en cada una, la suma verificada y las respuestas a las preguntas de reflexión.","formatos":["dibujo_cientifico","ficha"],"instrucciones":"Sube una foto de tu trabajo terminado. Máx 5 MB."}');
 
--- Módulo 3: El aguaymanto y los kilos
+-- ---- Módulo 3: El aguaymanto y los kilos (modulo_id=3) -------------------
 INSERT INTO modulo_pasos (modulo_id, numero_paso, tipo, contenido) VALUES
-(3,1,'historia','{"narrativa":"En el distrito de Torata, a 45 minutos de Moquegua, doña Carmen cultiva aguaymanto en sus pequeñas parcelas de tierra. El aguaymanto es una fruta deliciosa y nutritiva que cada vez tiene más demanda en los mercados de Lima y Arequipa. Este año doña Carmen cosechó 15 kilos de aguaymanto. En el mercado local el precio es de 8 soles el kilo, pero si vende directamente a un comprador de Lima, puede conseguir 12 soles el kilo. El problema es que doña Carmen nunca estudió más allá del tercer grado y le cuesta calcular rápidamente cuánto dinero ganaría en cada caso. Su sobrino Andrés, estudiante de quinto de primaria, decide ayudarla a hacer los cálculos usando la multiplicación para que ella pueda tomar la mejor decisión.","pregunta_disparadora":"¿Cómo puede Andrés ayudar a doña Carmen a calcular cuánto dinero ganará en cada opción de venta?"}'),
-(3,2,'actividad','{"materiales":["Hoja de papel","Lápiz","Calculadora (opcional para verificar)"],"instrucciones":["Resuelve: Si doña Carmen tiene 15 kilos y el precio local es S/8 por kilo, ¿cuánto ganará en total?","Resuelve: Si vende al comprador de Lima a S/12 por kilo, ¿cuánto ganará en total?","Crea tu propio problema: elige otro producto de tu región (papa, orégano, palta) y un precio. Calcula la ganancia para 10 kilos y para 25 kilos.","Compara los resultados y escribe: ¿Cuál opción le conviene más a doña Carmen y por qué?","Dibuja una tabla con tus cálculos mostrando: Producto, Kilos, Precio por kilo, Total."],"minutos":20}'),
-(3,3,'quiz','{"info":"Ver tabla quiz_preguntas para modulo 3"}'),
-(3,4,'entregable','{"consigna":"Muestra tu hoja de cálculos con los problemas de multiplicación resueltos y la tabla comparativa.","formatos":["ficha","dibujo_cientifico"],"instrucciones":"Toma una foto clara de tus cálculos escritos a mano. Máx 5 MB."}');
+(3, 1, 'historia',
+ '{"narrativa":"En las chacras de Torata, el aguaymanto crece entre neblina y sol. Es una fruta pequeña, amarilla y dulce que los agricultores venden en el mercado de Moquegua cada semana. Doña Carmen tiene una de esas chacras y este año tuvo una buena cosecha: logró recoger más bolsas de las que esperaba. Pero cuando fue al mercado a vender, no sabía cuánto dinero iba a ganar en total. Su hijo Erick, que cursa quinto de primaria, le dijo: Mamá, si sabemos cuántos kilos tienes y cuánto vale cada kilo, puedo calcular cuánto ganarás. Doña Carmen lo miró con orgullo y le entregó su libreta de apuntes. Erick abrió la libreta y encontró los datos: 8 kilos de aguaymanto a 4 soles cada kilo, 5 kilos de paprika a 6 soles cada kilo, y 3 kilos de orégano a 7 soles cada kilo. Se sentó bajo la sombra de un árbol y empezó a multiplicar con cuidado. Al terminar, le anunció a su mamá el total que iba a ganar ese día. Doña Carmen no podía creer lo rápido que Erick había resuelto algo que a ella le tomaba mucho más tiempo. Erick entendió ese día que la multiplicación no es solo una operación de la escuela, sino una herramienta real que ayuda a las familias a conocer sus ganancias y tomar decisiones sobre su trabajo.","pregunta_disparadora":"Si Doña Carmen tiene 12 kilos de aguaymanto y cada kilo vale 4.50 soles, ¿cuánto dinero recibirá en total? ¿Cómo lo calcularías?"}'),
+(3, 2, 'actividad',
+ '{"materiales":["Hoja de papel o cuaderno","Lápiz"],"instrucciones":["Imagina que eres agricultor o agricultora en Torata. Elige 4 productos que cultivas (puedes usar: aguaymanto, papa, orégano, paprika, ají, aceituna).","Para cada producto, anota: cantidad en kilos y precio por kilo. Inventa números reales y razonables.","Multiplica cantidad × precio para cada producto y escribe el resultado en la columna Ganancia.","Suma todas las ganancias para obtener el total del día de mercado.","Responde: ¿Cuál producto te dio más ganancia? ¿Por qué? ¿Qué cambiarías si quisieras ganar más?"],"minutos":20}'),
+(3, 3, 'quiz',
+ '{"info":"Ver tabla quiz_preguntas para las preguntas de este paso"}'),
+(3, 4, 'entregable',
+ '{"consigna":"Entrega tu tabla de productos con cantidades, precios y ganancias calculadas, más las respuestas a las preguntas de reflexión.","formatos":["ficha","otro"],"instrucciones":"Sube una foto de tu trabajo terminado. Máx 5 MB."}');
 
--- Módulo 4: El río Moquegua habla
+-- ---- Módulo 4: El río Moquegua habla (modulo_id=4) -----------------------
 INSERT INTO modulo_pasos (modulo_id, numero_paso, tipo, contenido) VALUES
-(4,1,'historia','{"narrativa":"El río Moquegua nace en las alturas de los Andes y recorre más de 60 kilómetros hasta llegar al mar. Durante siglos fue la fuente de vida de todas las comunidades que vivían a sus orillas: les daba agua para beber, para regar sus cultivos y para sus animales. Pero Sofía, una niña de quinto grado, nota que el río ya no es lo que era antes. El agua llega turbia y a veces huele mal. Los peces han desaparecido casi por completo. Una tarde, Sofía se sienta a la orilla y cierra los ojos. En su imaginación, el río le habla: le cuenta cómo era antes, cristalino y lleno de vida, y le describe cómo la basura, las aguas servidas y los residuos mineros lo han ido enfermando poco a poco. El río le pide a Sofía que cuente su historia para que la gente entienda y cambie.","pregunta_disparadora":"Si el río Moquegua pudiera escribirle una carta a la comunidad, ¿qué crees que le diría y qué le pediría?"}'),
-(4,2,'actividad','{"materiales":["Papel","Lápiz o lapicero","Colores (opcional para ilustrar)"],"instrucciones":["Imagina que eres el río Moquegua y vas a escribirle una carta a la comunidad.","La carta debe tener: saludo, cuerpo (tu historia y tu situación actual) y despedida con una petición.","Escribe al menos 3 párrafos: uno sobre cómo eras antes, uno sobre cómo estás ahora y uno con lo que necesitas de la comunidad.","Usa palabras que expresen sentimientos: tristeza, esperanza, gratitud, preocupación.","Si quieres, dibuja un pequeño río al lado de tu carta."],"minutos":20}'),
-(4,3,'quiz','{"info":"Ver tabla quiz_preguntas para modulo 4"}'),
-(4,4,'entregable','{"consigna":"Comparte la carta que escribiste desde la perspectiva del río Moquegua.","formatos":["cuento_ilustrado","ficha"],"instrucciones":"Fotografía tu carta escrita a mano. Asegúrate de que la letra sea legible. Máx 5 MB."}');
+(4, 1, 'historia',
+ '{"narrativa":"Una tarde de otoño, Sofía caminaba sola por las orillas del río Moquegua cuando escuchó algo extraño: un murmullo que no era el viento ni el agua. Se acercó más y de repente le pareció que el río le hablaba. Yo fui limpio, Sofía, le dijo la voz del río. Recuerdo cuando los niños se bañaban en mis aguas y las mujeres lavaban su ropa en mis orillas. Ahora cargó con tristeza porque la gente tira basura en mis orillas y las fábricas me llenan de colores que no son míos. Sofía se sentó en una piedra y escuchó con atención. El río le contó que venía desde las alturas de Puno, que cruzaba valles de olivos y viñas, y que llegaba al mar después de un largo viaje. Le habló de los pájaros que ya no se posaban en sus orillas, de los peces que habían desaparecido y de las familias que antes dependían de su agua para regar sus cultivos. Sofía sacó su cuaderno y empezó a escribir todo lo que el río le contaba. Al llegar a casa pensó: ¿Qué pasaría si el río pudiera escribirle una carta a la comunidad? ¿Qué les diría? ¿Qué les pediría? Esa noche Sofía aprendió que escribir una carta es una forma de dar voz a quien no puede hablar.","pregunta_disparadora":"Si el río Moquegua pudiera escribirte una carta, ¿qué crees que te diría? ¿Qué problemas contaría y qué te pediría que hicieras?"}'),
+(4, 2, 'actividad',
+ '{"materiales":["Papel o cuaderno","Lápiz o lapicero"],"instrucciones":["Escribe una carta del río Moquegua dirigida a los habitantes de la ciudad. La carta debe tener: saludo inicial, al menos dos párrafos donde el río cuente su situación y sus recuerdos, una petición clara a la comunidad, y una despedida.","Usa la primera persona (Yo, el río, les escribo...) para que la carta suene como si el río hablara de verdad.","Incluye al menos 3 detalles específicos sobre Moquegua: lugares, plantas, animales o tradiciones relacionadas con el río.","Revisa la ortografía y la puntuación antes de entregar.","Dale un título creativo a tu carta."],"minutos":20}'),
+(4, 3, 'quiz',
+ '{"info":"Ver tabla quiz_preguntas para las preguntas de este paso"}'),
+(4, 4, 'entregable',
+ '{"consigna":"Entrega tu carta escrita del río Moquegua a la comunidad. Debe tener todos los elementos de una carta formal: saludo, cuerpo con al menos dos párrafos, petición y despedida.","formatos":["cuento_ilustrado","ficha"],"instrucciones":"Sube una foto de tu carta manuscrita terminada. Máx 5 MB."}');
 
--- Módulo 5: Leyendas de Torata
+-- ---- Módulo 5: Leyendas de Torata (modulo_id=5) --------------------------
 INSERT INTO modulo_pasos (modulo_id, numero_paso, tipo, contenido) VALUES
-(5,1,'historia','{"narrativa":"El abuelo Aurelio tiene 78 años y es uno de los últimos guardianes de las leyendas de Torata. Sentado bajo un viejo eucalipto, con su sombrero de paja y su poncho de alpaca, cuenta la historia del volcán Ticsani. Según la leyenda, el Ticsani era un guerrero poderoso que se enamoró de la laguna Pasto Grande. Pero los dioses de las montañas, celosos de su felicidad, lo convirtieron en volcán para separarlo de la laguna para siempre. Por eso, dicen los ancianos, el Ticsani aún humea de vez en cuando: son los suspiros del guerrero que extraña a su amada. El abuelo Aurelio le dice a su nieta Valentina que estas historias no deben perderse, que cada generación tiene la responsabilidad de contarlas de nuevo y de darles vida con su propia voz.","pregunta_disparadora":"¿Qué elementos de la naturaleza de tu región podrías convertir en personajes de una leyenda?"}'),
-(5,2,'actividad','{"materiales":["Papel","Lápiz","Colores (opcional)"],"instrucciones":["Lee la leyenda del abuelo Aurelio y escríbela con tus propias palabras (no copies, cuenta la historia como si se la contaras a un amigo).","Luego crea tu propia versión: cambia uno de los personajes o agrega un nuevo elemento a la historia.","Tu leyenda debe tener: título, presentación de los personajes, el problema o conflicto y cómo termina.","Incluye al menos un elemento de la naturaleza de Moquegua: el volcán, el río, el desierto, las terrazas.","Ilustra tu leyenda con un dibujo."],"minutos":20}'),
-(5,3,'quiz','{"info":"Ver tabla quiz_preguntas para modulo 5"}'),
-(5,4,'entregable','{"consigna":"Muestra tu leyenda reescrita o creada, con su ilustración.","formatos":["cuento_ilustrado","mural_digital"],"instrucciones":"Fotografía tu texto e ilustración. Máx 5 MB."}');
+(5, 1, 'historia',
+ '{"narrativa":"El abuelo Aurelio tiene ochenta y dos años y una voz como el trueno de verano. Cada vez que su nieto Miguel lo visita en su casa de Torata, le pide que cuente la leyenda del volcán. El abuelo se acomoda en su silla de madera, cierra los ojos un momento y comienza: Dicen los antiguos que hace muchísimos años, cuando Moquegua era todavía muy joven, el volcán Ticsani se enamoró de una pastora llamada Urpicha. Ella cuidaba sus rebaños en las faldas del cerro y cantaba tan lindo que el volcán temblaba de emoción cada vez que la escuchaba. Un día, unos mensajeros del sol le dijeron a Urpicha que debía irse lejos, a vivir entre las nubes. Ella lloró tanto que sus lágrimas formaron el río que hoy riega nuestros campos. Y el volcán, al verla partir, soltó una columna de humo que todavía hoy se puede ver en los días claros. Miguel escucha con la boca abierta. Le pregunta al abuelo si eso es verdad. El abuelo sonríe y dice: Las leyendas no son falsas ni verdaderas, niño. Son la manera en que los pueblos explican el mundo y guardan su historia. Miguel toma su cuaderno y decide que también él quiere contar una leyenda, a su manera.","pregunta_disparadora":"¿Qué elementos hacen que una leyenda sea diferente a un cuento de ficción o a una noticia? ¿Por qué los pueblos crean leyendas para explicar la naturaleza?"}'),
+(5, 2, 'actividad',
+ '{"materiales":["Cuaderno o papel","Lápiz o lapicero","Lápices de colores (opcional para ilustrar)"],"instrucciones":["Lee nuevamente la leyenda del volcán Ticsani que contó el abuelo Aurelio.","Reescríbela con tus propias palabras en al menos 10 oraciones. Puedes cambiar algunos detalles, pero mantén los personajes principales.","Luego crea tu propia leyenda moqueguana. Elige un elemento de la naturaleza de la región (el cerro Baúl, el desierto, los olivos, el río) y explica su origen con una historia fantástica.","Tu leyenda debe tener: personajes (humanos, naturaleza o seres mágicos), un problema o situación especial, y un final que explique algo del mundo real.","Si quieres, ilustra tu leyenda con un dibujo."],"minutos":20}'),
+(5, 3, 'quiz',
+ '{"info":"Ver tabla quiz_preguntas para las preguntas de este paso"}'),
+(5, 4, 'entregable',
+ '{"consigna":"Entrega tu leyenda moqueguana propia, escrita a mano o en computadora. Debe tener título, personajes identificables, un hecho sobrenatural y un final explicativo.","formatos":["cuento_ilustrado","ficha"],"instrucciones":"Sube una foto o archivo de tu leyenda terminada. Máx 5 MB."}');
 
--- Módulo 6: Noticias de mi barrio
+-- ---- Módulo 6: Noticias de mi barrio (modulo_id=6) -----------------------
 INSERT INTO modulo_pasos (modulo_id, numero_paso, tipo, contenido) VALUES
-(6,1,'historia','{"narrativa":"La profesora Luciana tiene una idea emocionante para el quinto grado A de la GUE Mariscal Nieto: crear el primer periódico escolar del colegio, llamado Voz del Mariscal. Pero para eso necesita reporteros estudiantiles que sepan escribir noticias reales sobre lo que pasa en el barrio, en la escuela y en la ciudad. Miguel, que siempre está enterado de todo lo que ocurre en su barrio, es el primero en levantar la mano. La profesora le explica que una noticia no es cualquier texto: debe responder seis preguntas fundamentales llamadas las 6W en inglés (¿Quién? ¿Qué? ¿Cuándo? ¿Dónde? ¿Por qué? ¿Cómo?). Además debe tener un título llamativo, un primer párrafo que resuma todo y un cuerpo con los detalles. Miguel se da cuenta de que escribir noticias es como ser un detective que recoge pistas y las organiza para contar la verdad.","pregunta_disparadora":"¿Cuál es el evento más importante que ha ocurrido recientemente en tu barrio o escuela que merezca ser una noticia?"}'),
-(6,2,'actividad','{"materiales":["Papel","Lápiz o lapicero"],"instrucciones":["Piensa en un evento real o imaginario que ocurrió en tu barrio, escuela o comunidad.","Responde las 6 preguntas: ¿Quién? ¿Qué pasó? ¿Cuándo? ¿Dónde? ¿Por qué? ¿Cómo?","Escribe un título llamativo para tu noticia (máximo 10 palabras).","Escribe el primer párrafo resumiendo los puntos más importantes en 2-3 oraciones.","Escribe el cuerpo de la noticia con más detalles en 2 párrafos adicionales.","Agrega un cierre con una conclusión o dato adicional."],"minutos":20}'),
-(6,3,'quiz','{"info":"Ver tabla quiz_preguntas para modulo 6"}'),
-(6,4,'entregable','{"consigna":"Comparte la noticia que redactaste con su título y los 6 párrafos estructurados.","formatos":["ficha","cuento_ilustrado"],"instrucciones":"Fotografía tu noticia escrita. La letra debe ser legible. Máx 5 MB."}');
+(6, 1, 'historia',
+ '{"narrativa":"El aula de 5to A de la GUE Mariscal Nieto tiene un proyecto especial este año: publicar el primer periódico escolar del colegio. La profesora Flores les explica a sus alumnos que las noticias no solo ocurren en Lima o en las grandes ciudades: cada barrio, cada mercado y cada familia tiene historias que merecen ser contadas. Lucía, una estudiante curiosa y observadora, decide que quiere escribir sobre el nuevo parque que acaban de inaugurar en su barrio. Pero cuando intenta redactar la nota, se da cuenta de que no sabe por dónde empezar. ¿Cuándo fue inaugurado? ¿Quién lo construyó? ¿Por qué era necesario? Su compañero Rodrigo le dice que una buena noticia siempre responde seis preguntas: ¿Qué pasó?, ¿Quién lo hizo?, ¿Cuándo?, ¿Dónde?, ¿Cómo? y ¿Por qué? Lucía anota esas preguntas en su cuaderno y regresa al parque con su libreta. Habla con los vecinos, con el trabajador que plantó los árboles y con los niños que ya juegan ahí. Al llegar a clase, tiene toda la información que necesita. La profesora le dice que ahora viene la parte más importante: organizar esa información de manera clara, con un titular llamativo, una introducción y los detalles más importantes al principio. Lucía descubre que escribir noticias es como resolver un rompecabezas de palabras.","pregunta_disparadora":"¿Qué historia importante de tu barrio o colegio merece ser contada en un periódico? ¿Cómo la describirías en pocas palabras para que llame la atención?"}'),
+(6, 2, 'actividad',
+ '{"materiales":["Cuaderno o papel","Lápiz o lapicero"],"instrucciones":["Elige un hecho real o imaginario que haya ocurrido en tu barrio, colegio o familia recientemente (puede ser una mejora, un evento, un personaje interesante).","Responde las seis preguntas del periodismo: ¿Qué?, ¿Quién?, ¿Cuándo?, ¿Dónde?, ¿Cómo?, ¿Por qué?","Escribe un titular llamativo de no más de 10 palabras que resuma la noticia.","Redacta la nota informativa en al menos tres párrafos: introducción (lo más importante), desarrollo (detalles) y cierre (consecuencias o reflexión).","Revisa que la nota esté en tercera persona y no contenga opiniones personales."],"minutos":20}'),
+(6, 3, 'quiz',
+ '{"info":"Ver tabla quiz_preguntas para las preguntas de este paso"}'),
+(6, 4, 'entregable',
+ '{"consigna":"Entrega tu nota periodística completa con titular, respuestas a las seis preguntas y los tres párrafos redactados correctamente.","formatos":["ficha","otro"],"instrucciones":"Sube una foto de tu nota periodística terminada. Máx 5 MB."}');
 
 
--- Módulo 7: Colores de Moquegua
+-- ---- Módulo 7: Colores de Moquegua (modulo_id=7) -------------------------
 INSERT INTO modulo_pasos (modulo_id, numero_paso, tipo, contenido) VALUES
-(7,1,'historia','{"narrativa":"Víctor Apaza es un pintor moqueguano que lleva 20 años capturando los paisajes de su región en lienzos y acuarelas. Sus cuadros muestran el desierto color ocre, las lomas verdes de invierno, el cielo azul intenso y las flores amarillas del huarango. Un día, una joven artista llamada Camila le pregunta cómo logra esos colores tan exactos. Víctor le revela su secreto: en realidad nunca usa directamente los colores del tubo. Siempre mezcla los colores primarios (rojo, azul y amarillo) para crear los colores exactos que ve en la naturaleza. El anaranjado del atardecer sobre el volcán Ubinas se logra mezclando rojo y amarillo. El morado de la flor de papa se logra con rojo y azul. Camila comprende que las mezclas de colores son como una receta de cocina: cambiando las proporciones se obtienen resultados completamente diferentes.","pregunta_disparadora":"¿Qué colores ves en el paisaje de tu comunidad o barrio que quisieras capturar en un dibujo?"}'),
-(7,2,'actividad','{"materiales":["Pinturas o crayolas de colores primarios: rojo, azul y amarillo","Papel blanco","Pincel o palito para mezclar (si usa pintura)"],"instrucciones":["Mezcla rojo + amarillo para obtener naranja. Pinta una muestra en tu papel.","Mezcla azul + amarillo para obtener verde. Pinta una muestra.","Mezcla rojo + azul para obtener violeta. Pinta una muestra.","Ahora intenta mezclar con diferentes proporciones: más rojo que amarillo, o más azul que rojo. Observa cómo cambia el color.","Crea una paleta de 6 colores y nómbralos con colores de la naturaleza moqueguana: arena del desierto, cielo andino, flor de papa, chuño, volcán, laguna."],"minutos":20}'),
-(7,3,'quiz','{"info":"Ver tabla quiz_preguntas para modulo 7"}'),
-(7,4,'entregable','{"consigna":"Muestra tu paleta de colores mezclados con los nombres inspirados en la naturaleza de Moquegua.","formatos":["dibujo_cientifico","mural_digital"],"instrucciones":"Fotografía tu paleta de colores con buena iluminación para que se vean las mezclas. Máx 5 MB."}');
+(7, 1, 'historia',
+ '{"narrativa":"Víctor Quispe es un pintor moqueguano que lleva años intentando capturar en sus lienzos los colores del desierto de Moquegua. No es un desierto cualquiera: en las mañanas el suelo es ocre y violeta, al mediodía se vuelve blanco y dorado, y al atardecer los cerros se tiñen de naranja encendido y rojo oscuro. Víctor mezcla pinturas en su taller, que está lleno de frascos de colores primarios: rojo, azul y amarillo. Sabe que con esos tres colores puede crear casi cualquier tono que vea en la naturaleza, pero a veces los colores no le salen como quiere. Un día, su sobrina Daniela de diez años lo visita y le pregunta: Tío, ¿cómo haces el color anaranjado del cerro? Víctor le explica que el naranja se obtiene mezclando rojo y amarillo, pero la cantidad de cada uno determina si el resultado es más rojizo o más amarillento. Daniela queda fascinada. Le pregunta por el morado de las sombras, por el café de la tierra y por el gris verdoso de los cactus. Víctor le muestra cada mezcla con paciencia y Daniela anota todo en su cuaderno. Esa tarde aprende que los colores primarios son como un idioma: con pocas palabras se pueden construir infinitas historias. Y el desierto de Moquegua, con toda su paleta cambiante, es el mejor libro de colores que existe.","pregunta_disparadora":"¿Qué colores usarías para pintar un atardecer en el desierto de Moquegua? ¿Qué colores primarios mezclarías para obtener esos tonos?"}'),
+(7, 2, 'actividad',
+ '{"materiales":["Pinturas o crayolas de colores primarios (rojo, azul, amarillo)","Papel blanco","Pincel o palillo mezclador","Paleta o plato pequeño"],"instrucciones":["Observa el cielo, la tierra o una fotografía del desierto de Moquegua. Identifica al menos 5 colores que ves.","Mezcla colores primarios para obtener cada uno de esos colores. Por ejemplo: rojo + amarillo = naranja, azul + amarillo = verde, rojo + azul = violeta.","Pinta cuadros de muestra de cada color que obtuviste y escribe al lado qué colores mezclaste y en qué proporción (más rojo que amarillo, partes iguales, etc.).","Crea una paleta de colores del desierto moqueguano con al menos 6 tonos diferentes.","Pinta una pequeña escena del desierto usando solo los colores de tu paleta."],"minutos":20}'),
+(7, 3, 'quiz',
+ '{"info":"Ver tabla quiz_preguntas para las preguntas de este paso"}'),
+(7, 4, 'entregable',
+ '{"consigna":"Entrega tu paleta de colores del desierto moqueguano con los colores mezclados, las fórmulas de mezcla anotadas y la pequeña escena pintada.","formatos":["dibujo_cientifico","mural_digital"],"instrucciones":"Sube una foto de tu trabajo terminado. Máx 5 MB."}');
 
--- Módulo 8: Mural del barrio
+-- ---- Módulo 8: Mural del barrio (modulo_id=8) ----------------------------
 INSERT INTO modulo_pasos (modulo_id, numero_paso, tipo, contenido) VALUES
-(8,1,'historia','{"narrativa":"La junta vecinal del barrio San Antonio de Moquegua reunió a todos los vecinos un domingo por la tarde. El presidente de la junta, don Héctor, anunció que habían conseguido el permiso para pintar un mural en la pared más grande de la plaza del barrio. La idea era que el mural representara la identidad del barrio: sus tradiciones, su gente, su historia y sus sueños para el futuro. Pero nadie sabía por dónde empezar. Fue entonces cuando Valentina, una estudiante de sexto grado, propuso que los niños del barrio fueran los diseñadores del mural. Argumentó que ellos conocen el barrio desde adentro, desde los juegos en la calle, desde las conversaciones con los abuelos, desde los aromas del mercado y de las cocinas de las casas. Don Héctor estuvo de acuerdo y le encargó a Valentina organizar el proceso creativo.","pregunta_disparadora":"Si pudieras diseñar un mural para el lugar más importante de tu barrio, ¿qué elementos incluirías para representar tu comunidad?"}'),
-(8,2,'actividad','{"materiales":["Papel grande (puede ser unión de varias hojas)","Lápices y colores","Cinta adhesiva para unir papeles"],"instrucciones":["Reúnete con 2 o 3 compañeros o trabaja solo. Decidan el tema del mural: identidad del barrio, naturaleza de Moquegua, sueños del futuro, etc.","Dividan el espacio del papel en secciones y asigna cada sección a un integrante (o planifica las secciones tú solo).","Boceta primero con lápiz los elementos principales: personas, paisajes, símbolos locales.","Colorea con los colores que representen mejor tu comunidad.","Escribe el título del mural en la parte superior y los nombres de los autores en la parte inferior."],"minutos":25}'),
-(8,3,'quiz','{"info":"Ver tabla quiz_preguntas para modulo 8"}'),
-(8,4,'entregable','{"consigna":"Muestra tu diseño de mural colectivo con su título y los nombres de los autores.","formatos":["mural_digital","dibujo_cientifico"],"instrucciones":"Toma una foto del mural completo. Si es en papel grande, asegúrate de capturar toda la imagen. Máx 5 MB."}');
+(8, 1, 'historia',
+ '{"narrativa":"La junta vecinal del barrio San Antonio de Moquegua se reunió una tarde para hablar de la plaza del barrio. Las paredes de la placita estaban grises y desanimadas, y los vecinos querían hacer algo para cambiarlas. Alguien propuso contratar a un artista, pero el presupuesto era muy limitado. Entonces la señora Elena, directora de la escuela vecina, tuvo una idea: ¿Y si son los propios niños del barrio quienes pintan el mural? Los vecinos dudaron al principio, pero ella les explicó que en muchas ciudades del mundo los murales comunitarios son hechos por jóvenes artistas que expresan la historia y los sueños de su comunidad. La propuesta fue aprobada. Al día siguiente, la señora Elena visitó el aula de 5to A con la gran noticia: van a diseñar el mural de la plaza San Antonio. Los estudiantes estallaron de emoción. Pero diseñar un mural colectivo no es fácil: hay que ponerse de acuerdo en el tema, en los colores, en quién dibuja qué parte y cómo las piezas encajan en el conjunto. Carlos, el más callado de la clase, levantó la mano y dijo: Primero necesitamos saber de qué trata el mural. ¿Qué historia queremos contar? Ese fue el mejor inicio posible para el proyecto más grande que 5to A había enfrentado.","pregunta_disparadora":"Si pudieras pintar un mural en una pared de tu barrio, ¿qué historia o imagen moqueguana escogerías? ¿Por qué eso es importante para tu comunidad?"}'),
+(8, 2, 'actividad',
+ '{"materiales":["Papel grande (puede ser varias hojas pegadas)","Lápices de colores, crayolas o temperas","Lápiz para borrador"],"instrucciones":["Elige un tema para tu mural: puede ser la historia de Moquegua, la naturaleza local, los oficios del mercado, las fiestas tradicionales, etc.","Dibuja en papel grande el diseño de tu mural dividido en al menos 3 secciones o escenas relacionadas entre sí.","Usa colores que representen a Moquegua: los ocres del desierto, el verde de los olivos, el azul del cielo limpio.","Agrega al menos un texto corto dentro del mural: una frase, el nombre del barrio o una palabra en quechua.","Comparte tu diseño con tus compañeros y explica por qué elegiste ese tema y esos colores."],"minutos":25}'),
+(8, 3, 'quiz',
+ '{"info":"Ver tabla quiz_preguntas para las preguntas de este paso"}'),
+(8, 4, 'entregable',
+ '{"consigna":"Entrega el diseño de tu mural en papel grande con al menos 3 secciones temáticas, colores representativos de Moquegua y un texto incluido.","formatos":["mural_digital","dibujo_cientifico"],"instrucciones":"Sube una foto de tu diseño de mural terminado. Máx 5 MB."}');
 
--- Módulo 9: Tejidos y patrones
+-- ---- Módulo 9: Tejidos y patrones (modulo_id=9) --------------------------
 INSERT INTO modulo_pasos (modulo_id, numero_paso, tipo, contenido) VALUES
-(9,1,'historia','{"narrativa":"Cada sábado en el mercado central de Moquegua, las manos de doña Esperanza se mueven sin descanso sobre su telar de madera. Sus dedos conocen de memoria los patrones que le enseñó su madre, y que su madre aprendió de su abuela, en una cadena de conocimiento que se remonta a los tiempos precolombinos. Los tejidos andinos no son solo decorativos: cada patrón tiene un significado. El rombo representa el ojo que todo lo ve y protege. La serpiente en zigzag simboliza el río y el agua. Los cuadrados alternados representan los campos de cultivo vistos desde las montañas. Cuando una turista le pregunta a doña Esperanza cuánto tiempo le toma memorizar un patrón nuevo, ella sonríe y responde: Los patrones no se memorizan, se sienten. Pero también se pueden dibujar en papel cuadriculado para aprenderlos mejor.","pregunta_disparadora":"¿Has visto patrones en la ropa, en los pisos o en los muros de tu barrio? ¿Puedes describir cómo están formados?"}'),
-(9,2,'actividad','{"materiales":["Papel cuadriculado (o papel blanco con cuadrícula dibujada)","Lápices de colores (mínimo 3 colores)","Regla"],"instrucciones":["Observa el patrón del rombo: dibuja un rombo de 4x4 cuadrados y repítelo en fila, alternando colores.","Dibuja el patrón de la serpiente: una línea en zigzag de 2 cuadrados de alto que se repite horizontalmente.","Crea tu propio patrón: elige una figura geométrica simple (triángulo, cuadrado, L) y repítela para formar un patrón de al menos 3 repeticiones.","Colorea cada patrón con 2 colores que combinen bien.","Debajo de cada patrón escribe su nombre o inventa uno inspirado en la naturaleza de Moquegua."],"minutos":20}'),
-(9,3,'quiz','{"info":"Ver tabla quiz_preguntas para modulo 9"}'),
-(9,4,'entregable','{"consigna":"Muestra tus tres patrones dibujados en papel cuadriculado con sus nombres.","formatos":["dibujo_cientifico","mural_digital"],"instrucciones":"Fotografía tu hoja de patrones con buena luz. Máx 5 MB."}');
+(9, 1, 'historia',
+ '{"narrativa":"En el mercado artesanal de Moquegua, doña Gregoria y su hermana Rosa llegan cada sábado con sus tejidos. Las dos aprendieron a tejer de su madre, quien aprendió de la suya, en una cadena de conocimiento que se pierde en el tiempo. Sus tejidos tienen patrones que no son simples adornos: cada figura tiene un significado. Los rombos representan los ojos de la tierra, las líneas en zigzag son los rayos del trueno y los cuadrados concéntricos simbolizan las terrazas de cultivo. Un niño que pasaba por el mercado se detuvo frente a los tejidos y le preguntó a doña Gregoria: ¿Cómo sabe qué hilo va en cada lugar? La tejedora sonrió y le dijo: Los patrones tienen una lógica, igual que las matemáticas. Si repites la misma secuencia de colores e hilos, el patrón aparece solo. El niño se quedó fascinado. Nunca había pensado que tejer fuera algo matemático. Doña Gregoria le mostró cómo un patrón de tres colores que se repite cada cinco hilos crea una franja decorativa que puede extenderse infinitamente. El niño sacó su cuaderno y empezó a copiar el patrón en papel cuadriculado, coloreando cada celda como si fuera un hilo. Doña Gregoria lo observó y dijo: Ahora eres un tejedor de papel. Y así comenzó el aprendizaje.","pregunta_disparadora":"¿Qué patrones geométricos puedes observar en los tejidos andinos? ¿Cómo crees que los tejedores los crean sin equivocarse?"}'),
+(9, 2, 'actividad',
+ '{"materiales":["Papel cuadriculado","Lápices de colores (mínimo 3 colores)","Lápiz"],"instrucciones":["Observa los patrones andinos que te muestra tu profesor o busca ejemplos de tejidos moqueguanos.","Reproduce en papel cuadriculado al menos 2 patrones geométricos andinos: uno con rombos y uno con líneas en zigzag. Cada cuadradito del papel representa un hilo.","Crea tu propio patrón original usando al menos 3 colores y una secuencia que se repita mínimo 4 veces.","Escribe debajo de cada patrón cuál es la unidad que se repite (la secuencia básica).","Une los tres patrones en una tira decorativa horizontal y coloréala completamente."],"minutos":20}'),
+(9, 3, 'quiz',
+ '{"info":"Ver tabla quiz_preguntas para las preguntas de este paso"}'),
+(9, 4, 'entregable',
+ '{"consigna":"Entrega tu hoja de patrones con los dos patrones andinos reproducidos y tu patrón original, todos correctamente coloreados y con la unidad de repetición identificada.","formatos":["dibujo_cientifico","ficha"],"instrucciones":"Sube una foto de tu hoja de patrones terminada. Máx 5 MB."}');
 
--- Módulo 10: Puentes con papel
+-- ---- Módulo 10: Puentes con papel (modulo_id=10) -------------------------
 INSERT INTO modulo_pasos (modulo_id, numero_paso, tipo, contenido) VALUES
-(10,1,'historia','{"narrativa":"La comunidad de Elena, en las afueras de Moquegua, tiene un problema serio: el pequeño puente de madera que cruza el canal de riego está deteriorado. Las lluvias de los últimos años han debilitado sus bases y ya no es seguro para que los niños lo crucen camino a la escuela. Elena, que quiere ser ingeniera cuando sea grande, observa el puente con ojos distintos a los demás. No ve solo madera vieja: ve vigas, tensiones, el peso del agua debajo y el peso de las personas encima. Su profesor de ciencias le enseñó que los ingenieros prueban sus diseños con modelos a pequeña escala antes de construir el puente real. Así pueden descubrir los puntos débiles sin arriesgar vidas. Elena propone a su clase construir mini-puentes de papel para aprender qué formas estructurales son más resistentes.","pregunta_disparadora":"¿Qué forma crees que haría un puente de papel más resistente: plano, con arcos, o con vigas triangulares? ¿Por qué?"}'),
-(10,2,'actividad','{"materiales":["5 hojas de papel bond A4","Cinta adhesiva o clips","Dos libros o cajas del mismo tamaño para los apoyos","Monedas o pesas pequeñas para la prueba de carga"],"instrucciones":["Coloca los dos libros separados por 15 centímetros. Este será el vano que debe cruzar tu puente.","Construye un primer puente simplemente poniendo una hoja plana sobre los libros. Prueba cuántas monedas aguanta.","Construye un segundo puente doblando la hoja en pliegues como acordeón (tablilla corrugada). Prueba el peso.","Construye un tercer puente usando varias hojas enrolladas como columnas. Prueba el peso.","Registra en una tabla: Diseño / Peso máximo soportado / Observaciones. Compara los tres diseños."],"minutos":25}'),
-(10,3,'quiz','{"info":"Ver tabla quiz_preguntas para modulo 10"}'),
-(10,4,'entregable','{"consigna":"Muestra una foto de tu puente de papel más resistente junto con la tabla de resultados de tus pruebas.","formatos":["prototipo","dibujo_cientifico"],"instrucciones":"Fotografía tu mejor puente con el peso que soportó. Máx 5 MB."}');
+(10, 1, 'historia',
+ '{"narrativa":"La comunidad de Quinistaquillas, a pocos kilómetros de Moquegua, tiene un problema serio: el pequeño puente que conecta su barrio con la escuela está dañado después de las últimas lluvias. Elena, una niña de diez años que vive ahí, tiene que dar una vuelta de veinte minutos para llegar a clases porque el puente ya no es seguro. Un día, su tío Germán, que estudia ingeniería en la universidad, le explica que los puentes funcionan gracias a la distribución del peso: cuando pisamos un puente, la fuerza que ejercemos no cae en un solo punto sino que se distribuye a lo largo de la estructura. Elena le pregunta: ¿Y cómo saben los ingenieros cuánto peso puede soportar un puente antes de construirlo? Germán le dice que los ingenieros hacen pruebas con modelos pequeños antes de construir el puente real. Usan materiales baratos para experimentar con diferentes diseños y medir cuál soporta más peso. Elena se entusiasma y decide hacer su propio experimento en casa con materiales simples. Esa tarde aprende algo fundamental: que la ingeniería no comienza con máquinas ni con computadoras, sino con una pregunta: ¿Cómo puedo resolver este problema? Y con la valentía de intentarlo aunque no salga perfecto a la primera.","pregunta_disparadora":"¿Qué forma crees que hace más resistente a un puente: plano, en arco o con triángulos de soporte? ¿Por qué?"}'),
+(10, 2, 'actividad',
+ '{"materiales":["5 hojas de papel bond","Cinta adhesiva","Tijeras","Monedas o pesas pequeñas","Regla","2 pilas de libros o sillas como apoyos"],"instrucciones":["Diseña y construye un puente de papel que conecte dos apoyos separados 20 cm. Solo puedes usar papel y cinta adhesiva.","Primero dibuja tu diseño antes de construir: ¿Usarás papel plano, doblado en acordeón, enrollado en tubos o con forma de arco?","Construye tu puente y colócalo entre los dos apoyos.","Prueba cuántas monedas o cuánto peso soporta tu puente antes de colapsar. Registra el resultado.","Modifica tu diseño para hacerlo más resistente y prueba de nuevo. Compara los resultados de ambos intentos."],"minutos":25}'),
+(10, 3, 'quiz',
+ '{"info":"Ver tabla quiz_preguntas para las preguntas de este paso"}'),
+(10, 4, 'entregable',
+ '{"consigna":"Entrega una foto de tu prototipo de puente con el registro del peso soportado en ambos intentos y una descripción de los cambios que hiciste en el segundo diseño.","formatos":["prototipo","ficha"],"instrucciones":"Sube una foto de tu puente terminado con el peso soportado. Máx 5 MB."}');
 
--- Módulo 11: Filtro de agua
+-- ---- Módulo 11: Filtro de agua (modulo_id=11) ----------------------------
 INSERT INTO modulo_pasos (modulo_id, numero_paso, tipo, contenido) VALUES
-(11,1,'historia','{"narrativa":"En la comunidad de Santa Rosa, a las afueras de Moquegua, el pozo del que todos se abastecen ha comenzado a tener agua turbia. No huele mal pero se ve sucia, con pequeñas partículas flotando. El señor Mamani, el fontanero del pueblo, explica que son sedimentos de la tierra que entran cuando llueve fuerte en las alturas. El agua no es necesariamente peligrosa, pero nadie quiere beberla así. Julio, un estudiante de sexto grado apasionado por las ciencias, recuerda que en su libro de ciencias leyó que las personas sin acceso a tecnología moderna pueden purificar el agua usando materiales naturales: arena, piedras y carbón vegetal. Propone construir un filtro casero como proyecto de clase para demostrar que la ciencia puede resolver problemas reales de la comunidad.","pregunta_disparadora":"¿Qué materiales naturales crees que podrían atrapar las partículas sucias del agua y por qué?"}'),
-(11,2,'actividad','{"materiales":["Botella de plástico de 1.5L cortada por la mitad","Algodón o tela de tela","Arena fina lavada","Piedras pequeñas limpias","Agua turbia (con tierra o tierra disuelta)","Recipiente limpio para recoger el agua filtrada"],"instrucciones":["Voltea la parte superior de la botella boca abajo (como embudo) y ponla sobre la parte inferior.","Coloca una capa de algodón en el fondo del embudo para que no se escape la arena.","Agrega 3 cm de arena fina encima del algodón.","Agrega 3 cm de piedras pequeñas encima de la arena.","Vierte lentamente el agua turbia desde arriba y observa cómo el agua va saliendo más clara por abajo.","Anota: ¿Qué tan turbia entró? ¿Qué tan clara salió? ¿Cuánto tiempo tardó en filtrarse?"],"minutos":25}'),
-(11,3,'quiz','{"info":"Ver tabla quiz_preguntas para modulo 11"}'),
-(11,4,'entregable','{"consigna":"Muestra una foto de tu filtro de agua armado y compara el agua antes y después del filtrado.","formatos":["prototipo","dibujo_cientifico"],"instrucciones":"Fotografía tu filtro con los vasos de agua antes y después. Máx 5 MB."}');
+(11, 1, 'historia',
+ '{"narrativa":"En la comunidad de Tumilaca, cerca de Moquegua, el agua que llega al pozo del pueblo a veces trae tierra, arena y partículas que la hacen turbia y peligrosa para beber. Don Marcelo, el presidente de la junta comunal, llevaba meses buscando una solución sin gastar mucho dinero. Un día, su hija Luciana llegó de la escuela muy emocionada: Papá, la profesora nos enseñó que se puede limpiar el agua con materiales naturales. Don Marcelo la escuchó con escepticismo, pero le dio permiso de intentarlo. Luciana recordó lo que había aprendido: el agua sucia pasa por capas de diferentes materiales, y cada capa atrapa partículas más pequeñas. La piedra grande retiene los objetos más grandes, la arena fina atrapa las partículas medianas y el algodón filtra las más pequeñas. No elimina los gérmenes, pero clarifica el agua de manera visible. Don Marcelo observó cómo su hija construía el filtro con una botella plástica cortada, y cuando vio el agua salir más clara al otro lado, quedó impresionado. Ese experimento le enseñó dos cosas: que la ciencia no siempre necesita equipos caros, y que a veces los que más saben de soluciones creativas son los niños que todavía hacen preguntas sin miedo.","pregunta_disparadora":"¿Por qué crees que diferentes capas de materiales pueden limpiar el agua mejor que una sola capa? ¿Qué tipo de material atraparía las partículas más pequeñas?"}'),
+(11, 2, 'actividad',
+ '{"materiales":["Botella de plástico grande cortada por la mitad","Arena fina limpia","Piedras pequeñas","Algodón o tela fina","Agua turbia (con tierra o arena)","Vaso o recipiente para recoger el agua filtrada"],"instrucciones":["Corta la botella plástica por la mitad. La mitad superior (con la boca hacia abajo) será el filtro; la mitad inferior recogerá el agua filtrada.","Coloca las capas en este orden desde abajo hacia arriba (recuerda que el agua baja): algodón, luego arena fina, luego piedras pequeñas.","Vierte lentamente el agua turbia sobre las piedras y observa qué sucede.","Compara el agua que entra y el agua que sale. Escribe o dibuja las diferencias que observas.","Responde: ¿El agua quedó completamente limpia? ¿Qué crees que le faltaría para ser apta para beber?"],"minutos":25}'),
+(11, 3, 'quiz',
+ '{"info":"Ver tabla quiz_preguntas para las preguntas de este paso"}'),
+(11, 4, 'entregable',
+ '{"consigna":"Entrega una foto de tu filtro construido junto con un registro escrito donde compares el agua antes y después del filtrado, y tus conclusiones sobre la efectividad del filtro.","formatos":["prototipo","ficha"],"instrucciones":"Sube una foto de tu filtro en funcionamiento. Máx 5 MB."}');
 
--- Módulo 12: Torre sísmica
+-- ---- Módulo 12: Torre sísmica (modulo_id=12) -----------------------------
 INSERT INTO modulo_pasos (modulo_id, numero_paso, tipo, contenido) VALUES
-(12,1,'historia','{"narrativa":"Moquegua es una de las regiones sísmicas más activas del Perú. En el año 2001, un terremoto de magnitud 8.4 causó grandes daños en la ciudad y en los pueblos cercanos. El ingeniero Carlos Llerena, que participó en la reconstrucción de la ciudad, explica que los edificios que mejor resistieron el sismo tenían algo en común: usaban formas geométricas triangulares en su estructura interna. El triángulo, a diferencia del cuadrado, no se deforma cuando se aplica fuerza lateral. Esta es la razón por la que los ingenieros usan vigas triangulares, llamadas cerchas, en puentes y edificios. La estudiante Andrea, después de escuchar al ingeniero Llerena en una charla en su escuela, quiere comprobarlo por sí misma. Su plan: construir dos torres con palitos, una con cuadrados y otra con triángulos, y sacudirlas para ver cuál resiste mejor.","pregunta_disparadora":"¿Por qué crees que la forma triangular podría ser más resistente que la cuadrada ante los movimientos del suelo?"}'),
-(12,2,'actividad','{"materiales":["Palitos de helado o fósforos (20 unidades)","Plastilina o masilla para unir","Regla","Superficie plana para probar la resistencia"],"instrucciones":["Construye una torre cuadrada: une 4 palitos formando un cuadrado en la base, luego añade otra capa de cuadrado encima (2 pisos). Une con plastilina en las esquinas.","Construye una torre triangular: une 3 palitos formando un triángulo en la base, luego agrega triángulos encima para subir 2 pisos.","Prueba la resistencia: sacude suavemente la superficie donde están las torres de lado a lado, simulando un sismo.","Observa: ¿cuál se deforma más? ¿Cuál colapsa primero?","Dibuja ambas torres y escribe tus conclusiones sobre cuál es más resistente y por qué."],"minutos":25}'),
-(12,3,'quiz','{"info":"Ver tabla quiz_preguntas para modulo 12"}'),
-(12,4,'entregable','{"consigna":"Muestra una foto de tus dos torres (cuadrada y triangular) con tus conclusiones escritas sobre cuál fue más resistente.","formatos":["prototipo","dibujo_cientifico"],"instrucciones":"Fotografía las dos torres juntas. Máx 5 MB."}');
+(12, 1, 'historia',
+ '{"narrativa":"Moquegua es una ciudad que conoce bien los terremotos. El más recordado ocurrió en el año 2001, cuando un sismo de gran magnitud afectó a miles de familias y derrumbó edificios que no habían sido construidos para resistir ese tipo de movimiento. Desde entonces, la región ha aprendido mucho sobre construcción sismorresistente. Andrés es un estudiante de quinto grado cuyo padre trabaja en construcción. Un día, su padre le explica que los ingenieros diseñan los edificios para que no sean rígidos sino flexibles: si la estructura puede moverse un poco sin romperse, puede sobrevivir un sismo. Andrés se queda pensando en eso y le pregunta: ¿Qué es más resistente a los temblores, algo rígido o algo flexible? Su padre le dice: Haz el experimento tú mismo. Andrés decide construir dos torres pequeñas: una con material rígido y otra con material flexible, y las sacude para ver cuál aguanta más. Descubre que la torre flexible se tambalea pero no cae, mientras que la rígida cae al primer golpe fuerte. Esa tarde aprende que en ingeniería, la resistencia no siempre significa dureza: a veces significa la capacidad de ceder un poco para no romperse del todo. Es una lección que va mucho más allá de los puentes y las torres.","pregunta_disparadora":"¿Por qué crees que una estructura flexible puede ser más resistente a los sismos que una estructura completamente rígida?"}'),
+(12, 2, 'actividad',
+ '{"materiales":["Palitos de helado o palillos de madera","Plastilina o goma de mascar","Regla","Superficie plana para sacudir"],"instrucciones":["Diseña y construye una torre de al menos 20 cm de altura usando palitos de helado y plastilina como uniones.","Piensa en cómo harás la base: ¿será ancha o angosta? ¿Usarás triángulos o cuadrados en la estructura?","Construye tu torre y mídela con la regla.","Simula un sismo sacudiendo suavemente la superficie donde está la torre. Aumenta gradualmente la intensidad.","Registra cuánto sacudido aguanta antes de deformarse o caer. Modifica el diseño si es necesario e intenta de nuevo."],"minutos":25}'),
+(12, 3, 'quiz',
+ '{"info":"Ver tabla quiz_preguntas para las preguntas de este paso"}'),
+(12, 4, 'entregable',
+ '{"consigna":"Entrega una foto de tu torre sísmica construida con la descripción del diseño (por qué elegiste esa forma de base y estructura) y el resultado de la prueba de sacudido.","formatos":["prototipo","ficha"],"instrucciones":"Sube una foto de tu torre con su descripción. Máx 5 MB."}');
 
--- Módulo 13: My Moquegua
+
+-- ---- Módulo 13: My Moquegua (modulo_id=13) -------------------------------
 INSERT INTO modulo_pasos (modulo_id, numero_paso, tipo, contenido) VALUES
-(13,1,'historia','{"narrativa":"Tim is a tourist from Canada who just arrived in Moquegua for the first time. He has heard that Moquegua is famous for its wine, its beautiful churches and its delicious food. But when he arrives at the bus station, he feels lost. Nobody speaks English and he does not speak Spanish. He looks at the signs but cannot understand them. He wants to find the main square, eat something typical and visit the regional museum, but he does not know how to ask. Fortunately, a group of students from GUE Mariscal Nieto is doing a school project about tourism. They decide to help Tim by making a bilingual welcome card that explains the most important things about Moquegua in both English and Spanish. Tim is very happy and thanks them in English. The students realize that knowing basic English is not just a school subject: it is a real tool to connect with the world.","pregunta_disparadora":"If a tourist arrived in your neighborhood and did not speak Spanish, what 5 things would you want to tell them about your community?"}'),
-(13,2,'actividad','{"materiales":["Tarjeta o papel grueso (puede ser media hoja A4 doblada)","Lápices de colores","Lapicero"],"instrucciones":["En la parte frontal de tu tarjeta: escribe WELCOME TO MOQUEGUA en grande y decórala con colores.","En el interior izquierdo: escribe 5 frases en inglés sobre Moquegua. Ejemplo: Moquegua is famous for its wine. / The weather is sunny and warm.","En el interior derecho: escribe la traducción en español de cada frase.","En la parte trasera: dibuja un mapa simple con la plaza principal, el mercado y el museo.","Firma tu tarjeta con tu nombre en inglés: Made by [tu nombre]."],"minutos":20}'),
-(13,3,'quiz','{"info":"Ver tabla quiz_preguntas para modulo 13"}'),
-(13,4,'entregable','{"consigna":"Share a photo of your bilingual welcome card for tourists visiting Moquegua.","formatos":["ficha","mural_digital"],"instrucciones":"Take a clear photo of both sides of your card. Max 5 MB."}');
+(13, 1, 'historia',
+ '{"narrativa":"Tim is a young tourist from Canada who has arrived in Moquegua for the first time. He is very excited because his grandfather once told him about the beautiful deserts and olive groves of southern Peru. But when Tim walks through the streets near the central market, he realizes he does not understand anything people are saying, and the signs are all in Spanish. He feels a little lost. A girl named Valeria sees him looking confused in front of a shop and decides to help him. She speaks a little English from school and tries to say: Hello! Welcome to Moquegua! Tim smiles immediately. Valeria shows him the market, the church, and the main plaza. She teaches him a few words in Spanish: mercado means market, cerro means hill, and gracias means thank you. Tim teaches her a few English words in return. By the end of the afternoon, they have both learned something new. Tim writes in his travel notebook: The people here are very friendly and this city is beautiful. I want to learn more Spanish. And Valeria writes in her school notebook: Today I spoke English with a real tourist. It was exciting. Hablar inglés es importante para conectarse con el mundo. / Speaking English is important to connect with the world.","pregunta_disparadora":"If a tourist arrived in your neighborhood and did not speak Spanish, what 5 phrases in English would be most useful to welcome them and help them?"}'),
+(13, 2, 'actividad',
+ '{"materiales":["Tarjeta de cartulina o papel grueso","Lápices de colores","Lápiz o lapicero"],"instrucciones":["Crea una tarjeta de bienvenida bilingüe (español e inglés) para un turista que llega a Moquegua.","La tarjeta debe incluir al menos 5 frases útiles en inglés con su traducción al español. Ejemplos: Welcome to Moquegua! / ¡Bienvenido a Moquegua!, The market is nearby. / El mercado está cerca.","Dibuja o decora la tarjeta con elementos representativos de Moquegua (el cerro Baúl, olivos, el desierto, el mercado).","Escribe el nombre de la ciudad en inglés y en español en la parte frontal de la tarjeta.","Practica leer las frases en voz alta con un compañero, uno haciendo de turista y otro de anfitrión."],"minutos":20}'),
+(13, 3, 'quiz',
+ '{"info":"Ver tabla quiz_preguntas para las preguntas de este paso"}'),
+(13, 4, 'entregable',
+ '{"consigna":"Sube una foto de tu tarjeta de bienvenida bilingüe con las 5 frases en inglés y español y la decoración moqueguana.","formatos":["ficha","otro"],"instrucciones":"Sube una foto de tu tarjeta terminada. Máx 5 MB."}');
 
--- Módulo 14: The market
+-- ---- Módulo 14: The market (modulo_id=14) --------------------------------
 INSERT INTO modulo_pasos (modulo_id, numero_paso, tipo, contenido) VALUES
-(14,1,'historia','{"narrativa":"Sara is a student who loves learning English. One Saturday morning, she goes to the Moquegua central market with her mother. As they walk through the stalls, Sara imagines that the market is an English classroom. She starts practicing: How much is this? she asks a vendor in English, pointing at some tomatoes. The vendor, confused, answers in Spanish. Sara laughs and translates for her mother. Then she invents a game: she will practice a complete market conversation with her classmate Diego, taking turns being the buyer and the seller. Sara will be the buyer and Diego will be the seller. They decide to use real prices from the Moquegua market to make the practice as realistic as possible. Their teacher told them that the best way to learn a language is to use it in real situations, even if you make mistakes.","pregunta_disparadora":"What things do you usually buy at the market or store? How would you say them in English?"}'),
-(14,2,'actividad','{"materiales":["Papel","Lápiz"],"instrucciones":["Learn these market phrases: How much is this? / It costs... soles. / I will take one kilo, please. / Here is your change. / Thank you!","With a partner (or alone, writing both roles), create a dialogue of at least 6 lines between a buyer and a seller at the Moquegua market.","Include at least 2 products with prices in soles.","Practice saying the dialogue out loud.","Write the dialogue on paper with the two characters clearly labeled: Buyer (Comprador) and Seller (Vendedor)."],"minutos":20}'),
-(14,3,'quiz','{"info":"Ver tabla quiz_preguntas para modulo 14"}'),
-(14,4,'entregable','{"consigna":"Share a photo of your written market dialogue in English with at least 6 lines.","formatos":["ficha","cuento_ilustrado"],"instrucciones":"Write the dialogue clearly and take a photo. Max 5 MB."}');
+(14, 1, 'historia',
+ '{"narrativa":"Sara is a ten-year-old girl who lives near the central market of Moquegua. Every Saturday she goes with her mom to buy vegetables, fruits, and sometimes a special treat. One day, Sara decides to practice her English at the market. She knows that some tourists visit the market to buy local products like olives, aguaymanto, and handmade crafts. Sara prepares a small notebook with useful English phrases. When she arrives at the market she sees a tourist couple looking confused at the fruit stand. Sara takes a deep breath and approaches them: Good morning! Can I help you? The tourists smile and one of them asks: How much is this? pointing at a bag of aguaymanto. Sara looks at the price sign and answers: It is five soles. That is about one dollar and fifty cents. The tourists buy two bags and thank Sara warmly. The seller, doña Rosa, looks at Sara with pride and says in Spanish: You just did business in two languages! Sara laughs and writes in her notebook: Today I learned that market vocabulary in English is very useful. Numbers, prices, and polite expressions can open many doors. / Hoy aprendí que el vocabulario del mercado en inglés es muy útil. Los números, los precios y las expresiones amables pueden abrir muchas puertas.","pregunta_disparadora":"¿Qué palabras y frases en inglés necesitarías saber para comprar y vender productos en un mercado? Piensa en al menos 6."}'),
+(14, 2, 'actividad',
+ '{"materiales":["Cuaderno o papel","Lápiz o lapicero"],"instrucciones":["Con un compañero, practica un diálogo de compra y venta en inglés en el mercado. Un estudiante es el comprador (buyer) y otro es el vendedor (seller).","El diálogo debe tener al menos 6 intercambios e incluir: saludo, pregunta por el precio (How much is it?), respuesta con precio en inglés, negociación o comentario, pago y despedida.","Usen productos típicos de Moquegua: olives (aceitunas), aguaymanto, oregano (orégano), cheese (queso), peppers (ajíes).","Escriban el diálogo en sus cuadernos antes de actuarlo.","Luego intercambien roles y repitan el diálogo con un producto diferente."],"minutos":20}'),
+(14, 3, 'quiz',
+ '{"info":"Ver tabla quiz_preguntas para las preguntas de este paso"}'),
+(14, 4, 'entregable',
+ '{"consigna":"Entrega tu diálogo escrito de compra y venta en inglés con al menos 6 intercambios, incluyendo saludo, precios, negociación y despedida.","formatos":["ficha","otro"],"instrucciones":"Sube una foto de tu diálogo escrito. Máx 5 MB."}');
 
--- Módulo 15: Nature around us
+-- ---- Módulo 15: Nature around us (modulo_id=15) --------------------------
 INSERT INTO modulo_pasos (modulo_id, numero_paso, tipo, contenido) VALUES
-(15,1,'historia','{"narrativa":"Every morning, when Lucia walks to school in Moquegua, she notices the colors around her. The sky is a deep blue (azul) in the dry season. The desert sand is golden yellow (amarillo dorado). The cactus plants are dark green (verde oscuro). In winter, when it rains in the highlands, the hills turn bright green (verde brillante). The flowers of the huarango tree are yellow (amarillo). The volcanic rock on the mountains is dark gray (gris oscuro). Lucia thinks that nature is like a giant colorful painting. Her English teacher, Miss Rosa, tells the class that learning colors in English is one of the most useful vocabulary sets because colors appear everywhere: in clothes, in food, in art, in nature. Miss Rosa gives the class a challenge: create a bilingual color chart inspired by the nature of Moquegua, connecting each English color word with a real element from their region.","pregunta_disparadora":"What is your favorite color in nature around your home or school? How do you think it is called in English?"}'),
-(15,2,'actividad','{"materiales":["Papel blanco o ficha","Lápices de colores","Lapicero"],"instrucciones":["Draw a table with 3 columns: Color in English / Color in Spanish / Example from nature in Moquegua.","Fill in at least 8 colors: red, blue, yellow, green, orange, purple, brown, white, gray, black.","For each color, write an example from Moquegua nature. Example: red = red chili pepper / ají rojo.","Color each row with the corresponding color.","At the bottom, write your favorite color in a sentence: My favorite color is ___ because ___."],"minutos":20}'),
-(15,3,'quiz','{"info":"Ver tabla quiz_preguntas para modulo 15"}'),
-(15,4,'entregable','{"consigna":"Share a photo of your bilingual color chart with examples from the nature of Moquegua.","formatos":["ficha","dibujo_cientifico"],"instrucciones":"Take a clear photo of your completed color chart. Max 5 MB."}');
+(15, 1, 'historia',
+ '{"narrativa":"Una mañana de primavera, la profesora de inglés entró al aula con una caja llena de tarjetas de colores. Cada tarjeta tenía escrita una palabra en inglés y un dibujo. Rosa, uno de los estudiantes, tomó una tarjeta verde con un árbol dibujado. La profesora dijo: Green. Tree. Green tree. Y luego preguntó: ¿Qué objeto de color verde tienen en casa o en el barrio? Los estudiantes empezaron a levantar la mano: plantas, puertas pintadas, uniformes escolares. La profesora entonces les pidió que miraran por la ventana. Afuera, los cerros de Moquegua eran marrones y ocres, los eucaliptos eran verdes, el cielo era azul y las flores del jardín eran amarillas y rojas. Brown hills. Green trees. Blue sky. Yellow flowers. Red flowers. Los estudiantes empezaron a repetir con entusiasmo. Lo más sorprendente fue cuando la profesora explicó que en inglés los colores y la naturaleza están muy conectados: el color naranja viene de la fruta orange, el color rosa viene de la flor rose, y el color violeta viene de la planta violet. Aprender colores en inglés es también aprender a ver la naturaleza con otros ojos. Y en Moquegua, con sus desiertos dorados, sus valles verdes y su cielo sin nubes, hay toda una paleta esperando ser nombrada en dos idiomas.","pregunta_disparadora":"¿Cuántos colores de la naturaleza que conoces en español puedes decir también en inglés? Haz una lista mental antes de empezar."}'),
+(15, 2, 'actividad',
+ '{"materiales":["Ficha impresa o papel","Lápices de colores","Lápiz o lapicero"],"instrucciones":["Dibuja o completa una ficha bilingüe de colores y naturaleza. Para cada color escribe: el nombre en inglés, el nombre en español, y un objeto de la naturaleza moqueguana de ese color.","Ejemplo: Red / Rojo / Flor de buganvilia. Yellow / Amarillo / Aguaymanto. Brown / Marrón / Cerro. Green / Verde / Olivo. Blue / Azul / Cielo. Orange / Naranja / Atardecer.","Incluye al menos 8 colores en tu ficha.","Dibuja al lado de cada entrada un pequeño objeto o elemento de la naturaleza de ese color.","Practica pronunciando los colores en inglés en voz alta con tu compañero de banco."],"minutos":20}'),
+(15, 3, 'quiz',
+ '{"info":"Ver tabla quiz_preguntas para las preguntas de este paso"}'),
+(15, 4, 'entregable',
+ '{"consigna":"Entrega tu ficha bilingüe de colores y naturaleza con al menos 8 colores en inglés y español, cada uno con su objeto de la naturaleza moqueguana y su dibujo.","formatos":["ficha","dibujo_cientifico"],"instrucciones":"Sube una foto de tu ficha terminada. Máx 5 MB."}');
 
+-- ===========================================================================
+-- 6. quiz_preguntas — 3 preguntas × 15 módulos = 45 filas
+-- ===========================================================================
 
--- ============================================================
--- SEED: quiz_preguntas (3 preguntas por módulo = 45 total)
--- Usamos subconsultas para obtener el paso_id correcto
--- ============================================================
-
--- Módulo 1: El mercado de Moquegua
+-- ---- Módulo 1: El mercado de Moquegua ------------------------------------
 INSERT INTO quiz_preguntas (paso_id, texto, opciones, orden) VALUES
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='El mercado de Moquegua' AND mp.tipo='quiz'),
- '¿Para qué sirve un gráfico de barras?',
- '[{"texto":"Para dibujar figuras geométricas","correcta":false},{"texto":"Para representar y comparar datos de forma visual","correcta":true},{"texto":"Para calcular el área de un terreno","correcta":false}]', 1),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='El mercado de Moquegua' AND mp.tipo='quiz'),
- 'Si el kilo de papa cuesta S/3 en un puesto y S/5 en otro, ¿cuánto más caro es el segundo?',
- '[{"texto":"S/1","correcta":false},{"texto":"S/2","correcta":true},{"texto":"S/3","correcta":false}]', 2),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='El mercado de Moquegua' AND mp.tipo='quiz'),
- 'En una tabla de precios, ¿qué representan las filas?',
- '[{"texto":"Los tipos de gráficos posibles","correcta":false},{"texto":"Cada producto o lugar con su precio correspondiente","correcta":true},{"texto":"Los colores del gráfico","correcta":false}]', 3);
+((SELECT id FROM modulo_pasos WHERE modulo_id=1 AND numero_paso=3),
+ '¿Qué es un gráfico de barras?',
+ '[{"texto":"Una tabla de multiplicar","correcta":false},{"texto":"Una representación visual de datos con barras rectangulares","correcta":true},{"texto":"Un tipo de calculadora","correcta":false}]',
+ 1),
+((SELECT id FROM modulo_pasos WHERE modulo_id=1 AND numero_paso=3),
+ 'En la tabla de precios de Don Aurelio, la papa cuesta 2.50 soles y la cebolla cuesta 1.80 soles. ¿Cuál es el producto más caro?',
+ '[{"texto":"La cebolla","correcta":false},{"texto":"Cuestan lo mismo","correcta":false},{"texto":"La papa","correcta":true}]',
+ 2),
+((SELECT id FROM modulo_pasos WHERE modulo_id=1 AND numero_paso=3),
+ '¿Para qué sirve comparar precios en el mercado?',
+ '[{"texto":"Para confundir a los vendedores","correcta":false},{"texto":"Para tomar decisiones de compra más inteligentes y justas","correcta":true},{"texto":"Para decorar el cuaderno con números","correcta":false}]',
+ 3);
 
--- Módulo 2: Construyendo terrazas
+-- ---- Módulo 2: Construyendo terrazas -------------------------------------
 INSERT INTO quiz_preguntas (paso_id, texto, opciones, orden) VALUES
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Construyendo terrazas' AND mp.tipo='quiz'),
- '¿Qué fracción representa la mitad de un terreno?',
- '[{"texto":"1/4","correcta":false},{"texto":"1/3","correcta":false},{"texto":"1/2","correcta":true}]', 1),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Construyendo terrazas' AND mp.tipo='quiz'),
- 'Si una terraza mide 8 metros y se divide en 4 partes iguales, ¿cuánto mide cada parte?',
- '[{"texto":"4 metros","correcta":false},{"texto":"2 metros","correcta":true},{"texto":"3 metros","correcta":false}]', 2),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Construyendo terrazas' AND mp.tipo='quiz'),
- '¿Cuál fracción es mayor: 1/2 o 1/4?',
- '[{"texto":"1/4","correcta":false},{"texto":"Son iguales","correcta":false},{"texto":"1/2","correcta":true}]', 3);
+((SELECT id FROM modulo_pasos WHERE modulo_id=2 AND numero_paso=3),
+ '¿Qué fracción representa la mitad de una terraza?',
+ '[{"texto":"1/4","correcta":false},{"texto":"1/3","correcta":false},{"texto":"1/2","correcta":true}]',
+ 1),
+((SELECT id FROM modulo_pasos WHERE modulo_id=2 AND numero_paso=3),
+ 'Si divides una ladera en 4 terrazas iguales, ¿qué fracción corresponde a cada una?',
+ '[{"texto":"1/4","correcta":true},{"texto":"1/3","correcta":false},{"texto":"1/2","correcta":false}]',
+ 2),
+((SELECT id FROM modulo_pasos WHERE modulo_id=2 AND numero_paso=3),
+ '¿Cuánto es 1/4 + 1/4 + 1/2?',
+ '[{"texto":"1 entero (toda la ladera)","correcta":true},{"texto":"1/2","correcta":false},{"texto":"2 enteros","correcta":false}]',
+ 3);
 
--- Módulo 3: El aguaymanto y los kilos
+-- ---- Módulo 3: El aguaymanto y los kilos ---------------------------------
 INSERT INTO quiz_preguntas (paso_id, texto, opciones, orden) VALUES
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='El aguaymanto y los kilos' AND mp.tipo='quiz'),
- 'Doña Carmen tiene 15 kilos de aguaymanto a S/8 el kilo. ¿Cuánto gana en total?',
- '[{"texto":"S/100","correcta":false},{"texto":"S/120","correcta":true},{"texto":"S/108","correcta":false}]', 1),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='El aguaymanto y los kilos' AND mp.tipo='quiz'),
- 'Si el precio sube a S/12 por kilo, ¿cuánto gana doña Carmen por 15 kilos?',
- '[{"texto":"S/150","correcta":false},{"texto":"S/180","correcta":true},{"texto":"S/160","correcta":false}]', 2),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='El aguaymanto y los kilos' AND mp.tipo='quiz'),
- '¿Cuánto más gana doña Carmen vendiendo a Lima que en el mercado local?',
- '[{"texto":"S/50","correcta":false},{"texto":"S/60","correcta":true},{"texto":"S/45","correcta":false}]', 3);
+((SELECT id FROM modulo_pasos WHERE modulo_id=3 AND numero_paso=3),
+ 'Doña Carmen tiene 8 kilos de aguaymanto a 4 soles el kilo. ¿Cuánto ganará en total?',
+ '[{"texto":"32 soles","correcta":true},{"texto":"12 soles","correcta":false},{"texto":"28 soles","correcta":false}]',
+ 1),
+((SELECT id FROM modulo_pasos WHERE modulo_id=3 AND numero_paso=3),
+ '¿Cuál es la operación correcta para calcular la ganancia de un producto?',
+ '[{"texto":"Cantidad + Precio","correcta":false},{"texto":"Cantidad × Precio","correcta":true},{"texto":"Cantidad - Precio","correcta":false}]',
+ 2),
+((SELECT id FROM modulo_pasos WHERE modulo_id=3 AND numero_paso=3),
+ 'Si Erick vende 5 kilos de orégano a 7 soles cada kilo y 3 kilos de paprika a 6 soles cada kilo, ¿cuánto gana en total?',
+ '[{"texto":"53 soles","correcta":true},{"texto":"35 soles","correcta":false},{"texto":"41 soles","correcta":false}]',
+ 3);
 
--- Módulo 4: El río Moquegua habla
+-- ---- Módulo 4: El río Moquegua habla ------------------------------------
 INSERT INTO quiz_preguntas (paso_id, texto, opciones, orden) VALUES
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='El río Moquegua habla' AND mp.tipo='quiz'),
- '¿Cuál es el propósito principal de una carta narrativa?',
- '[{"texto":"Hacer una lista de compras","correcta":false},{"texto":"Contar una historia desde el punto de vista del narrador","correcta":true},{"texto":"Describir un proceso científico","correcta":false}]', 1),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='El río Moquegua habla' AND mp.tipo='quiz'),
- '¿Qué elemento NO debe faltar en una carta?',
- '[{"texto":"Fórmulas matemáticas","correcta":false},{"texto":"Saludo, cuerpo y despedida","correcta":true},{"texto":"Diagramas y gráficos","correcta":false}]', 2),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='El río Moquegua habla' AND mp.tipo='quiz'),
- '¿Qué significa escribir desde el punto de vista del río?',
- '[{"texto":"Escribir sobre peces y plantas","correcta":false},{"texto":"Hablar como si fueras el río, usando yo y mis sentimientos","correcta":true},{"texto":"Copiar información de un libro sobre ríos","correcta":false}]', 3);
+((SELECT id FROM modulo_pasos WHERE modulo_id=4 AND numero_paso=3),
+ '¿Cuál es el elemento que NO debe faltar en una carta formal?',
+ '[{"texto":"Dibujos y colores decorativos","correcta":false},{"texto":"Saludo, cuerpo del mensaje y despedida","correcta":true},{"texto":"El número de páginas en el encabezado","correcta":false}]',
+ 1),
+((SELECT id FROM modulo_pasos WHERE modulo_id=4 AND numero_paso=3),
+ 'En la carta del río Moquegua, ¿desde qué punto de vista debe estar escrita?',
+ '[{"texto":"En tercera persona (él, ella)","correcta":false},{"texto":"En primera persona (yo, el río)","correcta":true},{"texto":"Sin usar ningún pronombre","correcta":false}]',
+ 2),
+((SELECT id FROM modulo_pasos WHERE modulo_id=4 AND numero_paso=3),
+ '¿Para qué sirve escribir una carta narrativa desde el punto de vista de un elemento de la naturaleza?',
+ '[{"texto":"Para practicar caligrafía bonita","correcta":false},{"texto":"Para dar voz a quien no puede hablar y crear empatía con el medioambiente","correcta":true},{"texto":"Para aprender a copiar textos del libro","correcta":false}]',
+ 3);
 
--- Módulo 5: Leyendas de Torata
+-- ---- Módulo 5: Leyendas de Torata ----------------------------------------
 INSERT INTO quiz_preguntas (paso_id, texto, opciones, orden) VALUES
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Leyendas de Torata' AND mp.tipo='quiz'),
- '¿Cuál es la característica principal de una leyenda?',
- '[{"texto":"Es completamente inventada sin ninguna base real","correcta":false},{"texto":"Mezcla elementos reales con sobrenaturales y explica fenómenos naturales","correcta":true},{"texto":"Es un texto científico con datos comprobados","correcta":false}]', 1),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Leyendas de Torata' AND mp.tipo='quiz'),
- 'En la leyenda del Ticsani, ¿en qué fue convertido el guerrero?',
- '[{"texto":"En una laguna","correcta":false},{"texto":"En un árbol","correcta":false},{"texto":"En un volcán","correcta":true}]', 2),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Leyendas de Torata' AND mp.tipo='quiz'),
- '¿Por qué es importante reescribir las leyendas con nuestras propias palabras?',
- '[{"texto":"Para cambiar la historia completamente","correcta":false},{"texto":"Para mantenerlas vivas y transmitirlas a las nuevas generaciones","correcta":true},{"texto":"Porque el original está equivocado","correcta":false}]', 3);
+((SELECT id FROM modulo_pasos WHERE modulo_id=5 AND numero_paso=3),
+ '¿Cuál es la función principal de una leyenda en una cultura?',
+ '[{"texto":"Entretener solamente sin otro propósito","correcta":false},{"texto":"Explicar fenómenos naturales y preservar la historia de un pueblo","correcta":true},{"texto":"Enseñar matemáticas de forma indirecta","correcta":false}]',
+ 1),
+((SELECT id FROM modulo_pasos WHERE modulo_id=5 AND numero_paso=3),
+ 'En la leyenda del volcán Ticsani, ¿qué formaron las lágrimas de Urpicha al partir?',
+ '[{"texto":"El lago Titicaca","correcta":false},{"texto":"El río que riega los campos de Moquegua","correcta":true},{"texto":"Las terrazas de cultivo de los cerros","correcta":false}]',
+ 2),
+((SELECT id FROM modulo_pasos WHERE modulo_id=5 AND numero_paso=3),
+ '¿Qué diferencia a una leyenda de una noticia periodística?',
+ '[{"texto":"La leyenda tiene hechos verificables y la noticia no","correcta":false},{"texto":"La leyenda mezcla lo real con lo fantástico; la noticia reporta hechos verificables","correcta":true},{"texto":"No hay diferencia entre ambas","correcta":false}]',
+ 3);
 
--- Módulo 6: Noticias de mi barrio
+-- ---- Módulo 6: Noticias de mi barrio -------------------------------------
 INSERT INTO quiz_preguntas (paso_id, texto, opciones, orden) VALUES
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Noticias de mi barrio' AND mp.tipo='quiz'),
- '¿Cuántas preguntas básicas debe responder una buena noticia?',
- '[{"texto":"3 preguntas","correcta":false},{"texto":"6 preguntas (¿Quién? ¿Qué? ¿Cuándo? ¿Dónde? ¿Por qué? ¿Cómo?)","correcta":true},{"texto":"10 preguntas","correcta":false}]', 1),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Noticias de mi barrio' AND mp.tipo='quiz'),
- '¿Qué parte de la noticia resume los puntos más importantes?',
- '[{"texto":"El título únicamente","correcta":false},{"texto":"El primer párrafo o lead","correcta":true},{"texto":"La conclusión al final","correcta":false}]', 2),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Noticias de mi barrio' AND mp.tipo='quiz'),
- '¿Qué diferencia a una noticia de una opinión?',
- '[{"texto":"La noticia es más larga","correcta":false},{"texto":"La noticia narra hechos reales y verificables","correcta":true},{"texto":"La noticia tiene más dibujos","correcta":false}]', 3);
+((SELECT id FROM modulo_pasos WHERE modulo_id=6 AND numero_paso=3),
+ '¿Cuáles son las seis preguntas básicas del periodismo?',
+ '[{"texto":"Cuándo, dónde, por qué, para quién, cuánto y cómo","correcta":false},{"texto":"Qué, quién, cuándo, dónde, cómo y por qué","correcta":true},{"texto":"Qué, quién, cuántos, dónde, para qué y opinión","correcta":false}]',
+ 1),
+((SELECT id FROM modulo_pasos WHERE modulo_id=6 AND numero_paso=3),
+ '¿En qué persona gramatical debe estar escrita una nota periodística?',
+ '[{"texto":"Primera persona (yo opino que...)","correcta":false},{"texto":"Segunda persona (tú debes saber...)","correcta":false},{"texto":"Tercera persona (el alcalde inauguró...)","correcta":true}]',
+ 2),
+((SELECT id FROM modulo_pasos WHERE modulo_id=6 AND numero_paso=3),
+ '¿Qué debe contener el primer párrafo de una nota periodística?',
+ '[{"texto":"La información más importante resumida","correcta":true},{"texto":"Los detalles secundarios y anécdotas","correcta":false},{"texto":"La opinión personal del periodista","correcta":false}]',
+ 3);
 
--- Módulo 7: Colores de Moquegua
+-- ---- Módulo 7: Colores de Moquegua ----------------------------------------
 INSERT INTO quiz_preguntas (paso_id, texto, opciones, orden) VALUES
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Colores de Moquegua' AND mp.tipo='quiz'),
+((SELECT id FROM modulo_pasos WHERE modulo_id=7 AND numero_paso=3),
  '¿Cuáles son los tres colores primarios?',
- '[{"texto":"Verde, naranja y morado","correcta":false},{"texto":"Rojo, azul y amarillo","correcta":true},{"texto":"Blanco, negro y gris","correcta":false}]', 1),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Colores de Moquegua' AND mp.tipo='quiz'),
+ '[{"texto":"Verde, naranja y violeta","correcta":false},{"texto":"Rojo, azul y amarillo","correcta":true},{"texto":"Blanco, negro y gris","correcta":false}]',
+ 1),
+((SELECT id FROM modulo_pasos WHERE modulo_id=7 AND numero_paso=3),
  '¿Qué colores se mezclan para obtener el color naranja?',
- '[{"texto":"Azul y amarillo","correcta":false},{"texto":"Rojo y azul","correcta":false},{"texto":"Rojo y amarillo","correcta":true}]', 2),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Colores de Moquegua' AND mp.tipo='quiz'),
- 'Si mezclas más rojo que azul, ¿qué tono de morado obtienes?',
- '[{"texto":"Un morado más frío y azulado","correcta":false},{"texto":"Un morado más cálido, tirando a rojizo","correcta":true},{"texto":"Exactamente el mismo morado","correcta":false}]', 3);
+ '[{"texto":"Azul y amarillo","correcta":false},{"texto":"Rojo y azul","correcta":false},{"texto":"Rojo y amarillo","correcta":true}]',
+ 2),
+((SELECT id FROM modulo_pasos WHERE modulo_id=7 AND numero_paso=3),
+ 'El pintor Víctor quiere pintar el color del cielo de Moquegua al mediodía. ¿Qué colores usaría para obtener un azul celeste más claro?',
+ '[{"texto":"Azul puro sin mezclar nada","correcta":false},{"texto":"Azul mezclado con una pequeña cantidad de blanco","correcta":true},{"texto":"Azul mezclado con negro","correcta":false}]',
+ 3);
 
--- Módulo 8: Mural del barrio
+-- ---- Módulo 8: Mural del barrio -------------------------------------------
 INSERT INTO quiz_preguntas (paso_id, texto, opciones, orden) VALUES
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Mural del barrio' AND mp.tipo='quiz'),
- '¿Cuál es la principal diferencia entre un mural y un cuadro?',
- '[{"texto":"El mural siempre es más pequeño","correcta":false},{"texto":"El mural se crea en espacios públicos y es visto por toda la comunidad","correcta":true},{"texto":"Los murales no pueden tener colores","correcta":false}]', 1),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Mural del barrio' AND mp.tipo='quiz'),
- 'En el arte colectivo, ¿qué es fundamental para que el trabajo quede unido?',
- '[{"texto":"Que solo una persona dibuje todo","correcta":false},{"texto":"Planificar juntos los elementos, colores y estilo antes de empezar","correcta":true},{"texto":"Usar únicamente colores oscuros","correcta":false}]', 2),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Mural del barrio' AND mp.tipo='quiz'),
- '¿Qué debe mostrar un mural que representa la identidad de una comunidad?',
- '[{"texto":"Solo los edificios modernos","correcta":false},{"texto":"Las tradiciones, la gente, la historia y los sueños de la comunidad","correcta":true},{"texto":"Únicamente animales y plantas","correcta":false}]', 3);
+((SELECT id FROM modulo_pasos WHERE modulo_id=8 AND numero_paso=3),
+ '¿Qué característica define a un mural comunitario?',
+ '[{"texto":"Que sea pintado solo por artistas profesionales","correcta":false},{"texto":"Que esté en un espacio público y refleje la identidad o historia de una comunidad","correcta":true},{"texto":"Que use únicamente colores primarios sin mezclar","correcta":false}]',
+ 1),
+((SELECT id FROM modulo_pasos WHERE modulo_id=8 AND numero_paso=3),
+ '¿Por qué es importante planificar un mural antes de empezar a pintar?',
+ '[{"texto":"Para que salga perfectamente igual al primer intento","correcta":false},{"texto":"Para coordinar el tema, los colores y la distribución del espacio entre todos los participantes","correcta":true},{"texto":"Porque la pintura se seca muy rápido y no hay tiempo de pensar","correcta":false}]',
+ 2),
+((SELECT id FROM modulo_pasos WHERE modulo_id=8 AND numero_paso=3),
+ '¿Qué elemento puede enriquecer un mural además de las imágenes?',
+ '[{"texto":"Fórmulas matemáticas complicadas","correcta":false},{"texto":"Texto con frases, nombres de lugares o palabras en quechua","correcta":true},{"texto":"Números de teléfono y direcciones","correcta":false}]',
+ 3);
 
--- Módulo 9: Tejidos y patrones
+-- ---- Módulo 9: Tejidos y patrones ----------------------------------------
 INSERT INTO quiz_preguntas (paso_id, texto, opciones, orden) VALUES
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Tejidos y patrones' AND mp.tipo='quiz'),
- '¿Qué es un patrón en el arte?',
- '[{"texto":"Un error en el diseño","correcta":false},{"texto":"Una figura o motivo que se repite de forma ordenada","correcta":true},{"texto":"Un tipo especial de pintura","correcta":false}]', 1),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Tejidos y patrones' AND mp.tipo='quiz'),
- 'En los tejidos andinos, ¿qué símbolo representa el agua y los ríos?',
- '[{"texto":"El rombo","correcta":false},{"texto":"El círculo","correcta":false},{"texto":"La serpiente o zigzag","correcta":true}]', 2),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Tejidos y patrones' AND mp.tipo='quiz'),
- '¿Cuántas repeticiones mínimas necesita un patrón para que se note que es una secuencia?',
- '[{"texto":"Al menos 2 o 3 repeticiones","correcta":true},{"texto":"Solo 1 es suficiente","correcta":false},{"texto":"Mínimo 10 repeticiones","correcta":false}]', 3);
+((SELECT id FROM modulo_pasos WHERE modulo_id=9 AND numero_paso=3),
+ '¿Qué es un patrón en el arte textil andino?',
+ '[{"texto":"Un error que se repite sin querer en el tejido","correcta":false},{"texto":"Una secuencia de colores o formas que se repite de manera ordenada","correcta":true},{"texto":"Un dibujo que solo aparece una vez en el tejido","correcta":false}]',
+ 1),
+((SELECT id FROM modulo_pasos WHERE modulo_id=9 AND numero_paso=3),
+ 'Doña Gregoria usa una secuencia de 3 colores que se repite cada 5 hilos. Si el tejido tiene 25 hilos de ancho, ¿cuántas veces se repite la secuencia?',
+ '[{"texto":"3 veces","correcta":false},{"texto":"5 veces","correcta":true},{"texto":"10 veces","correcta":false}]',
+ 2),
+((SELECT id FROM modulo_pasos WHERE modulo_id=9 AND numero_paso=3),
+ '¿Qué figura geométrica representan los rombos en los tejidos andinos según la leyenda textil?',
+ '[{"texto":"Los rayos del trueno","correcta":false},{"texto":"Los ojos de la tierra","correcta":true},{"texto":"Las terrazas de cultivo","correcta":false}]',
+ 3);
 
--- Módulo 10: Puentes con papel
+-- ---- Módulo 10: Puentes con papel ----------------------------------------
 INSERT INTO quiz_preguntas (paso_id, texto, opciones, orden) VALUES
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Puentes con papel' AND mp.tipo='quiz'),
- '¿Por qué los ingenieros construyen modelos a pequeña escala antes del puente real?',
- '[{"texto":"Porque es más barato que contratar obreros","correcta":false},{"texto":"Para probar el diseño y encontrar puntos débiles sin arriesgar vidas","correcta":true},{"texto":"Por tradición histórica","correcta":false}]', 1),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Puentes con papel' AND mp.tipo='quiz'),
- '¿Qué forma estructural hace que un puente de papel sea más resistente?',
- '[{"texto":"Completamente plano sin dobleces","correcta":false},{"texto":"Enrollado o corrugado en pliegues como acordeón","correcta":true},{"texto":"Doblado en una sola vez por la mitad","correcta":false}]', 2),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Puentes con papel' AND mp.tipo='quiz'),
- '¿Cómo se llama la fuerza que aplica el peso de las personas sobre un puente?',
- '[{"texto":"Fuerza de tensión","correcta":false},{"texto":"Carga o fuerza de compresión","correcta":true},{"texto":"Fuerza magnética","correcta":false}]', 3);
+((SELECT id FROM modulo_pasos WHERE modulo_id=10 AND numero_paso=3),
+ '¿Por qué la forma triangular es tan usada en la construcción de puentes?',
+ '[{"texto":"Porque es la figura geométrica más fácil de dibujar","correcta":false},{"texto":"Porque el triángulo distribuye el peso de forma eficiente y es muy rígido","correcta":true},{"texto":"Porque usa menos material que otras formas","correcta":false}]',
+ 1),
+((SELECT id FROM modulo_pasos WHERE modulo_id=10 AND numero_paso=3),
+ 'En el experimento de puentes de papel, ¿cuál técnica haría el papel más resistente?',
+ '[{"texto":"Dejar el papel completamente plano sin doblar","correcta":false},{"texto":"Doblar el papel en forma de acordeón o enrollarlo en tubos","correcta":true},{"texto":"Mojar el papel antes de colocarlo","correcta":false}]',
+ 2),
+((SELECT id FROM modulo_pasos WHERE modulo_id=10 AND numero_paso=3),
+ '¿Qué significa que un ingeniero haga un prototipo antes de construir la versión final?',
+ '[{"texto":"Que copió el diseño de otro ingeniero","correcta":false},{"texto":"Que construye un modelo pequeño para probar y mejorar el diseño antes de la construcción real","correcta":true},{"texto":"Que el proyecto fracasó y hay que empezar de nuevo","correcta":false}]',
+ 3);
 
--- Módulo 11: Filtro de agua
+-- ---- Módulo 11: Filtro de agua -------------------------------------------
 INSERT INTO quiz_preguntas (paso_id, texto, opciones, orden) VALUES
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Filtro de agua' AND mp.tipo='quiz'),
- '¿Cuál es la función de la arena en un filtro de agua casero?',
- '[{"texto":"Dar sabor al agua","correcta":false},{"texto":"Atrapar partículas finas de suciedad y sedimentos","correcta":true},{"texto":"Hacer que el agua fluya más rápido","correcta":false}]', 1),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Filtro de agua' AND mp.tipo='quiz'),
- '¿En qué orden deben colocarse los materiales en el filtro (de abajo hacia arriba)?',
- '[{"texto":"Piedras, arena, algodón","correcta":false},{"texto":"Algodón, arena, piedras","correcta":true},{"texto":"Arena, piedras, algodón","correcta":false}]', 2),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Filtro de agua' AND mp.tipo='quiz'),
- '¿El filtro casero hace que el agua sea completamente segura para beber?',
- '[{"texto":"Sí, elimina todos los gérmenes y bacterias","correcta":false},{"texto":"No, solo elimina partículas visibles; necesita hervirse también","correcta":true},{"texto":"Solo funciona con agua de mar","correcta":false}]', 3);
+((SELECT id FROM modulo_pasos WHERE modulo_id=11 AND numero_paso=3),
+ '¿Cuál es la función de la capa de arena fina en un filtro de agua casero?',
+ '[{"texto":"Darle color al agua filtrada","correcta":false},{"texto":"Retener partículas medianas que las piedras no atraparon","correcta":true},{"texto":"Agregar minerales beneficiosos al agua","correcta":false}]',
+ 1),
+((SELECT id FROM modulo_pasos WHERE modulo_id=11 AND numero_paso=3),
+ '¿El filtro casero de arena, piedras y algodón hace el agua segura para beber directamente?',
+ '[{"texto":"Sí, el agua queda completamente purificada","correcta":false},{"texto":"No, solo clarifica el agua pero no elimina gérmenes ni bacterias","correcta":true},{"texto":"Depende del color del recipiente que se use","correcta":false}]',
+ 2),
+((SELECT id FROM modulo_pasos WHERE modulo_id=11 AND numero_paso=3),
+ '¿En qué orden deben colocarse las capas del filtro (de abajo hacia arriba)?',
+ '[{"texto":"Piedras, arena, algodón","correcta":false},{"texto":"Algodón, arena fina, piedras pequeñas","correcta":true},{"texto":"Arena, algodón, piedras","correcta":false}]',
+ 3);
 
--- Módulo 12: Torre sísmica
+-- ---- Módulo 12: Torre sísmica -------------------------------------------
 INSERT INTO quiz_preguntas (paso_id, texto, opciones, orden) VALUES
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Torre sísmica' AND mp.tipo='quiz'),
- '¿Por qué el triángulo es más resistente que el cuadrado ante fuerzas laterales?',
- '[{"texto":"Porque tiene más lados","correcta":false},{"texto":"Porque no se puede deformar sin cambiar el largo de sus lados","correcta":true},{"texto":"Porque es más pequeño","correcta":false}]', 1),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Torre sísmica' AND mp.tipo='quiz'),
- '¿Cómo se llama la estructura triangular que usan los ingenieros en puentes y techos?',
- '[{"texto":"Columna","correcta":false},{"texto":"Cercha o viga triangulada","correcta":true},{"texto":"Arco","correcta":false}]', 2),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Torre sísmica' AND mp.tipo='quiz'),
- '¿En qué año ocurrió el terremoto de magnitud 8.4 que afectó a Moquegua?',
- '[{"texto":"1970","correcta":false},{"texto":"2001","correcta":true},{"texto":"2010","correcta":false}]', 3);
+((SELECT id FROM modulo_pasos WHERE modulo_id=12 AND numero_paso=3),
+ '¿Por qué una base ancha hace más estable a una torre frente a los sismos?',
+ '[{"texto":"Porque pesa más y aplasta el suelo","correcta":false},{"texto":"Porque distribuye mejor el peso y reduce el riesgo de volcamiento","correcta":true},{"texto":"Porque usa más material de construcción","correcta":false}]',
+ 1),
+((SELECT id FROM modulo_pasos WHERE modulo_id=12 AND numero_paso=3),
+ '¿Qué característica de una estructura la hace más resistente a los movimientos sísmicos?',
+ '[{"texto":"Ser completamente rígida sin ningún movimiento","correcta":false},{"texto":"Tener cierta flexibilidad para absorber la energía del sismo sin romperse","correcta":true},{"texto":"Ser lo más alta posible para estar lejos del suelo","correcta":false}]',
+ 2),
+((SELECT id FROM modulo_pasos WHERE modulo_id=12 AND numero_paso=3),
+ 'Moquegua sufrió un terremoto destructivo en el año:',
+ '[{"texto":"1970","correcta":false},{"texto":"2001","correcta":true},{"texto":"2015","correcta":false}]',
+ 3);
 
--- Módulo 13: My Moquegua
+-- ---- Módulo 13: My Moquegua (inglés) ------------------------------------
 INSERT INTO quiz_preguntas (paso_id, texto, opciones, orden) VALUES
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='My Moquegua' AND mp.tipo='quiz'),
- 'How do you say "Bienvenido" in English?',
- '[{"texto":"Goodbye","correcta":false},{"texto":"Welcome","correcta":true},{"texto":"Thank you","correcta":false}]', 1),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='My Moquegua' AND mp.tipo='quiz'),
- 'Which sentence correctly introduces a city?',
- '[{"texto":"Moquegua is famous for its wine and sunny weather.","correcta":true},{"texto":"Moquegua are famous for its wine.","correcta":false},{"texto":"Moquegua am a city in Peru.","correcta":false}]', 2),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='My Moquegua' AND mp.tipo='quiz'),
- 'What does "bilingual" mean?',
- '[{"texto":"Speaking only one language","correcta":false},{"texto":"Written in two languages","correcta":true},{"texto":"A type of map","correcta":false}]', 3);
+((SELECT id FROM modulo_pasos WHERE modulo_id=13 AND numero_paso=3),
+ 'How do you say "Bienvenido a Moquegua" in English?',
+ '[{"texto":"Goodbye Moquegua","correcta":false},{"texto":"Welcome to Moquegua","correcta":true},{"texto":"Hello, I am Moquegua","correcta":false}]',
+ 1),
+((SELECT id FROM modulo_pasos WHERE modulo_id=13 AND numero_paso=3),
+ 'What does "market" mean in Spanish?',
+ '[{"texto":"Cerro","correcta":false},{"texto":"Plaza","correcta":false},{"texto":"Mercado","correcta":true}]',
+ 2),
+((SELECT id FROM modulo_pasos WHERE modulo_id=13 AND numero_paso=3),
+ 'Which phrase is the correct way to greet someone in English?',
+ '[{"texto":"Good morning! / Buenos días","correcta":true},{"texto":"Thank you! / Gracias (as a greeting)","correcta":false},{"texto":"Goodbye! / Adiós (as an initial greeting)","correcta":false}]',
+ 3);
 
--- Módulo 14: The market
+-- ---- Módulo 14: The market (inglés) -------------------------------------
 INSERT INTO quiz_preguntas (paso_id, texto, opciones, orden) VALUES
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='The market' AND mp.tipo='quiz'),
+((SELECT id FROM modulo_pasos WHERE modulo_id=14 AND numero_paso=3),
  'How do you ask for the price of something in English?',
- '[{"texto":"Where is the market?","correcta":false},{"texto":"How much is this?","correcta":true},{"texto":"What time is it?","correcta":false}]', 1),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='The market' AND mp.tipo='quiz'),
- 'A vendor says "It costs 5 soles." What does "costs" mean?',
- '[{"texto":"Cuesta / tiene un precio de","correcta":true},{"texto":"Pesa","correcta":false},{"texto":"Mide","correcta":false}]', 2),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='The market' AND mp.tipo='quiz'),
- 'How do you say "Aquí está tu cambio" in English?',
- '[{"texto":"Here is your change.","correcta":true},{"texto":"Here is your charge.","correcta":false},{"texto":"Here is your check.","correcta":false}]', 3);
+ '[{"texto":"Where is it?","correcta":false},{"texto":"How much is it?","correcta":true},{"texto":"What is your name?","correcta":false}]',
+ 1),
+((SELECT id FROM modulo_pasos WHERE modulo_id=14 AND numero_paso=3),
+ 'If aguaymanto costs "five soles", how do you say the number five in English?',
+ '[{"texto":"Four","correcta":false},{"texto":"Six","correcta":false},{"texto":"Five","correcta":true}]',
+ 2),
+((SELECT id FROM modulo_pasos WHERE modulo_id=14 AND numero_paso=3),
+ 'In the market dialogue, what does "I would like to buy..." mean in Spanish?',
+ '[{"texto":"No quiero comprar...","correcta":false},{"texto":"Quisiera comprar...","correcta":true},{"texto":"Ya compré...","correcta":false}]',
+ 3);
 
--- Módulo 15: Nature around us
+-- ---- Módulo 15: Nature around us (inglés) --------------------------------
 INSERT INTO quiz_preguntas (paso_id, texto, opciones, orden) VALUES
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Nature around us' AND mp.tipo='quiz'),
- 'What color is the sky on a sunny day in Moquegua?',
- '[{"texto":"Green","correcta":false},{"texto":"Blue","correcta":true},{"texto":"Red","correcta":false}]', 1),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Nature around us' AND mp.tipo='quiz'),
- 'How do you say "amarillo" in English?',
- '[{"texto":"Orange","correcta":false},{"texto":"Brown","correcta":false},{"texto":"Yellow","correcta":true}]', 2),
-((SELECT mp.id FROM modulo_pasos mp JOIN modulos m ON m.id=mp.modulo_id WHERE m.titulo='Nature around us' AND mp.tipo='quiz'),
- 'Which sentence uses colors in English correctly?',
- '[{"texto":"The cactus is green and the sand is golden yellow.","correcta":true},{"texto":"The cactus is verde and the sand is yellow.","correcta":false},{"texto":"The cactus is blue and the sand is green.","correcta":false}]', 3);
+((SELECT id FROM modulo_pasos WHERE modulo_id=15 AND numero_paso=3),
+ 'What color is the aguaymanto fruit in English?',
+ '[{"texto":"Red / Rojo","correcta":false},{"texto":"Yellow / Amarillo","correcta":true},{"texto":"Blue / Azul","correcta":false}]',
+ 1),
+((SELECT id FROM modulo_pasos WHERE modulo_id=15 AND numero_paso=3),
+ 'How do you say "árbol" in English?',
+ '[{"texto":"Flower","correcta":false},{"texto":"River","correcta":false},{"texto":"Tree","correcta":true}]',
+ 2),
+((SELECT id FROM modulo_pasos WHERE modulo_id=15 AND numero_paso=3),
+ 'What is the English word for the color "marrón" (the color of the hills of Moquegua)?',
+ '[{"texto":"Green","correcta":false},{"texto":"Brown","correcta":true},{"texto":"Purple","correcta":false}]',
+ 3);
 
--- ============================================================
--- aula_modulos: asignar los 15 módulos al aula 1
--- ============================================================
 
+-- ===========================================================================
+-- 7. aula_modulos — 15 módulos asignados al aula 1, fechas semanales
+-- ===========================================================================
 INSERT INTO aula_modulos (aula_id, modulo_id, fecha_planificada, asignado_por) VALUES
-(1, 1,  '2026-04-14', 1),
-(1, 2,  '2026-04-21', 1),
-(1, 3,  '2026-04-28', 1),
-(1, 4,  '2026-05-05', 1),
-(1, 5,  '2026-05-12', 1),
-(1, 6,  '2026-05-19', 1),
-(1, 7,  '2026-05-26', 1),
-(1, 8,  '2026-06-02', 1),
-(1, 9,  '2026-06-09', 1),
+(1,  1, '2026-04-14', 1),
+(1,  2, '2026-04-21', 1),
+(1,  3, '2026-04-28', 1),
+(1,  4, '2026-05-05', 1),
+(1,  5, '2026-05-12', 1),
+(1,  6, '2026-05-19', 1),
+(1,  7, '2026-05-26', 1),
+(1,  8, '2026-06-02', 1),
+(1,  9, '2026-06-09', 1),
 (1, 10, '2026-06-16', 1),
 (1, 11, '2026-06-23', 1),
 (1, 12, '2026-06-30', 1),
@@ -583,3 +735,6 @@ INSERT INTO aula_modulos (aula_id, modulo_id, fecha_planificada, asignado_por) V
 (1, 14, '2026-07-14', 1),
 (1, 15, '2026-07-21', 1);
 
+-- ===========================================================================
+-- End of schema.sql
+-- ===========================================================================
