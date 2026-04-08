@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 40" fill="none">
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4a9eff"/>
+      <stop offset="100%" stop-color="#a78bfa"/>
+    </linearGradient>
+  </defs>
+  <!-- Star icon -->
+  <polygon points="20,4 23.5,14 34,14 25.5,20.5 28.5,31 20,25 11.5,31 14.5,20.5 6,14 16.5,14"
+           fill="url(#g1)" opacity="0.95"/>
+  <!-- Text: INNOVA -->
+  <text x="42" y="26" font-family="Syne, sans-serif" font-weight="800" font-size="18"
+        fill="#ffffff" letter-spacing="1">INNOVA</text>
+  <!-- Text: STEAM -->
+  <text x="112" y="26" font-family="Syne, sans-serif" font-weight="400" font-size="18"
+        fill="url(#g1)" letter-spacing="1">STEAM</text>
+</svg>
