@@ -25,10 +25,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect(BASE_URL . '/practicante/index.php');
     }
 
-    // Handle photo upload
-    $fotoUrl = null;
+    // Handle photo upload — stored as JSON array in fotos_actividad
+    $fotosJson = null;
     if (!empty($_FILES['foto']['name']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
         $fotoUrl = handleUpload($_FILES['foto'], 'sesiones');
+        if ($fotoUrl) {
+            $fotosJson = json_encode([$fotoUrl]);
+        }
     }
 
     // Count attendees
@@ -36,10 +39,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Insert sesion
     $stmtSesion = $db->prepare(
-        'INSERT INTO sesiones (practicante_id, aula_id, modulo_id, fecha_sesion, asistentes, notas, foto_url)
+        'INSERT INTO sesiones (practicante_id, aula_id, modulo_id, fecha_sesion, asistentes, notas, fotos_actividad)
          VALUES (?,?,?,?,?,?,?)'
     );
-    $stmtSesion->execute([$uid, $aulaId, $moduloId, $fecha, $asistentes, $notas, $fotoUrl]);
+    $stmtSesion->execute([$uid, $aulaId, $moduloId, $fecha, $asistentes, $notas, $fotosJson]);
     $sesionId = (int)$db->lastInsertId();
 
     // Insert asistencia per student
