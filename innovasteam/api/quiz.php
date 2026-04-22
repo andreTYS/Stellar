@@ -66,8 +66,8 @@ $stmtInsert = $pdo->prepare(
         (estudiante_id, modulo_id, pregunta_id, opcion_elegida, es_correcta, respondido_en)
      VALUES (?, ?, ?, ?, ?, NOW())
      ON DUPLICATE KEY UPDATE
-        opcion_elegida = VALUES(opcion_elegida),
-        es_correcta    = VALUES(es_correcta),
+        opcion_elegida = ?,
+        es_correcta    = ?,
         respondido_en  = NOW()'
 );
 
@@ -83,17 +83,17 @@ foreach ($respuestas as $resp) {
     $opciones  = $preguntasMap[$preguntaId];
     $esCorrecta = false;
 
-    // opciones is an array; each element may have a 'correcta' boolean field
     if (isset($opciones[$opcionElegida]) && !empty($opciones[$opcionElegida]['correcta'])) {
         $esCorrecta = true;
         $correctas++;
     }
 
-    // Persist the answer (upsert so retries overwrite)
     $stmtInsert->execute([
         $userId,
         $moduloId,
         $preguntaId,
+        $opcionElegida,
+        (int)$esCorrecta,
         $opcionElegida,
         (int)$esCorrecta,
     ]);
@@ -121,9 +121,9 @@ $pdo->prepare(
         (estudiante_id, modulo_id, estrellas_quiz, intentos_quiz)
      VALUES (?, ?, ?, 1)
      ON DUPLICATE KEY UPDATE
-        estrellas_quiz = GREATEST(estrellas_quiz, VALUES(estrellas_quiz)),
+        estrellas_quiz = GREATEST(estrellas_quiz, ?),
         intentos_quiz  = intentos_quiz + 1'
-)->execute([$userId, $moduloId, $estrellas]);
+)->execute([$userId, $moduloId, $estrellas, $estrellas]);
 
 // ── Response ──────────────────────────────────────────────────
 echo json_encode([
