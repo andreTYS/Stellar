@@ -388,6 +388,7 @@ require_once __DIR__ . '/../includes/header.php';
 // ══════════════════════════════════════════════
 const accentColor = '<?= $color ?>';
 let quizRespuestas  = [];
+let quizCorrectas   = 0;
 let totalPreguntas  = <?= count($quizPreguntas) ?>;
 
 document.querySelectorAll('.opcion-btn').forEach(btn => {
@@ -399,6 +400,8 @@ document.querySelectorAll('.opcion-btn').forEach(btn => {
     const esCorrecta = this.dataset.correcta === '1';
     const pregId     = parseInt(this.dataset.pregunta);
     const opcion     = parseInt(this.dataset.opcion);
+
+    if (esCorrecta) quizCorrectas++;
 
     // Highlight answers
     group.querySelectorAll('.opcion-btn').forEach(b => {
@@ -439,38 +442,36 @@ document.querySelectorAll('.btn-siguiente-preg').forEach(btn => {
     this.closest('.quiz-pregunta').style.display = 'none';
     document.getElementById('q-' + nextIdx).style.display = 'block';
     document.getElementById('q-num').textContent = nextIdx + 1;
-    // update mini progress bar
     const bar = document.getElementById('quiz-progress-bar');
     if (bar) bar.style.width = Math.round(((nextIdx + 1) / total) * 100) + '%';
   });
 });
 
-document.getElementById('btn-ver-resultado')?.addEventListener('click', async function () {
-  this.disabled    = true;
-  this.textContent = 'Calculando...';
-  try {
-    const res  = await fetch('<?= BASE_URL ?>/api/quiz.php', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ modulo_id: <?= $moduloId ?>, respuestas: quizRespuestas })
-    });
-    const data = await res.json();
+document.getElementById('btn-ver-resultado')?.addEventListener('click', function () {
+  this.disabled = true;
 
-    document.getElementById('quiz-container').style.display = 'none';
-    const resultDiv = document.getElementById('quiz-resultado');
-    resultDiv.style.display = 'block';
+  // Calcular estrellas en el cliente inmediatamente
+  const pct = totalPreguntas > 0 ? (quizCorrectas / totalPreguntas) : 0;
+  const stars = pct >= 1 ? 3 : pct >= 0.6 ? 2 : 1;
 
-    const stars    = data.estrellas ?? 0;
-    const starStr  = '★'.repeat(stars) + '<span style="color:var(--bg-border)">★</span>'.repeat(Math.max(0, 3 - stars));
-    document.getElementById('resultado-estrellas').innerHTML = starStr;
-    document.getElementById('resultado-titulo').textContent  =
-      stars === 3 ? '¡Perfecto!' : stars === 2 ? '¡Muy bien!' : '¡Buen intento!';
-    document.getElementById('resultado-texto').textContent   =
-      `Respondiste ${data.correctas ?? 0} de ${data.total ?? totalPreguntas} preguntas correctamente.`;
-  } catch (e) {
-    this.disabled    = false;
-    this.textContent = 'Ver mi resultado';
-  }
+  // Mostrar resultado sin esperar el API
+  document.getElementById('quiz-container').style.display = 'none';
+  const resultDiv = document.getElementById('quiz-resultado');
+  resultDiv.style.display = 'block';
+
+  const starStr = '★'.repeat(stars) + '<span style="color:var(--bg-border)">★</span>'.repeat(Math.max(0, 3 - stars));
+  document.getElementById('resultado-estrellas').innerHTML = starStr;
+  document.getElementById('resultado-titulo').textContent =
+    stars === 3 ? '¡Perfecto!' : stars === 2 ? '¡Muy bien!' : '¡Buen intento!';
+  document.getElementById('resultado-texto').textContent =
+    `Respondiste ${quizCorrectas} de ${totalPreguntas} preguntas correctamente.`;
+
+  // Guardar en servidor en segundo plano (no bloquea el flujo)
+  fetch('<?= BASE_URL ?>/api/quiz.php', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ modulo_id: <?= $moduloId ?>, respuestas: quizRespuestas })
+  }).catch(() => {});
 });
 
 // ══════════════════════════════════════════════
