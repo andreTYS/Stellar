@@ -51,7 +51,7 @@ $completadosCount = count(array_filter($modulosData, fn($m) => $m['completado'])
 $totalCount       = count($modulos);
 $porcentaje       = $totalCount > 0 ? round(($completadosCount / $totalCount) * 100) : 0;
 $color            = sanitize($curso['color_hex'] ?? '#4a9eff');
-$emoji            = sanitize($curso['emoji'] ?? '📘');
+$initial          = strtoupper(mb_substr(trim($curso['nombre'] ?? 'C'), 0, 1));
 
 // ── View ──────────────────────────────────────────────────────
 $pageTitle = sanitize($curso['nombre']);
@@ -71,7 +71,7 @@ include __DIR__ . '/../includes/header.php';
 <div class="card mb-28"
      style="border-color:<?= $color ?>40;background:linear-gradient(135deg,<?= $color ?>0d,var(--bg-surface))">
   <div class="flex items-center gap-20">
-    <div style="font-size:56px;flex-shrink:0"><?= $emoji ?></div>
+    <div style="width:72px;height:72px;border-radius:16px;background:<?= $color ?>;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Syne',sans-serif;font-weight:800;font-size:36px;color:#fff;user-select:none"><?= htmlspecialchars($initial) ?></div>
     <div class="flex-1">
       <h1 class="page-title mb-8" style="color:<?= $color ?>"><?= sanitize($curso['nombre']) ?></h1>
       <?php if (!empty($curso['descripcion'])): ?>
@@ -98,7 +98,7 @@ include __DIR__ . '/../includes/header.php';
 
 <?php if (empty($modulosData)): ?>
   <div class="empty-state">
-    <div class="empty-icon">📭</div>
+    <div class="empty-state-svg"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div>
     <h3>Sin módulos disponibles</h3>
     <p>Este curso no tiene módulos publicados aún.</p>
   </div>
