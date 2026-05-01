@@ -1206,42 +1206,77 @@ tbody td:first-child {
 }
 
 /* ── Responsive ────────────────────────────────────────────── */
-@media (max-width: 768px) {
-  h1 { font-size: 1.5rem; }
-  h2 { font-size: 1.25rem; }
-
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
+@media (max-width: 1024px) {
   .courses-grid {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  }
-
-  .modal-box {
-    padding: 20px;
-    border-radius: var(--radius);
-  }
-
-  .step-label {
-    display: none;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
+  h1 { font-size: 1.4rem; }
+  h2 { font-size: 1.2rem; }
+  .page-title { font-size: 18px; }
+
   .stats-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
 
   .courses-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
   }
 
-  .card {
-    padding: 16px;
+  .table-wrapper { border-radius: var(--radius-sm); }
+  table         { font-size: 13px; }
+  thead th, tbody td { padding: 10px 12px; }
+
+  .modal-overlay { padding: 12px; }
+  .modal-box {
+    padding: 24px 20px;
+    border-radius: var(--radius);
+    max-height: 95vh;
   }
 
-  .login-card {
-    padding: 24px;
+  .page-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+
+  .step-label { display: none; }
+  .step-circle { width: 28px; height: 28px; font-size: 11px; }
+
+  .btn-lg { padding: 10px 18px; font-size: 14px; }
+  .btn-block-mobile { width: 100%; justify-content: center; }
+
+  .hide-mobile { display: none !important; }
+}
+
+@media (max-width: 640px) {
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
   }
+  .stat-card { padding: 14px; }
+  .stat-value { font-size: 24px; }
+
+  .courses-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .course-card-header { height: 80px; }
+  .course-initial { font-size: 28px; }
+  .course-card-body { padding: 12px 14px; }
+  .course-card-name { font-size: 13px; }
+}
+
+@media (max-width: 480px) {
+  .courses-grid { grid-template-columns: 1fr; }
+  .stats-grid   { grid-template-columns: 1fr 1fr; }
+
+  .card { padding: 16px; }
+
+  .modal-box { padding: 20px 16px; }
+
+  .flex-col-mobile { flex-direction: column !important; }
+  .gap-col-mobile  { gap: 8px !important; }
+
+  .btn { padding: 8px 14px; font-size: 13px; }
 }

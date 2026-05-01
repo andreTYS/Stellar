@@ -129,21 +129,14 @@ require_once __DIR__ . '/../includes/header.php';
       Obtuviste <strong style="color:var(--gold);"><?= $estrellas ?> estrella<?= $estrellas!=1?'s':'' ?></strong> en el quiz.
     </p>
     <div class="flex gap-12" style="justify-content:center;flex-wrap:wrap;">
-      <a href="<?= BASE_URL ?>/estudiante/curso.php?id=<?= (int)$modulo['curso_id'] ?>" class="btn btn-ghost">
-        <i data-lucide="arrow-left" style="width:15px;height:15px"></i>
-        Volver al curso
+      <a href="<?= BASE_URL ?>/estudiante/index.php" class="btn btn-ghost">
+        <i data-lucide="layout-grid" style="width:15px;height:15px"></i>
+        Mis cursos
       </a>
-      <?php if ($cert && !empty($cert['pdf_url'])): ?>
-      <a href="<?= sanitize($cert['pdf_url']) ?>" class="btn btn-primary" target="_blank">
-        <i data-lucide="award" style="width:15px;height:15px"></i>
-        Descargar certificado
-      </a>
-      <?php else: ?>
       <a href="<?= BASE_URL ?>/estudiante/certificados.php" class="btn btn-primary">
         <i data-lucide="award" style="width:15px;height:15px"></i>
-        Ver mis certificados
+        Ver certificado
       </a>
-      <?php endif; ?>
     </div>
   </div>
 
@@ -363,20 +356,25 @@ require_once __DIR__ . '/../includes/header.php';
   <?php endif; // completado ?>
 </div>
 
-<!-- Celebration modal (shown after step 4 completes) -->
+<!-- Celebration modal -->
 <div class="modal-overlay" id="modal-celebracion">
-  <div class="modal-box" style="text-align:center;padding:44px 32px;">
-    <div style="font-size:72px;margin-bottom:12px;">🎓</div>
-    <h2 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:8px;">¡Felicitaciones!</h2>
-    <p style="color:var(--text-secondary);font-size:15px;margin-bottom:16px;">Completaste el módulo <strong style="color:var(--text-primary);"><?= sanitize($modulo['titulo']) ?></strong></p>
-    <div id="modal-estrellas" style="font-size:40px;margin-bottom:20px;letter-spacing:4px;"></div>
-    <div class="flex gap-12" style="justify-content:center;flex-wrap:wrap;">
-      <a href="<?= BASE_URL ?>/estudiante/curso.php?id=<?= (int)$modulo['curso_id'] ?>" class="btn btn-ghost">
-        Volver al curso
+  <div class="modal-box" style="text-align:center;padding:40px 32px;max-width:440px;">
+    <div style="width:64px;height:64px;border-radius:50%;background:var(--accent-light,#eef2ff);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+      <i data-lucide="award" style="width:32px;height:32px;color:var(--accent,#4361ee)"></i>
+    </div>
+    <h2 style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:8px;color:var(--text-primary,#1a1f36);">Modulo completado</h2>
+    <p style="color:var(--text-secondary,#4e5d78);font-size:14px;margin-bottom:16px;">
+      <?= sanitize($modulo['titulo']) ?>
+    </p>
+    <div id="modal-estrellas" style="font-size:36px;margin-bottom:24px;letter-spacing:6px;color:#f59e0b;"></div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <a href="<?= BASE_URL ?>/estudiante/index.php" class="btn btn-ghost">
+        <i data-lucide="layout-grid" style="width:14px;height:14px"></i>
+        Mis cursos
       </a>
       <a href="<?= BASE_URL ?>/estudiante/certificados.php" class="btn btn-primary">
-        <i data-lucide="award" style="width:15px;height:15px"></i>
-        Ver certificados
+        <i data-lucide="award" style="width:14px;height:14px"></i>
+        Ver certificado
       </a>
     </div>
   </div>
@@ -537,44 +535,35 @@ async function subirEntregable(moduloId) {
     errEl.style.display = 'block';
     return;
   }
+  if (!document.getElementById('formato-seleccionado')?.value) {
+    errEl.textContent   = 'Por favor selecciona un formato de presentacion.';
+    errEl.style.display = 'block';
+    return;
+  }
   if (archivo.size > <?= MAX_UPLOAD_BYTES ?>) {
-    errEl.textContent   = `La imagen supera el límite de <?= MAX_UPLOAD_MB ?> MB.`;
+    errEl.textContent   = `La imagen supera el limite de <?= MAX_UPLOAD_MB ?> MB.`;
     errEl.style.display = 'block';
     return;
   }
 
-  btn.disabled       = true;
-  btn.innerHTML      = '<i data-lucide="loader" style="width:16px;height:16px;animation:spin 1s linear infinite"></i> Subiendo...';
+  btn.disabled  = true;
+  btn.innerHTML = 'Completando modulo...';
+
+  // 1. Marcar modulo como completado PRIMERO (genera certificado)
+  await avanzarPaso(moduloId, 4, false);
+
+  // 2. Mostrar modal de celebracion
+  const stars = <?= $estrellas > 0 ? $estrellas : 1 ?>;
+  document.getElementById('modal-estrellas').innerHTML =
+    '★'.repeat(stars) + '<span style="opacity:.25">★</span>'.repeat(Math.max(0, 3 - stars));
+  document.getElementById('modal-celebracion').classList.add('open');
   if (typeof lucide !== 'undefined') lucide.createIcons();
 
+  // 3. Subir archivo en segundo plano (no bloquea el flujo)
   try {
-    const fd  = new FormData(document.getElementById('form-entregable'));
-    const res = await fetch('<?= BASE_URL ?>/api/entregable.php', { method: 'POST', body: fd });
-    const data = await res.json();
-
-    if (data.ok) {
-      // Show celebration modal then advance
-      const modal = document.getElementById('modal-celebracion');
-      const stars  = data.estrellas ?? <?= $estrellas ?>;
-      document.getElementById('modal-estrellas').innerHTML =
-        '★'.repeat(stars) + '<span style="color:var(--bg-border)">★</span>'.repeat(Math.max(0, 3-stars));
-      modal.classList.add('open');
-      // Also call progreso API to mark completed
-      await avanzarPaso(moduloId, <?= $pasoActual ?>, false);
-    } else {
-      errEl.textContent   = data.error || 'Error al subir. Por favor intenta de nuevo.';
-      errEl.style.display = 'block';
-      btn.disabled        = false;
-      btn.innerHTML       = '<i data-lucide="upload" style="width:16px;height:16px"></i> Subir y completar módulo';
-      if (typeof lucide !== 'undefined') lucide.createIcons();
-    }
-  } catch (e) {
-    errEl.textContent   = 'Error de conexión. Verifica tu internet e intenta de nuevo.';
-    errEl.style.display = 'block';
-    btn.disabled        = false;
-    btn.innerHTML       = '<i data-lucide="upload" style="width:16px;height:16px"></i> Subir y completar módulo';
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-  }
+    const fd = new FormData(document.getElementById('form-entregable'));
+    fetch('<?= BASE_URL ?>/api/entregable.php', { method: 'POST', body: fd }).catch(() => {});
+  } catch (e) {}
 }
 
 // ══════════════════════════════════════════════
