@@ -656,10 +656,10 @@ $queryError = $_GET['error'] ?? '';
         <div class="demo-grid">
           <?php
           $demos = [
-            ['admin@innovasteam.pe',       'password', 'Admin',        'admin@innovasteam.pe'],
-            ['docente@innovasteam.pe',      'password', 'Docente',      'docente@innovasteam.pe'],
-            ['practicante@innovasteam.pe',  'password', 'Practicante',  'practicante@innovasteam.pe'],
-            ['EST001',                      'password', 'Estudiante',   'EST001'],
+            ['admin@innovasteam.edu.pe',       'password', 'Admin',        'admin@innovasteam.edu.pe'],
+            ['docente@innovasteam.edu.pe',      'password', 'Docente',      'docente@innovasteam.edu.pe'],
+            ['practicante@innovasteam.edu.pe',  'password', 'Practicante',  'practicante@innovasteam.edu.pe'],
+            ['EST-001',                         'password', 'Estudiante',   'EST-001'],
           ];
           foreach ($demos as [$cred, $pass, $label, $display]):
           ?>
