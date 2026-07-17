@@ -81,6 +81,19 @@ require_once __DIR__ . '/../includes/header.php';
   </div>
 </div>
 
+<!-- Chart row -->
+<div class="card mb-24">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">Progreso por curso</h2>
+      <p class="card-subtitle">Estudiantes activos por área</p>
+    </div>
+  </div>
+  <div class="chart-container" style="height:200px">
+    <canvas id="chartDocente"></canvas>
+  </div>
+</div>
+
 <!-- Mis aulas -->
 <div class="card mb-24">
   <div class="card-header">
@@ -194,5 +207,37 @@ require_once __DIR__ . '/../includes/header.php';
   </div>
   <?php endif; ?>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  if (typeof Chart === 'undefined') return;
+  Chart.defaults.font.family = "'Inter', sans-serif";
+  Chart.defaults.color = '#8898aa';
+  try {
+    const r = await fetch('<?= BASE_URL ?>/api/stats.php?type=students_by_course');
+    const d = await r.json();
+    new Chart(document.getElementById('chartDocente'), {
+      type: 'doughnut',
+      data: {
+        labels: d.labels,
+        datasets: [{
+          data: d.values,
+          backgroundColor: d.colors.map(c => c + 'dd'),
+          borderColor: d.colors,
+          borderWidth: 2,
+          hoverOffset: 6,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'right', labels: { padding: 16, font: { size: 12 } } }
+        },
+        cutout: '60%',
+      }
+    });
+  } catch(e) {}
+});
+</script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

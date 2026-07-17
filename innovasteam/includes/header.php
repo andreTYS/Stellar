@@ -62,7 +62,13 @@ $rolLabel = match ($rol) {
   <?php if (!empty($extraCss)): foreach ($extraCss as $css): ?>
   <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/<?= $css ?>"/>
   <?php endforeach; endif; ?>
+  <style>[x-cloak] { display: none !important; }</style>
+  <!-- Alpine.js v3 -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <!-- Lucide icons -->
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
   <script>document.addEventListener('DOMContentLoaded',()=>{ if(typeof lucide!=='undefined') lucide.createIcons(); });</script>
 </head>
 <body>
@@ -116,13 +122,40 @@ $rolLabel = match ($rol) {
   <div class="main-content" id="main-content">
 
     <!-- Topbar -->
-    <header class="topbar">
+    <header class="topbar" x-data="{ userOpen: false }">
       <button class="topbar-toggle" onclick="toggleSidebar()" aria-label="Menu">
         <i data-lucide="menu"></i>
       </button>
       <h1 class="topbar-title"><?= sanitize($pageTitle) ?></h1>
-      <div class="topbar-actions">
-        <span class="topbar-role-badge"><?= $rolLabel ?></span>
+      <div class="topbar-actions" style="position:relative">
+        <!-- User avatar + dropdown -->
+        <button @click="userOpen = !userOpen" @click.away="userOpen = false"
+                class="topbar-user-btn" style="display:flex;align-items:center;gap:8px;background:transparent;border:none;cursor:pointer;padding:4px 8px;border-radius:8px;transition:background .15s"
+                :style="userOpen ? 'background:var(--bg-hover)' : ''">
+          <div class="user-avatar" style="width:32px;height:32px;font-size:13px"><?= $initials ?></div>
+          <span style="font-size:13px;font-weight:600;color:var(--text-primary);max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><?= sanitize($user['nombre'] ?? '') ?></span>
+          <i data-lucide="chevron-down" style="width:14px;height:14px;color:var(--text-muted);transition:transform .2s" :style="userOpen ? 'transform:rotate(180deg)' : ''"></i>
+        </button>
+        <!-- Dropdown -->
+        <div x-show="userOpen" x-transition:enter="transition ease-out duration-150"
+             x-transition:enter-start="opacity-0 transform scale-95"
+             x-transition:enter-end="opacity-100 transform scale-100"
+             x-transition:leave="transition ease-in duration-100"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             style="position:absolute;top:calc(100% + 8px);right:0;min-width:200px;background:var(--bg-card);border:1px solid var(--bg-border);border-radius:12px;box-shadow:0 8px 32px rgba(26,31,54,.12);z-index:200;overflow:hidden;display:none"
+             x-cloak>
+          <div style="padding:12px 16px;border-bottom:1px solid var(--bg-border)">
+            <div style="font-weight:700;font-size:14px;color:var(--text-primary)"><?= sanitize(trim(($user['nombre'] ?? '') . ' ' . ($user['apellido'] ?? ''))) ?></div>
+            <div style="font-size:12px;color:var(--text-muted)"><?= $rolLabel ?></div>
+          </div>
+          <div style="padding:6px">
+            <a href="<?= BASE_URL ?>/logout.php" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;font-size:13px;color:var(--danger);text-decoration:none;transition:background .15s" onmouseover="this.style.background='var(--danger-light)'" onmouseout="this.style.background=''">
+              <i data-lucide="log-out" style="width:15px;height:15px"></i>
+              Cerrar sesión
+            </a>
+          </div>
+        </div>
       </div>
     </header>
 

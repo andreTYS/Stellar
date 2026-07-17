@@ -72,6 +72,37 @@ require_once __DIR__ . '/../includes/header.php';
   </div>
 </div>
 
+<!-- Charts row -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+
+  <!-- Completaciones por curso -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h2 class="card-title">Completaciones por curso</h2>
+        <p class="card-subtitle">Módulos completados totales</p>
+      </div>
+    </div>
+    <div class="chart-container" style="height:220px">
+      <canvas id="chartCursos"></canvas>
+    </div>
+  </div>
+
+  <!-- Actividad últimos 7 días -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h2 class="card-title">Actividad reciente</h2>
+        <p class="card-subtitle">Módulos completados — últimos 7 días</p>
+      </div>
+    </div>
+    <div class="chart-container" style="height:220px">
+      <canvas id="chartActividad"></canvas>
+    </div>
+  </div>
+
+</div>
+
 <!-- Colegios table -->
 <div class="card mb-24">
   <div class="card-header">
@@ -150,5 +181,78 @@ require_once __DIR__ . '/../includes/header.php';
   </a>
   <?php endforeach; ?>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const BASE = '<?= BASE_URL ?>';
+  const fontColor = '#8898aa';
+
+  // Chart defaults
+  if (typeof Chart !== 'undefined') {
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.color = fontColor;
+
+    // Completaciones por curso
+    try {
+      const r1 = await fetch(BASE + '/api/stats.php?type=completions_by_course');
+      const d1 = await r1.json();
+      new Chart(document.getElementById('chartCursos'), {
+        type: 'bar',
+        data: {
+          labels: d1.labels,
+          datasets: [{
+            label: 'Completados',
+            data: d1.values,
+            backgroundColor: d1.colors.map(c => c + 'cc'),
+            borderColor: d1.colors,
+            borderWidth: 2,
+            borderRadius: 8,
+            borderSkipped: false,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#e4e8f022' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    } catch(e) {}
+
+    // Actividad últimos 7 días
+    try {
+      const r2 = await fetch(BASE + '/api/stats.php?type=daily_activity');
+      const d2 = await r2.json();
+      new Chart(document.getElementById('chartActividad'), {
+        type: 'line',
+        data: {
+          labels: d2.labels,
+          datasets: [{
+            label: 'Completaciones',
+            data: d2.values,
+            borderColor: '#4361ee',
+            backgroundColor: 'rgba(67,97,238,.08)',
+            fill: true,
+            tension: .4,
+            pointBackgroundColor: '#4361ee',
+            pointRadius: 4,
+            pointHoverRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#e4e8f022' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    } catch(e) {}
+  }
+});
+</script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
