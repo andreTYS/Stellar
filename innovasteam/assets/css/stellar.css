@@ -53,6 +53,13 @@
   --sidebar-text:    #a0aec0;
   --sidebar-active:  #ffffff;
 
+  /* Extended palette — used by admin/docente pages */
+  --blue:   #4a9eff;
+  --green:  #3ecf8e;
+  --purple: #a78bfa;
+  --coral:  #ff6b6b;
+  --teal:   #06b6d4;
+
   /* Sidebar width — consumed by sidebar.css */
   --sidebar-width: 240px;
 
@@ -636,6 +643,25 @@ tbody td {
 tbody td:first-child {
   color: var(--text-primary);
   font-weight: 500;
+}
+
+/* Aliases used by practicante pages */
+.table-wrap { width: 100%; overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+/* Compact progress bar (used in dashboard tables) */
+.progress-bar-wrap {
+  height: 6px;
+  background: var(--bg-border);
+  border-radius: 99px;
+  overflow: hidden;
+  flex: 1;
+  min-width: 60px;
+}
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width .4s ease;
 }
 
 /* ── Empty State ───────────────────────────────────────────── */

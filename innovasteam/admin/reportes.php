@@ -1,6 +1,6 @@
 <?php
-require_once '../includes/config.php';
-require_once '../includes/functions.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
 requireLogin('admin');
 
 $pdo = getDB();
@@ -38,7 +38,7 @@ $porColegio = $pdo->query("
 
 $pageTitle = 'Reportes Globales';
 $activeNav = 'reportes';
-require_once '../includes/header.php';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 <div class="page-content">
   <div class="stats-grid">
@@ -95,4 +95,4 @@ require_once '../includes/header.php';
     <button onclick="window.print()" class="btn-ghost" style="padding:10px 24px;">🖨️ Imprimir reporte global</button>
   </div>
 </div>
-<?php require_once '../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

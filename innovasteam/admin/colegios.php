@@ -1,6 +1,6 @@
 <?php
-require_once '../includes/config.php';
-require_once '../includes/functions.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
 requireLogin('admin');
 
 $pdo = getDB();
@@ -44,7 +44,7 @@ if (isset($_GET['edit'])) {
 [$msgType,$msgText] = $msg ? explode(':', $msg, 2) : ['',''];
 $pageTitle = 'Colegios';
 $activeNav = 'colegios';
-require_once '../includes/header.php';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 <div class="page-content">
   <?php if ($msgText): ?>
@@ -112,4 +112,4 @@ require_once '../includes/header.php';
     </div>
   </div>
 </div>
-<?php require_once '../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

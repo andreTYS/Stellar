@@ -1,6 +1,6 @@
 <?php
-require_once '../includes/config.php';
-require_once '../includes/functions.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
 requireLogin('admin');
 
 $pdo = getDB();
@@ -18,7 +18,7 @@ $cursos = $pdo->query("
 
 $pageTitle = 'Cursos';
 $activeNav = 'cursos';
-require_once '../includes/header.php';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 <div class="page-content">
   <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:20px;">
@@ -49,4 +49,4 @@ require_once '../includes/header.php';
     <?php endforeach; ?>
   </div>
 </div>
-<?php require_once '../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

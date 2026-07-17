@@ -1,6 +1,6 @@
 <?php
-require_once '../includes/config.php';
-require_once '../includes/functions.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
 requireLogin('docente');
 
 $user   = currentUser();
@@ -31,7 +31,7 @@ $estudiantes = $estudiantes->fetchAll();
 
 $pageTitle = 'Estudiantes — ' . $aula['grado'] . ' ' . $aula['seccion'];
 $activeNav = 'dashboard';
-require_once '../includes/header.php';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="page-content">
@@ -87,4 +87,4 @@ require_once '../includes/header.php';
   </div>
 </div>
 
-<?php require_once '../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

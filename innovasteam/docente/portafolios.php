@@ -1,6 +1,6 @@
 <?php
-require_once '../includes/config.php';
-require_once '../includes/functions.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
 requireLogin('docente');
 
 $user        = currentUser();
@@ -43,7 +43,7 @@ if ($estudianteId) {
 
 $pageTitle = $estudiante ? 'Portafolio de '.$estudiante['nombre'] : 'Portafolios';
 $activeNav = 'dashboard';
-require_once '../includes/header.php';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="page-content">
@@ -131,4 +131,4 @@ require_once '../includes/header.php';
   <?php endif; ?>
 </div>
 
-<?php require_once '../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

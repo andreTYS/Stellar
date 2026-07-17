@@ -1,6 +1,6 @@
 <?php
-require_once '../includes/config.php';
-require_once '../includes/functions.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
 requireLogin('admin');
 
 $pdo = getDB();
@@ -28,7 +28,7 @@ $modulos = $modulos->fetchAll();
 
 $pageTitle = 'Módulos';
 $activeNav = 'modulos';
-require_once '../includes/header.php';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 <div class="page-content">
   <!-- Course filter tabs -->
@@ -77,4 +77,4 @@ require_once '../includes/header.php';
     </div>
   </div>
 </div>
-<?php require_once '../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

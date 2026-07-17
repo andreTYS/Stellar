@@ -1,14 +1,14 @@
 <?php
-require_once '../includes/config.php';
-require_once '../includes/functions.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
 requireLogin('admin');
 
 $pdo = getDB();
 
 $stats = [
-    'colegios'    => $pdo->query("SELECT COUNT(*) FROM colegios WHERE activo=1")->fetchColumn(),
-    'usuarios'    => $pdo->query("SELECT COUNT(*) FROM usuarios WHERE activo=1")->fetchColumn(),
-    'estudiantes' => $pdo->query("SELECT COUNT(*) FROM usuarios WHERE rol='estudiante' AND activo=1")->fetchColumn(),
+    'colegios'            => $pdo->query("SELECT COUNT(*) FROM colegios WHERE activo=1")->fetchColumn(),
+    'usuarios'            => $pdo->query("SELECT COUNT(*) FROM usuarios WHERE activo=1")->fetchColumn(),
+    'estudiantes'         => $pdo->query("SELECT COUNT(*) FROM usuarios WHERE rol='estudiante' AND activo=1")->fetchColumn(),
     'modulos_completados' => $pdo->query("SELECT COUNT(*) FROM progreso_estudiante WHERE completado=1")->fetchColumn(),
 ];
 
@@ -25,75 +25,130 @@ $colegiosRecientes = $pdo->query("
 
 $pageTitle = 'Dashboard Global';
 $activeNav = 'dashboard';
-require_once '../includes/header.php';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
-<div class="page-content">
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-icon">🏫</div>
-      <div class="stat-value" style="color:var(--blue);"><?= $stats['colegios'] ?></div>
-      <div class="stat-label">Colegios activos</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon">👥</div>
-      <div class="stat-value" style="color:var(--green);"><?= $stats['usuarios'] ?></div>
-      <div class="stat-label">Usuarios totales</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon">👨‍🎓</div>
-      <div class="stat-value" style="color:var(--purple);"><?= $stats['estudiantes'] ?></div>
-      <div class="stat-label">Estudiantes</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon">✅</div>
-      <div class="stat-value" style="color:var(--gold);"><?= $stats['modulos_completados'] ?></div>
-      <div class="stat-label">Módulos completados</div>
-    </div>
+<!-- Page header -->
+<div class="page-header flex justify-between items-center">
+  <div>
+    <h1 class="page-title">Panel de Administración</h1>
+    <p class="page-subtitle">Vista global de la plataforma · <?= date('d/m/Y') ?></p>
   </div>
+  <a href="<?= BASE_URL ?>/admin/reportes.php" class="btn btn-primary">
+    <i data-lucide="bar-chart-2" style="width:16px;height:16px"></i>
+    Ver reportes
+  </a>
+</div>
 
-  <div class="card">
-    <div class="card-header">
-      <h2 class="card-title">Colegios activos</h2>
-      <a href="colegios.php" class="btn-primary" style="padding:8px 16px; font-size:13px; text-decoration:none;">Gestionar</a>
+<!-- Stats -->
+<div class="stats-grid mb-32">
+  <div class="stat-card">
+    <div class="stat-icon" style="background:rgba(74,158,255,.12);color:var(--blue)">
+      <i data-lucide="building-2" style="width:22px;height:22px"></i>
     </div>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr><th>Colegio</th><th>Distrito</th><th>Director</th><th>Estudiantes</th><th>Acciones</th></tr>
-        </thead>
-        <tbody>
-          <?php foreach ($colegiosRecientes as $col): ?>
-          <tr>
-            <td style="font-weight:600;"><?= sanitize($col['nombre']) ?></td>
-            <td style="color:var(--text-secondary);"><?= sanitize($col['distrito']) ?></td>
-            <td style="color:var(--text-secondary);"><?= sanitize($col['director'] ?? '—') ?></td>
-            <td style="color:var(--blue); font-weight:700;"><?= $col['total_estudiantes'] ?></td>
-            <td><a href="colegios.php?edit=<?= $col['id'] ?>" style="color:var(--blue); font-size:13px; text-decoration:none;">Editar</a></td>
-          </tr>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
-    </div>
+    <div class="stat-value" style="color:var(--blue)"><?= (int)$stats['colegios'] ?></div>
+    <div class="stat-label">Colegios activos</div>
   </div>
-
-  <!-- Quick links -->
-  <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; margin-top:24px;">
-    <?php
-    $links = [
-      ['href'=>'colegios.php',  'icon'=>'🏫', 'label'=>'Colegios',  'color'=>'var(--blue)'],
-      ['href'=>'usuarios.php',  'icon'=>'👥', 'label'=>'Usuarios',  'color'=>'var(--purple)'],
-      ['href'=>'cursos.php',    'icon'=>'📚', 'label'=>'Cursos',    'color'=>'var(--green)'],
-      ['href'=>'modulos.php',   'icon'=>'🧩', 'label'=>'Módulos',   'color'=>'var(--gold)'],
-      ['href'=>'reportes.php',  'icon'=>'📊', 'label'=>'Reportes',  'color'=>'var(--coral)'],
-    ];
-    foreach ($links as $l): ?>
-    <a href="<?= $l['href'] ?>" style="background:var(--bg-elevated); border:1px solid var(--bg-border); border-radius:12px; padding:20px; text-decoration:none; display:flex; flex-direction:column; gap:8px; transition:border-color .2s;" onmouseover="this.style.borderColor='<?= $l['color'] ?>'" onmouseout="this.style.borderColor='var(--bg-border)'">
-      <span style="font-size:28px;"><?= $l['icon'] ?></span>
-      <span style="font-family:'Syne',sans-serif; font-weight:700; color:var(--text-primary);"><?= $l['label'] ?></span>
-    </a>
-    <?php endforeach; ?>
+  <div class="stat-card">
+    <div class="stat-icon" style="background:rgba(62,207,142,.12);color:var(--green)">
+      <i data-lucide="users" style="width:22px;height:22px"></i>
+    </div>
+    <div class="stat-value" style="color:var(--green)"><?= (int)$stats['usuarios'] ?></div>
+    <div class="stat-label">Usuarios totales</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background:rgba(167,139,250,.12);color:var(--purple)">
+      <i data-lucide="graduation-cap" style="width:22px;height:22px"></i>
+    </div>
+    <div class="stat-value" style="color:var(--purple)"><?= (int)$stats['estudiantes'] ?></div>
+    <div class="stat-label">Estudiantes</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background:rgba(245,200,66,.12);color:var(--gold)">
+      <i data-lucide="check-circle-2" style="width:22px;height:22px"></i>
+    </div>
+    <div class="stat-value" style="color:var(--gold)"><?= (int)$stats['modulos_completados'] ?></div>
+    <div class="stat-label">Módulos completados</div>
   </div>
 </div>
 
-<?php require_once '../includes/footer.php'; ?>
+<!-- Colegios table -->
+<div class="card mb-24">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">Colegios activos</h2>
+      <p class="card-subtitle">Últimos colegios registrados en la plataforma</p>
+    </div>
+    <a href="<?= BASE_URL ?>/admin/colegios.php" class="btn btn-primary btn-sm">
+      <i data-lucide="settings" style="width:14px;height:14px"></i>
+      Gestionar
+    </a>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Colegio</th>
+          <th>Distrito</th>
+          <th>Director</th>
+          <th>Estudiantes</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php if (empty($colegiosRecientes)): ?>
+        <tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-muted);">Sin colegios registrados</td></tr>
+        <?php else: ?>
+        <?php foreach ($colegiosRecientes as $col): ?>
+        <tr>
+          <td style="font-weight:600"><?= sanitize($col['nombre']) ?></td>
+          <td><?= sanitize($col['distrito']) ?></td>
+          <td><?= sanitize($col['director'] ?? '—') ?></td>
+          <td>
+            <span class="badge" style="background:rgba(74,158,255,.12);color:var(--blue)">
+              <?= (int)$col['total_estudiantes'] ?> est.
+            </span>
+          </td>
+          <td>
+            <a href="<?= BASE_URL ?>/admin/colegios.php?edit=<?= (int)$col['id'] ?>"
+               class="btn btn-ghost btn-sm">
+              <i data-lucide="pencil" style="width:13px;height:13px"></i>
+              Editar
+            </a>
+          </td>
+        </tr>
+        <?php endforeach; ?>
+        <?php endif; ?>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Quick links -->
+<div class="mb-8">
+  <h2 style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text-primary)">Acceso rápido</h2>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">
+  <?php
+  $links = [
+    ['href' => BASE_URL.'/admin/colegios.php',  'icon' => 'building-2',  'label' => 'Colegios',  'color' => 'var(--blue)'],
+    ['href' => BASE_URL.'/admin/usuarios.php',  'icon' => 'users',       'label' => 'Usuarios',  'color' => 'var(--purple)'],
+    ['href' => BASE_URL.'/admin/cursos.php',    'icon' => 'book-open',   'label' => 'Cursos',    'color' => 'var(--green)'],
+    ['href' => BASE_URL.'/admin/modulos.php',   'icon' => 'layers',      'label' => 'Módulos',   'color' => 'var(--gold)'],
+    ['href' => BASE_URL.'/admin/reportes.php',  'icon' => 'bar-chart-2', 'label' => 'Reportes',  'color' => 'var(--coral)'],
+  ];
+  foreach ($links as $l): ?>
+  <a href="<?= $l['href'] ?>"
+     class="card flex items-center gap-12"
+     style="text-decoration:none;transition:border-color .2s,transform .15s;cursor:pointer"
+     onmouseover="this.style.borderColor='<?= $l['color'] ?>55';this.style.transform='translateY(-2px)'"
+     onmouseout="this.style.borderColor='var(--bg-border)';this.style.transform=''">
+    <div style="width:38px;height:38px;border-radius:10px;background:<?= $l['color'] ?>18;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <i data-lucide="<?= $l['icon'] ?>" style="width:18px;height:18px;color:<?= $l['color'] ?>"></i>
+    </div>
+    <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--text-primary)"><?= $l['label'] ?></span>
+  </a>
+  <?php endforeach; ?>
+</div>
+
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>
