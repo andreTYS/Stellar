@@ -46,7 +46,7 @@ $queryError = $_GET['error'] ?? '';
       --text-muted: #8898aa;
       --border:     #e4e8f0;
       --bg-input:   #ffffff;
-      --bg-right:   #f8f9fc;
+      --bg-right:   #f0f2f8;
     }
 
     /* ── Reset ─────────────────────────────────────────────── */
@@ -57,6 +57,40 @@ $queryError = $_GET['error'] ?? '';
       overflow: hidden;
       font-family: 'Inter', system-ui, sans-serif;
       -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Animated background ────────────────────────────────── */
+    @keyframes gradientShift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes floatOrb1 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33%       { transform: translate(40px, -60px) scale(1.08); }
+      66%       { transform: translate(-30px, 40px) scale(0.94); }
+    }
+
+    @keyframes floatOrb2 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      40%       { transform: translate(-50px, 30px) scale(1.12); }
+      75%       { transform: translate(30px, -40px) scale(0.92); }
+    }
+
+    @keyframes floatOrb3 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50%       { transform: translate(20px, 50px) scale(1.06); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes shimmerBorder {
+      0%   { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
     }
 
     /* ── Split layout ──────────────────────────────────────── */
@@ -70,32 +104,79 @@ $queryError = $_GET['error'] ?? '';
     /* LEFT PANEL                                               */
     /* ──────────────────────────────────────────────────────── */
     .login-left {
-      width: 45%;
+      width: 48%;
       flex-shrink: 0;
-      background: #1a1f36;
+      background: #0d1024;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 52px 52px 40px;
+      padding: 52px 56px 44px;
       position: relative;
       overflow: hidden;
     }
 
-    /* Subtle decorative radial glows */
+    /* Animated gradient base layer */
     .login-left::before {
       content: '';
       position: absolute;
-      top: -140px; left: -100px;
-      width: 520px; height: 520px;
-      background: radial-gradient(circle, rgba(67,97,238,.13) 0%, transparent 68%);
+      inset: 0;
+      background: linear-gradient(135deg, #0d1024 0%, #141830 40%, #1a2050 70%, #0d1024 100%);
+      background-size: 300% 300%;
+      animation: gradientShift 12s ease infinite;
+      z-index: 0;
+    }
+
+    /* Orb 1 — vivid blue */
+    .orb-1 {
+      position: absolute;
+      top: -120px;
+      left: -80px;
+      width: 480px;
+      height: 480px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(67,97,238,.42) 0%, rgba(67,97,238,.10) 50%, transparent 75%);
+      animation: floatOrb1 14s ease-in-out infinite;
+      z-index: 1;
       pointer-events: none;
     }
-    .login-left::after {
-      content: '';
+
+    /* Orb 2 — purple */
+    .orb-2 {
       position: absolute;
-      bottom: -100px; right: -80px;
-      width: 380px; height: 380px;
-      background: radial-gradient(circle, rgba(99,102,241,.10) 0%, transparent 68%);
+      bottom: -80px;
+      right: -60px;
+      width: 420px;
+      height: 420px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(139,92,246,.38) 0%, rgba(139,92,246,.08) 50%, transparent 72%);
+      animation: floatOrb2 18s ease-in-out infinite;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Orb 3 — teal accent */
+    .orb-3 {
+      position: absolute;
+      top: 45%;
+      left: 55%;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(6,182,212,.22) 0%, transparent 70%);
+      animation: floatOrb3 10s ease-in-out infinite;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Subtle grid pattern overlay */
+    .left-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: 2;
       pointer-events: none;
     }
 
@@ -105,14 +186,14 @@ $queryError = $_GET['error'] ?? '';
       align-items: center;
       gap: 14px;
       position: relative;
-      z-index: 1;
+      z-index: 10;
     }
 
     .logo-mark {
-      width: 44px;
-      height: 44px;
-      background: var(--accent);
-      border-radius: 50%;
+      width: 46px;
+      height: 46px;
+      background: linear-gradient(135deg, #4361ee 0%, #6366f1 100%);
+      border-radius: 13px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -122,6 +203,7 @@ $queryError = $_GET['error'] ?? '';
       color: #ffffff;
       letter-spacing: -0.02em;
       flex-shrink: 0;
+      box-shadow: 0 4px 20px rgba(67,97,238,.45);
     }
 
     .brand-name {
@@ -129,7 +211,7 @@ $queryError = $_GET['error'] ?? '';
       font-weight: 800;
       font-size: 18px;
       color: #ffffff;
-      letter-spacing: 0.01em;
+      letter-spacing: 0.02em;
     }
 
     /* ── Center content ────────────────────────────────────── */
@@ -139,33 +221,107 @@ $queryError = $_GET['error'] ?? '';
       flex-direction: column;
       justify-content: center;
       position: relative;
-      z-index: 1;
+      z-index: 10;
       padding: 40px 0;
+    }
+
+    .left-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(67,97,238,.18);
+      border: 1px solid rgba(67,97,238,.35);
+      border-radius: 99px;
+      padding: 5px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #818cf8;
+      margin-bottom: 22px;
+      width: fit-content;
+    }
+
+    .left-eyebrow-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4361ee;
+      animation: pulse-dot 2s ease infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .5; transform: scale(.8); }
     }
 
     .left-heading {
       font-family: 'Syne', sans-serif;
       font-weight: 800;
-      font-size: 36px;
-      line-height: 1.15;
+      font-size: 40px;
+      line-height: 1.12;
       color: #ffffff;
-      margin-bottom: 14px;
-      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+      letter-spacing: -0.03em;
+      animation: fadeInUp .7s ease both;
+    }
+
+    .left-heading span {
+      background: linear-gradient(135deg, #818cf8, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .left-subtitle {
       font-size: 14.5px;
-      color: #8898aa;
-      line-height: 1.6;
-      max-width: 300px;
-      margin-bottom: 48px;
+      color: #7888a0;
+      line-height: 1.65;
+      max-width: 340px;
+      margin-bottom: 40px;
+      animation: fadeInUp .7s .1s ease both;
+    }
+
+    /* ── Stats row ─────────────────────────────────────────── */
+    .stats-row {
+      display: flex;
+      gap: 28px;
+      margin-bottom: 40px;
+      animation: fadeInUp .7s .18s ease both;
+    }
+
+    .stat-pill {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .stat-pill-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1;
+    }
+
+    .stat-pill-label {
+      font-size: 11px;
+      color: #4e6080;
+      letter-spacing: .04em;
+    }
+
+    .stat-divider {
+      width: 1px;
+      background: rgba(255,255,255,.07);
+      align-self: stretch;
     }
 
     /* ── Feature list ──────────────────────────────────────── */
     .feature-list {
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 16px;
+      animation: fadeInUp .7s .26s ease both;
     }
 
     .feature-row {
@@ -177,9 +333,9 @@ $queryError = $_GET['error'] ?? '';
     .feature-icon-wrap {
       width: 36px;
       height: 36px;
-      border-radius: 9px;
-      background: rgba(67,97,238,.15);
-      border: 1px solid rgba(67,97,238,.25);
+      border-radius: 10px;
+      background: rgba(67,97,238,.14);
+      border: 1px solid rgba(67,97,238,.28);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -189,7 +345,7 @@ $queryError = $_GET['error'] ?? '';
     .feature-icon-wrap svg {
       width: 16px;
       height: 16px;
-      stroke: #4361ee;
+      stroke: #818cf8;
       stroke-width: 2;
       fill: none;
       stroke-linecap: round;
@@ -197,17 +353,17 @@ $queryError = $_GET['error'] ?? '';
     }
 
     .feature-text {
-      font-size: 14px;
-      color: #c4cdd6;
+      font-size: 13.5px;
+      color: #a0b0c4;
       line-height: 1.4;
     }
 
     /* ── Left footer ───────────────────────────────────────── */
     .left-footer {
       font-size: 12px;
-      color: #3d4a5c;
+      color: #2a3550;
       position: relative;
-      z-index: 1;
+      z-index: 10;
     }
 
     /* ──────────────────────────────────────────────────────── */
@@ -221,32 +377,71 @@ $queryError = $_GET['error'] ?? '';
       justify-content: center;
       padding: 40px 32px;
       overflow-y: auto;
+      position: relative;
     }
 
-    /* ── Form card ─────────────────────────────────────────── */
+    /* Subtle right-panel background decoration */
+    .login-right::before {
+      content: '';
+      position: absolute;
+      top: -200px;
+      right: -200px;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(67,97,238,.06) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    /* ── Form card — glassmorphism ──────────────────────────── */
     .form-card {
       width: 100%;
-      max-width: 420px;
-      background: #ffffff;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      padding: 40px 36px;
-      box-shadow: 0 4px 24px rgba(26,31,54,.06);
+      max-width: 428px;
+      background: rgba(255,255,255,.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.9);
+      padding: 44px 40px;
+      box-shadow:
+        0 8px 40px rgba(26,31,54,.10),
+        0 2px 8px rgba(26,31,54,.05),
+        inset 0 1px 0 rgba(255,255,255,.8);
+      position: relative;
+      animation: fadeInUp .6s .05s ease both;
+    }
+
+    /* Animated gradient border on the card */
+    .form-card::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 21px;
+      background: linear-gradient(90deg, #4361ee, #8b5cf6, #38bdf8, #4361ee);
+      background-size: 200% 100%;
+      opacity: 0;
+      transition: opacity .3s;
+      z-index: -1;
+      animation: shimmerBorder 3s linear infinite;
+    }
+
+    .form-card:focus-within::before {
+      opacity: .45;
     }
 
     .form-heading {
       font-family: 'Syne', sans-serif;
       font-weight: 800;
-      font-size: 24px;
+      font-size: 26px;
       color: var(--text-dark);
       margin-bottom: 6px;
-      letter-spacing: -0.01em;
+      letter-spacing: -0.02em;
     }
 
     .form-subheading {
       font-size: 14px;
       color: var(--text-muted);
-      margin-bottom: 28px;
+      margin-bottom: 30px;
     }
 
     /* ── Alerts ────────────────────────────────────────────── */
@@ -304,25 +499,26 @@ $queryError = $_GET['error'] ?? '';
 
     .field-input {
       width: 100%;
-      background: var(--bg-input);
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      padding: 11px 14px;
+      background: rgba(255,255,255,.7);
+      border: 1.5px solid #dde3ef;
+      border-radius: 11px;
+      padding: 12px 14px;
       font-size: 14px;
       color: var(--text-dark);
       font-family: 'Inter', sans-serif;
-      transition: border-color .15s, box-shadow .15s;
+      transition: border-color .2s, box-shadow .2s, background .2s;
       outline: none;
       appearance: none;
     }
 
     .field-input::placeholder {
-      color: #c0c8d4;
+      color: #bac3d0;
     }
 
     .field-input:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(67,97,238,.12);
+      background: rgba(255,255,255,.95);
+      box-shadow: 0 0 0 3px rgba(67,97,238,.14), 0 2px 8px rgba(67,97,238,.08);
     }
 
     .field-input.has-toggle {
@@ -335,16 +531,16 @@ $queryError = $_GET['error'] ?? '';
       right: 0;
       top: 0;
       height: 100%;
-      width: 42px;
+      width: 44px;
       display: flex;
       align-items: center;
       justify-content: center;
       background: transparent;
       border: none;
       cursor: pointer;
-      color: #c0c8d4;
+      color: #bac3d0;
       transition: color .15s;
-      border-radius: 0 10px 10px 0;
+      border-radius: 0 11px 11px 0;
     }
 
     .pwd-toggle:hover {
@@ -365,27 +561,28 @@ $queryError = $_GET['error'] ?? '';
     /* ── Submit button ─────────────────────────────────────── */
     .btn-login {
       width: 100%;
-      padding: 12px 20px;
-      background: var(--accent);
+      padding: 13px 20px;
+      background: linear-gradient(135deg, #4361ee 0%, #6366f1 100%);
       color: #ffffff;
       font-family: 'Syne', sans-serif;
       font-weight: 700;
       font-size: 15px;
       letter-spacing: 0.01em;
       border: none;
-      border-radius: 10px;
+      border-radius: 11px;
       cursor: pointer;
-      transition: background .15s, transform .1s, box-shadow .15s;
+      transition: opacity .15s, transform .1s, box-shadow .2s;
       margin-top: 4px;
+      box-shadow: 0 4px 20px rgba(67,97,238,.30);
     }
 
     .btn-login:hover {
-      background: var(--accent-h);
-      box-shadow: 0 4px 20px rgba(67,97,238,.28);
+      opacity: .92;
+      box-shadow: 0 6px 28px rgba(67,97,238,.42);
     }
 
     .btn-login:active {
-      transform: scale(.985);
+      transform: scale(.98);
     }
 
     /* ── Demo credentials ──────────────────────────────────── */
@@ -397,19 +594,19 @@ $queryError = $_GET['error'] ?? '';
       display: flex;
       align-items: center;
       gap: 12px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
     .demo-separator-line {
       flex: 1;
       height: 1px;
-      background: var(--border);
+      background: #dde3ef;
     }
 
     .demo-separator-text {
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 600;
-      letter-spacing: .06em;
+      letter-spacing: .07em;
       text-transform: uppercase;
       color: var(--text-muted);
       white-space: nowrap;
@@ -427,18 +624,18 @@ $queryError = $_GET['error'] ?? '';
       align-items: flex-start;
       gap: 2px;
       padding: 10px 12px;
-      background: var(--bg-right);
-      border: 1.5px solid var(--border);
-      border-radius: 9px;
+      background: rgba(255,255,255,.6);
+      border: 1.5px solid #dde3ef;
+      border-radius: 10px;
       cursor: pointer;
       transition: border-color .15s, background .15s, box-shadow .15s;
       text-align: left;
     }
 
     .demo-btn:hover {
-      background: #eef2ff;
+      background: rgba(255,255,255,.95);
       border-color: var(--accent);
-      box-shadow: 0 2px 8px rgba(67,97,238,.10);
+      box-shadow: 0 2px 10px rgba(67,97,238,.12);
     }
 
     .demo-btn-role {
@@ -459,9 +656,7 @@ $queryError = $_GET['error'] ?? '';
 
     /* ── Responsive: mobile stacks ─────────────────────────── */
     @media (max-width: 768px) {
-      html, body {
-        overflow: auto;
-      }
+      html, body { overflow: auto; }
 
       .login-split {
         flex-direction: column;
@@ -471,36 +666,21 @@ $queryError = $_GET['error'] ?? '';
 
       .login-left {
         width: 100%;
-        padding: 28px 24px 24px;
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
+        padding: 28px 24px 28px;
+        min-height: auto;
       }
-
-      .login-left::before,
-      .login-left::after { display: none; }
 
       .left-center,
       .left-footer { display: none; }
 
-      .left-brand {
-        flex-direction: row;
-        align-items: center;
-      }
-
-      .left-heading { display: none; }
-
       .login-right {
         flex: none;
         padding: 32px 20px 52px;
-        background: var(--bg-right);
       }
 
       .form-card {
-        border: none;
-        box-shadow: none;
-        padding: 0;
-        background: transparent;
+        padding: 32px 24px;
+        background: rgba(255,255,255,.96);
       }
     }
   </style>
@@ -511,6 +691,12 @@ $queryError = $_GET['error'] ?? '';
 
   <!-- ── LEFT PANEL ───────────────────────────────────────────── -->
   <aside class="login-left">
+    <!-- Animated orbs -->
+    <div class="orb-1"></div>
+    <div class="orb-2"></div>
+    <div class="orb-3"></div>
+    <!-- Grid overlay -->
+    <div class="left-grid"></div>
 
     <!-- Top: Brand -->
     <div class="left-brand">
@@ -520,22 +706,42 @@ $queryError = $_GET['error'] ?? '';
 
     <!-- Middle: Heading + Features -->
     <div class="left-center">
-      <h2 class="left-heading">Aprende STEAM<br>a tu ritmo</h2>
-      <p class="left-subtitle">Plataforma educativa para instituciones de Moquegua, Peru</p>
+      <div class="left-eyebrow">
+        <span class="left-eyebrow-dot"></span>
+        Plataforma Educativa
+      </div>
+      <h2 class="left-heading">Plataforma<br>Educativa <span>STEAM</span></h2>
+      <p class="left-subtitle">Aprende ciencia, tecnología, ingeniería, arte y matemáticas con seguimiento en tiempo real.</p>
+
+      <!-- Stats row -->
+      <div class="stats-row">
+        <div class="stat-pill">
+          <span class="stat-pill-value">5</span>
+          <span class="stat-pill-label">cursos</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-pill">
+          <span class="stat-pill-value">15</span>
+          <span class="stat-pill-label">módulos</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-pill">
+          <span class="stat-pill-value">5</span>
+          <span class="stat-pill-label">roles</span>
+        </div>
+      </div>
 
       <div class="feature-list">
 
         <div class="feature-row">
           <div class="feature-icon-wrap">
-            <!-- Book icon -->
             <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
           </div>
-          <span class="feature-text">5 cursos STEAM integrados</span>
+          <span class="feature-text">5 cursos STEAM integrados con contenido interactivo</span>
         </div>
 
         <div class="feature-row">
           <div class="feature-icon-wrap">
-            <!-- Chart bar icon -->
             <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
           </div>
           <span class="feature-text">Seguimiento de progreso en tiempo real</span>
@@ -543,18 +749,16 @@ $queryError = $_GET['error'] ?? '';
 
         <div class="feature-row">
           <div class="feature-icon-wrap">
-            <!-- Award icon -->
             <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
           </div>
-          <span class="feature-text">Certificados al completar modulos</span>
+          <span class="feature-text">Certificados digitales al completar módulos</span>
         </div>
 
         <div class="feature-row">
           <div class="feature-icon-wrap">
-            <!-- Users icon -->
             <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           </div>
-          <span class="feature-text">Gestion multi-rol para docentes y practicantes</span>
+          <span class="feature-text">Gestión multi-rol: admin, docentes y practicantes</span>
         </div>
 
       </div>
@@ -569,7 +773,7 @@ $queryError = $_GET['error'] ?? '';
   <main class="login-right">
     <div class="form-card">
 
-      <h1 class="form-heading">Iniciar sesion</h1>
+      <h1 class="form-heading">Iniciar sesión</h1>
       <p class="form-subheading">Ingresa tus credenciales para acceder</p>
 
       <?php if ($error): ?>
@@ -606,7 +810,7 @@ $queryError = $_GET['error'] ?? '';
           />
         </div>
 
-        <div class="field-group" style="margin-bottom:24px">
+        <div class="field-group" style="margin-bottom:26px">
           <label class="field-label" for="login-password">Contrase&ntilde;a</label>
           <div class="field-input-wrap">
             <input
