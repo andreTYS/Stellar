@@ -390,10 +390,10 @@ require_once __DIR__ . '/../includes/header.php';
     <p class="form-label mb-12">Elige el formato de presentación</p>
     <?php
     $allFormats = [
-      ['dibujo_cientifico', '🔬', 'Dibujo científico'],
-      ['mural_digital',     '🎨', 'Mural digital'],
-      ['cuento_ilustrado',  '📖', 'Cuento ilustrado'],
-      ['prototipo',         '⚙️', 'Prototipo'],
+      ['dibujo_cientifico', 'microscope',  'Dibujo científico'],
+      ['mural_digital',     'image',       'Mural digital'],
+      ['cuento_ilustrado',  'book-open',   'Cuento ilustrado'],
+      ['prototipo',         'cog',         'Prototipo'],
     ];
     $allowedFormats = !empty($contenido['formatos']) ? (array)$contenido['formatos'] : array_column($allFormats, 0);
     ?>
@@ -404,7 +404,7 @@ require_once __DIR__ . '/../includes/header.php';
       <button class="format-btn" data-format="<?= $fval ?>"
               <?= !$isEnabled ? 'disabled' : '' ?>
               style="padding:16px 12px;background:var(--bg-elevated);border:2px solid var(--bg-border);border-radius:12px;cursor:<?= $isEnabled?'pointer':'not-allowed' ?>;text-align:center;transition:all .2s;<?= !$isEnabled?'opacity:.4;':'' ?>">
-        <div style="font-size:26px;margin-bottom:6px;"><?= $ficon ?></div>
+        <div style="margin-bottom:8px;color:var(--text-secondary)"><i data-lucide="<?= $ficon ?>" style="width:26px;height:26px"></i></div>
         <div style="font-size:12px;color:var(--text-secondary);font-weight:600;"><?= $flabel ?></div>
       </button>
       <?php endforeach; ?>
@@ -545,7 +545,9 @@ document.getElementById('btn-ver-resultado')?.addEventListener('click', function
   const resultDiv = document.getElementById('quiz-resultado');
   resultDiv.style.display = 'block';
 
-  const starStr = '★'.repeat(stars) + '<span style="color:var(--bg-border)">★</span>'.repeat(Math.max(0, 3 - stars));
+  const starSvgFilled = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" style="color:var(--gold);display:inline-block"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+  const starSvgEmpty  = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--bg-border);display:inline-block"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+  const starStr = starSvgFilled.repeat(stars) + starSvgEmpty.repeat(Math.max(0, 3 - stars));
   document.getElementById('resultado-estrellas').innerHTML = starStr;
   document.getElementById('resultado-titulo').textContent =
     stars === 3 ? '¡Perfecto!' : stars === 2 ? '¡Muy bien!' : '¡Buen intento!';
@@ -643,7 +645,7 @@ async function subirEntregable(moduloId) {
   // 2. Mostrar modal de celebracion
   const stars = <?= $estrellas > 0 ? $estrellas : 1 ?>;
   document.getElementById('modal-estrellas').innerHTML =
-    '★'.repeat(stars) + '<span style="opacity:.25">★</span>'.repeat(Math.max(0, 3 - stars));
+    starSvgFilled.repeat(stars) + starSvgEmpty.repeat(Math.max(0, 3 - stars));
   document.getElementById('modal-celebracion').classList.add('open');
   if (typeof lucide !== 'undefined') lucide.createIcons();
 
