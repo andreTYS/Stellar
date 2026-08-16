@@ -52,7 +52,7 @@ require_once __DIR__ . '/../includes/header.php';
   <?php if ($totalEstrellas > 0): ?>
   <!-- Total stars badge -->
   <div class="stat-card flex items-center gap-12" style="padding:14px 20px;">
-    <div style="font-size:28px;">⭐</div>
+    <div style="color:var(--gold)"><i data-lucide="star" style="width:28px;height:28px"></i></div>
     <div>
       <div class="stat-value" style="color:var(--gold);font-size:26px;"><?= $totalEstrellas ?></div>
       <div class="stat-label">estrellas ganadas</div>
@@ -64,7 +64,7 @@ require_once __DIR__ . '/../includes/header.php';
 <!-- Empty state -->
 <?php if (empty($certs)): ?>
 <div class="empty-state">
-  <div class="empty-icon">🎓</div>
+  <div style="width:72px;height:72px;border-radius:50%;background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;color:var(--text-muted)"><i data-lucide="graduation-cap" style="width:36px;height:36px"></i></div>
   <h3>¡Aún no tienes certificados!</h3>
   <p>Completa los 4 pasos de cualquier módulo — historia, actividad, quiz y entregable — para recibir tu primer certificado.</p>
   <a href="<?= BASE_URL ?>/estudiante/index.php" class="btn btn-primary" style="margin-top:24px;text-decoration:none;">
@@ -92,7 +92,9 @@ require_once __DIR__ . '/../includes/header.php';
       <div style="position:absolute;top:-30px;right:-30px;width:100px;height:100px;border-radius:50%;background:<?= $color ?>12;pointer-events:none;"></div>
       <div style="position:absolute;bottom:-20px;left:-20px;width:70px;height:70px;border-radius:50%;background:<?= $color ?>0e;pointer-events:none;"></div>
 
-      <div style="font-size:44px;margin-bottom:10px;position:relative;"><?= $icono ?></div>
+      <div style="width:64px;height:64px;border-radius:16px;background:<?= $color ?>;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:#fff;position:relative;">
+        <i data-lucide="award" style="width:30px;height:30px"></i>
+      </div>
       <span style="background:<?= $color ?>30;color:<?= $color ?>;border:1px solid <?= $color ?>55;padding:3px 14px;border-radius:20px;font-size:11px;font-weight:700;position:relative;">
         <?= sanitize($cert['curso_nombre']) ?>
       </span>
@@ -123,18 +125,12 @@ require_once __DIR__ . '/../includes/header.php';
 
       <!-- Download button -->
       <div style="margin-top:auto;padding-top:8px;">
-        <?php if ($hasPdf): ?>
-        <a href="<?= sanitize($cert['pdf_url']) ?>" target="_blank" rel="noopener"
+        <a href="<?= BASE_URL ?>/estudiante/certificado_ver.php?cert_id=<?= (int)$cert['id'] ?>"
+           target="_blank" rel="noopener"
            class="btn btn-primary btn-block" style="text-decoration:none;">
-          <i data-lucide="download" style="width:15px;height:15px"></i>
-          Descargar PDF
+          <i data-lucide="award" style="width:15px;height:15px"></i>
+          Ver certificado
         </a>
-        <?php else: ?>
-        <div style="text-align:center;padding:10px;background:var(--bg-elevated);border-radius:10px;color:var(--text-muted);font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;">
-          <i data-lucide="loader" style="width:13px;height:13px"></i>
-          PDF en generación…
-        </div>
-        <?php endif; ?>
       </div>
     </div>
   </div>
@@ -153,7 +149,9 @@ $remaining = max(0, $totalModulos - $totalCerts);
 <?php if ($remaining === 0 && $totalCerts > 0): ?>
 <!-- All done! Trophy banner -->
 <div class="card" style="text-align:center;padding:40px 24px;border:2px solid var(--gold)44;background:linear-gradient(135deg,rgba(245,200,66,.07),transparent);">
-  <div style="font-size:56px;margin-bottom:12px;">🏆</div>
+  <div style="width:72px;height:72px;border-radius:50%;background:rgba(245,200,66,.15);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+    <i data-lucide="trophy" style="width:36px;height:36px;color:var(--gold)"></i>
+  </div>
   <h2 style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--gold);margin-bottom:8px;">
     ¡Completaste todos los módulos!
   </h2>
@@ -165,7 +163,9 @@ $remaining = max(0, $totalModulos - $totalCerts);
 <?php else: ?>
 <!-- Keep going banner -->
 <div class="card flex items-center gap-16" style="border:1px solid var(--bg-border);flex-wrap:wrap;">
-  <div style="font-size:36px;flex-shrink:0;">🚀</div>
+  <div style="width:52px;height:52px;border-radius:50%;background:rgba(74,158,255,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+    <i data-lucide="rocket" style="width:24px;height:24px;color:var(--blue)"></i>
+  </div>
   <div class="flex-1">
     <p style="font-weight:700;font-family:'Syne',sans-serif;font-size:15px;margin-bottom:4px;">
       ¡Sigue adelante!

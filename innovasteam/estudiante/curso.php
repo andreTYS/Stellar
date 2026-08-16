@@ -128,7 +128,7 @@ include __DIR__ . '/../includes/header.php';
         $numberStyle  = "background:var(--bg-elevated);color:var(--text-muted)";
     }
 
-    $duracion = !empty($modulo['duracion_min']) ? (int)$modulo['duracion_min'] . ' min' : '';
+    $duracion = !empty($modulo['minutos_estimados']) ? (int)$modulo['minutos_estimados'] . ' min' : '';
   ?>
 
   <?php if ($desbloqueado): ?>

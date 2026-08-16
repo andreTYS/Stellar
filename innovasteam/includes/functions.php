@@ -344,10 +344,27 @@ function formatoLabel(string $formato): string
 
 function estrellasHtml(int $estrellas, int $max = 3): string
 {
+    $filled = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="color:var(--gold);display:inline-block;vertical-align:middle"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+    $empty  = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--bg-border);display:inline-block;vertical-align:middle"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
     $html = '';
     for ($i = 1; $i <= $max; $i++) {
-        $class = $i <= $estrellas ? 'star-filled' : 'star-empty';
-        $html .= "<span class=\"{$class}\">★</span>";
+        $html .= $i <= $estrellas ? $filled : $empty;
     }
     return $html;
+}
+
+function iconoLucideCurso(string $iconoSlug): string
+{
+    // Maps Lucide icon name → inline SVG path
+    $paths = [
+        'calculator'     => 'M4 2h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM8 6v4M12 6v4M16 6v4M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01',
+        'flask-conical'  => 'M14 2v6l3.79 6.89A4 4 0 0 1 14.17 22H9.83a4 4 0 0 1-3.62-7.11L10 8V2M8.5 2h7',
+        'monitor'        => 'M20 3H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zM8 21h8M12 17v4',
+        'palette'        => 'M12 2a10 10 0 1 0 10 10 4 4 0 0 1-4-4 4 4 0 0 1-4-4',
+        'cog'            => 'M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
+        'book-open'      => 'M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z',
+    ];
+    $path = $paths[$iconoSlug] ?? $paths['book-open'];
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+         . '<path d="' . $path . '"/></svg>';
 }

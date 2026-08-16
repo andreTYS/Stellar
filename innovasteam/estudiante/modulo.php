@@ -29,8 +29,9 @@ if (!$modulo) {
     redirect(BASE_URL . '/estudiante/index.php');
 }
 
-$color = htmlspecialchars($modulo['color_hex'] ?? '#4a9eff', ENT_QUOTES, 'UTF-8');
-$icono = htmlspecialchars($modulo['icono'] ?? '📘', ENT_QUOTES, 'UTF-8');
+$color      = htmlspecialchars($modulo['color_hex'] ?? '#4a9eff', ENT_QUOTES, 'UTF-8');
+$lucideIcon = $modulo['icono'] ?? 'book-open';
+$duracionMin = (int)($modulo['minutos_estimados'] ?? 0);
 
 // ── Fetch 4 pasos (with JSON decoded contenido) ──────────────
 $pasos = getPasosByModulo($moduloId);
@@ -82,7 +83,9 @@ require_once __DIR__ . '/../includes/header.php';
   <!-- Module header + step progress -->
   <div class="card mb-24" style="border-top:4px solid <?= $color ?>;">
     <div class="flex items-center gap-16 mb-20">
-      <span style="font-size:36px;flex-shrink:0;"><?= $icono ?></span>
+      <span style="width:52px;height:52px;border-radius:14px;background:<?= $color ?>;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff">
+        <i data-lucide="<?= sanitize($lucideIcon) ?>" style="width:26px;height:26px"></i>
+      </span>
       <div class="flex-1">
         <span style="background:<?= $color ?>22;color:<?= $color ?>;border:1px solid <?= $color ?>44;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;display:inline-block;margin-bottom:6px;">
           <?= sanitize($modulo['curso_nombre']) ?>
@@ -122,9 +125,11 @@ require_once __DIR__ . '/../includes/header.php';
   <?php if ($completado): ?>
   <!-- COMPLETED STATE -->
   <div class="card" style="text-align:center;padding:52px 24px;border:2px solid <?= $color ?>44;">
-    <div style="font-size:72px;margin-bottom:16px;">🎉</div>
+    <div style="width:80px;height:80px;border-radius:50%;background:<?= $color ?>18;border:2px solid <?= $color ?>44;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+      <i data-lucide="trophy" style="width:36px;height:36px;color:<?= $color ?>"></i>
+    </div>
     <h2 style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--text-primary);margin-bottom:12px;">¡Módulo completado!</h2>
-    <div style="font-size:36px;margin:12px 0;letter-spacing:4px;"><?= str_repeat('★', $estrellas) ?><span style="color:var(--bg-border);"><?= str_repeat('★', max(0,3-$estrellas)) ?></span></div>
+    <div style="display:flex;gap:4px;justify-content:center;margin:12px 0;"><?= estrellasHtml($estrellas) ?></div>
     <p style="color:var(--text-secondary);font-size:15px;margin-bottom:28px;">
       Obtuviste <strong style="color:var(--gold);"><?= $estrellas ?> estrella<?= $estrellas!=1?'s':'' ?></strong> en el quiz.
     </p>
@@ -154,7 +159,7 @@ require_once __DIR__ . '/../includes/header.php';
 
     <!-- Header row with TTS button -->
     <div class="flex items-center gap-12 mb-16" style="flex-wrap:wrap;row-gap:10px;">
-      <span style="background:<?= $color ?>22;width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">📖</span>
+      <span style="background:<?= $color ?>22;width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:<?= $color ?>"><i data-lucide="book-open" style="width:20px;height:20px"></i></span>
       <div class="flex-1">
         <h2 style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text-primary);">La historia</h2>
         <p style="font-size:12px;color:var(--text-muted);margin-top:2px;">Lee con atención antes de continuar</p>
@@ -257,7 +262,7 @@ require_once __DIR__ . '/../includes/header.php';
   <?php elseif ($paso['tipo'] === 'actividad'): ?>
   <div class="card" id="paso-actividad">
     <div class="flex items-center gap-12 mb-20">
-      <span style="background:<?= $color ?>22;width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🔬</span>
+      <span style="background:<?= $color ?>22;width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:<?= $color ?>"><i data-lucide="flask-conical" style="width:20px;height:20px"></i></span>
       <h2 style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;">La actividad</h2>
     </div>
 
@@ -303,7 +308,7 @@ require_once __DIR__ . '/../includes/header.php';
   <?php elseif ($paso['tipo'] === 'quiz'): ?>
   <div class="card" id="paso-quiz">
     <div class="flex items-center gap-12 mb-20">
-      <span style="background:<?= $color ?>22;width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🧠</span>
+      <span style="background:<?= $color ?>22;width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:<?= $color ?>"><i data-lucide="brain" style="width:20px;height:20px"></i></span>
       <h2 style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;">Quiz</h2>
       <span style="margin-left:auto;font-size:13px;color:var(--text-muted);" id="quiz-counter">
         Pregunta <span id="q-num">1</span> de <?= count($quizPreguntas) ?>
@@ -371,7 +376,7 @@ require_once __DIR__ . '/../includes/header.php';
   <?php elseif ($paso['tipo'] === 'entregable'): ?>
   <div class="card" id="paso-entregable">
     <div class="flex items-center gap-12 mb-20">
-      <span style="background:<?= $color ?>22;width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">📁</span>
+      <span style="background:<?= $color ?>22;width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:<?= $color ?>"><i data-lucide="folder" style="width:20px;height:20px"></i></span>
       <h2 style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;">Tu entregable</h2>
     </div>
 
@@ -412,7 +417,7 @@ require_once __DIR__ . '/../includes/header.php';
 
       <div id="drop-zone" onclick="document.getElementById('archivo-input').click()"
            style="border:2px dashed var(--bg-border);border-radius:12px;padding:36px 24px;text-align:center;cursor:pointer;transition:border-color .2s;margin-bottom:16px;">
-        <p style="font-size:36px;margin-bottom:8px;">📷</p>
+        <div style="margin-bottom:8px;color:var(--text-muted)"><i data-lucide="camera" style="width:36px;height:36px"></i></div>
         <p style="color:var(--text-secondary);font-size:14px;margin-bottom:4px;">Haz clic para seleccionar una foto de tu trabajo</p>
         <p style="color:var(--text-muted);font-size:12px;">JPG, PNG, WEBP — máx <?= MAX_UPLOAD_MB ?> MB</p>
         <input type="file" id="archivo-input" name="archivo" accept="image/*"

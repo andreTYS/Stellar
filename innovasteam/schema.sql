@@ -111,7 +111,7 @@ CREATE TABLE cursos (
   nombre              VARCHAR(100) NOT NULL,
   slug                VARCHAR(80)  NOT NULL UNIQUE,
   color_hex           VARCHAR(10),
-  icono               VARCHAR(10),
+  icono               VARCHAR(30),
   descripcion         TEXT,
   competencias_cneb   TEXT,
   activo              TINYINT(1)   NOT NULL DEFAULT 1
@@ -259,11 +259,11 @@ INSERT INTO colegios (nombre, distrito, ugel_codigo, director, telefono) VALUES
 -- cursos  (id 1-5 in insertion order)
 -- ---------------------------------------------------------------------------
 INSERT INTO cursos (nombre, slug, color_hex, icono, descripcion) VALUES
-('Matemática',   'matematica',   '#f5c842', '📐', 'Números, operaciones, estadística y geometría desde el entorno moqueguano'),
-('Comunicación', 'comunicacion', '#4a9eff', '📖', 'Lectura, escritura y expresión oral conectadas con la cultura local'),
-('Arte',         'arte',         '#3ecf8e', '🎨', 'Creación artística, apreciación cultural y expresión visual'),
-('Ingeniería',   'ingenieria',   '#a78bfa', '⚙️', 'Diseño, construcción y resolución de problemas tecnológicos'),
-('Inglés',       'ingles',       '#ff6b6b', '🌍', 'Comunicación básica en inglés conectada con el mundo global');
+('Matemática',   'matematica',   '#f5c842', 'calculator',    'Números, operaciones, estadística y geometría desde el entorno moqueguano'),
+('Comunicación', 'comunicacion', '#4a9eff', 'book-open',     'Lectura, escritura y expresión oral conectadas con la cultura local'),
+('Arte',         'arte',         '#3ecf8e', 'palette',       'Creación artística, apreciación cultural y expresión visual'),
+('Ingeniería',   'ingenieria',   '#a78bfa', 'cog',           'Diseño, construcción y resolución de problemas tecnológicos'),
+('Inglés',       'ingles',       '#ff6b6b', 'globe',         'Comunicación básica en inglés conectada con el mundo global');
 
 -- ---------------------------------------------------------------------------
 -- usuarios  (password_hash = bcrypt of 'password' — replace with hash of '1234')
