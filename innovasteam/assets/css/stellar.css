@@ -1544,3 +1544,13 @@ a.module-item:hover {
 .topbar-user-btn:hover {
   background: var(--bg-hover) !important;
 }
+
+/* ── TTS Wave Animation ─────────────────────────────────── */
+@keyframes wave {
+  0%, 100% { transform: scaleY(1); }
+  50%       { transform: scaleY(1.8); }
+}
+
+/* ── Historia reading card enhancements ──────────────────── */
+#historia-texto p { margin-bottom: 14px; }
+#historia-texto p:last-child { margin-bottom: 0; }

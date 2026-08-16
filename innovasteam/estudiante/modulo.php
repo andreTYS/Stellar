@@ -151,19 +151,102 @@ require_once __DIR__ . '/../includes/header.php';
   <!-- ══ PASO 1: HISTORIA ══ -->
   <?php if ($paso['tipo'] === 'historia'): ?>
   <div class="card" id="paso-historia">
-    <div class="flex items-center gap-12 mb-20">
-      <span style="background:<?= $color ?>22;width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">📖</span>
-      <h2 style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;">La historia</h2>
+
+    <!-- Header row with TTS button -->
+    <div class="flex items-center gap-12 mb-16" style="flex-wrap:wrap;row-gap:10px;">
+      <span style="background:<?= $color ?>22;width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">📖</span>
+      <div class="flex-1">
+        <h2 style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text-primary);">La historia</h2>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:2px;">Lee con atención antes de continuar</p>
+      </div>
+      <?php
+        $rawNarrativa = $contenido['narrativa'] ?? '';
+        $wordCount    = str_word_count(strip_tags($rawNarrativa));
+        $readMin      = max(1, (int)ceil($wordCount / 180));
+      ?>
+      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+        <span style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:5px;">
+          <i data-lucide="clock" style="width:13px;height:13px"></i>
+          <?= $readMin ?> min de lectura
+        </span>
+        <button id="tts-btn" onclick="toggleTTS()" title="Escuchar narración"
+                style="display:flex;align-items:center;gap:6px;padding:7px 14px;background:<?= $color ?>18;border:1.5px solid <?= $color ?>44;border-radius:20px;color:<?= $color ?>;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;">
+          <i data-lucide="volume-2" style="width:14px;height:14px" id="tts-icon-vol"></i>
+          <span id="tts-label">Escuchar</span>
+          <span id="tts-wave" style="display:none;align-items:center;gap:2px;">
+            <span style="width:3px;height:10px;background:currentColor;border-radius:2px;animation:wave 1s ease-in-out infinite"></span>
+            <span style="width:3px;height:14px;background:currentColor;border-radius:2px;animation:wave 1s ease-in-out infinite .15s"></span>
+            <span style="width:3px;height:8px;background:currentColor;border-radius:2px;animation:wave 1s ease-in-out infinite .3s"></span>
+          </span>
+        </button>
+      </div>
     </div>
-    <div style="font-size:15px;color:var(--text-primary);line-height:1.9;margin-bottom:24px;">
-      <?= nl2br(sanitize($contenido['narrativa'] ?? '')) ?>
+
+    <!-- Reading progress bar -->
+    <div style="height:3px;background:var(--bg-border);border-radius:2px;margin-bottom:24px;overflow:hidden;">
+      <div id="tts-progress" style="height:100%;background:<?= $color ?>;border-radius:2px;width:0%;transition:width .3s;"></div>
     </div>
-    <?php if (!empty($contenido['pregunta_disparadora'])): ?>
-    <div style="background:<?= $color ?>15;border-left:4px solid <?= $color ?>;border-radius:0 12px 12px 0;padding:16px 20px;margin-bottom:24px;">
-      <p style="font-size:12px;font-weight:700;color:<?= $color ?>;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">💬 Pregunta para pensar</p>
-      <p style="color:var(--text-primary);font-size:15px;line-height:1.6;"><?= sanitize($contenido['pregunta_disparadora']) ?></p>
+
+    <!-- Main narrative -->
+    <div id="historia-texto" style="font-size:15px;color:var(--text-primary);line-height:1.9;margin-bottom:0;">
+      <?php
+        // Split narrative into intro (first paragraph) and body (rest)
+        $paragraphs = array_filter(array_map('trim', preg_split('/\n{2,}/', trim($rawNarrativa))));
+        $paragraphs = array_values($paragraphs);
+        $intro      = $paragraphs[0] ?? '';
+        $body       = array_slice($paragraphs, 1);
+      ?>
+      <?php if ($intro): ?>
+      <p style="font-size:16px;font-weight:600;color:var(--text-primary);line-height:1.8;margin-bottom:18px;padding:18px 20px;background:<?= $color ?>0c;border-radius:12px;border-left:4px solid <?= $color ?>;">
+        <?= sanitize($intro) ?>
+      </p>
+      <?php endif; ?>
+
+      <?php foreach ($body as $para): ?>
+      <p style="margin-bottom:14px;line-height:1.9;"><?= sanitize($para) ?></p>
+      <?php endforeach; ?>
+    </div>
+
+    <?php if (!empty($contenido['conceptos_clave'])): ?>
+    <!-- Key concepts -->
+    <div style="margin:24px 0;">
+      <p style="font-size:11px;font-weight:800;color:<?= $color ?>;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+        <i data-lucide="bookmark" style="width:13px;height:13px"></i>
+        Conceptos clave
+      </p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;">
+        <?php foreach ((array)$contenido['conceptos_clave'] as $concepto): ?>
+        <div style="background:var(--bg-elevated);border:1px solid var(--bg-border);border-radius:10px;padding:12px 16px;display:flex;align-items:flex-start;gap:10px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:<?= $color ?>;flex-shrink:0;margin-top:5px;"></span>
+          <span style="font-size:13px;color:var(--text-primary);font-weight:500;line-height:1.5;"><?= sanitize($concepto) ?></span>
+        </div>
+        <?php endforeach; ?>
+      </div>
     </div>
     <?php endif; ?>
+
+    <?php if (!empty($contenido['dato_curioso'])): ?>
+    <!-- Fun fact -->
+    <div style="background:linear-gradient(135deg,<?= $color ?>12,<?= $color ?>06);border:1px solid <?= $color ?>30;border-radius:12px;padding:16px 20px;margin:20px 0;display:flex;gap:14px;align-items:flex-start;">
+      <span style="font-size:24px;flex-shrink:0;">💡</span>
+      <div>
+        <p style="font-size:11px;font-weight:800;color:<?= $color ?>;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Dato curioso</p>
+        <p style="color:var(--text-primary);font-size:14px;line-height:1.7;"><?= sanitize($contenido['dato_curioso']) ?></p>
+      </div>
+    </div>
+    <?php endif; ?>
+
+    <?php if (!empty($contenido['pregunta_disparadora'])): ?>
+    <!-- Thinking question -->
+    <div style="background:<?= $color ?>15;border-left:4px solid <?= $color ?>;border-radius:0 12px 12px 0;padding:16px 20px;margin:20px 0 28px;">
+      <p style="font-size:11px;font-weight:800;color:<?= $color ?>;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+        <i data-lucide="message-circle" style="width:13px;height:13px"></i>
+        Pregunta para reflexionar
+      </p>
+      <p style="color:var(--text-primary);font-size:15px;line-height:1.7;font-weight:500;"><?= sanitize($contenido['pregunta_disparadora']) ?></p>
+    </div>
+    <?php endif; ?>
+
     <button onclick="avanzarPaso(<?= $moduloId ?>, <?= (int)$paso['numero_paso'] ?>)" class="btn btn-primary btn-lg">
       Continuar a la actividad
       <i data-lucide="arrow-right" style="width:16px;height:16px"></i>
@@ -582,6 +665,86 @@ async function avanzarPaso(moduloId, paso, reload = true) {
 const style = document.createElement('style');
 style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
 document.head.appendChild(style);
+
+// ══════════════════════════════════════════════
+// Text-to-Speech (Web Speech API)
+// ══════════════════════════════════════════════
+const synth = window.speechSynthesis;
+let ttsUtterance = null;
+let ttsSpeaking  = false;
+
+function toggleTTS() {
+  if (!('speechSynthesis' in window)) {
+    alert('Tu navegador no soporta la lectura en voz alta. Prueba con Chrome o Edge.');
+    return;
+  }
+
+  if (synth.speaking || synth.pending) {
+    synth.cancel();
+    setTTSState(false);
+    return;
+  }
+
+  const el = document.getElementById('historia-texto');
+  if (!el) return;
+
+  const texto = el.innerText || el.textContent || '';
+  if (!texto.trim()) return;
+
+  ttsUtterance = new SpeechSynthesisUtterance(texto);
+  ttsUtterance.lang  = 'es-ES';
+  ttsUtterance.rate  = 0.88;
+  ttsUtterance.pitch = 1.05;
+
+  // Try to pick a Spanish voice
+  const voices = synth.getVoices();
+  const esVoice = voices.find(v => v.lang.startsWith('es')) || null;
+  if (esVoice) ttsUtterance.voice = esVoice;
+
+  ttsUtterance.onstart = () => setTTSState(true);
+  ttsUtterance.onend   = () => setTTSState(false);
+  ttsUtterance.onerror = () => setTTSState(false);
+
+  // Boundary event for progress bar
+  ttsUtterance.onboundary = (e) => {
+    const pct = texto.length > 0 ? Math.round((e.charIndex / texto.length) * 100) : 0;
+    const bar = document.getElementById('tts-progress');
+    if (bar) bar.style.width = pct + '%';
+  };
+
+  synth.speak(ttsUtterance);
+}
+
+function setTTSState(speaking) {
+  ttsSpeaking = speaking;
+  const btn   = document.getElementById('tts-btn');
+  const label = document.getElementById('tts-label');
+  const wave  = document.getElementById('tts-wave');
+  const volI  = document.getElementById('tts-icon-vol');
+  const bar   = document.getElementById('tts-progress');
+
+  if (speaking) {
+    if (label) label.textContent = 'Detener';
+    if (wave)  wave.style.display = 'flex';
+    if (volI)  volI.style.display = 'none';
+    if (bar)   bar.style.transition = 'none';
+  } else {
+    if (label) label.textContent = 'Escuchar';
+    if (wave)  wave.style.display = 'none';
+    if (volI)  volI.style.display = 'block';
+    if (bar) { bar.style.width = '0%'; bar.style.transition = 'width .3s'; }
+  }
+}
+
+// Load voices (some browsers load them async)
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = () => {};
+}
+
+// Cancel TTS when leaving page
+window.addEventListener('beforeunload', () => {
+  if (synth && synth.speaking) synth.cancel();
+});
 </script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
