@@ -415,9 +415,29 @@
   display: block;
 }
 
-/* Legacy class alias */
+/* Legacy class aliases */
 .sidebar-backdrop           { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.50); z-index: 99; }
 .sidebar-backdrop.visible   { display: block; }
+
+/* Alias: some pages use topbar-menu-btn instead of topbar-toggle */
+.topbar-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid var(--bg-border, #e4e8f0);
+  border-radius: var(--radius-sm, 8px);
+  color: var(--text-secondary, #4e5d78);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  flex-shrink: 0;
+}
+.topbar-menu-btn:hover {
+  background: var(--bg-hover, #f5f7fa);
+  color: var(--text-primary, #1a1f36);
+}
 
 /* ── Responsive — Tablet & Mobile (≤ 768px) ────────────────── */
 @media (max-width: 768px) {
@@ -442,7 +462,8 @@
   }
 
   /* Show hamburger in topbar */
-  .topbar-toggle {
+  .topbar-toggle,
+  .topbar-menu-btn {
     display: flex;
   }
 

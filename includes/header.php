@@ -69,6 +69,8 @@ $rolLabel = match ($rol) {
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+  <!-- App JS -->
+  <script src="<?= BASE_URL ?>/assets/js/main.js" defer></script>
   <script>document.addEventListener('DOMContentLoaded',()=>{ if(typeof lucide!=='undefined') lucide.createIcons(); });</script>
 </head>
 <body>
@@ -123,8 +125,8 @@ $rolLabel = match ($rol) {
 
     <!-- Topbar -->
     <header class="topbar" x-data="{ userOpen: false }">
-      <button class="topbar-toggle" onclick="toggleSidebar()" aria-label="Menu">
-        <i data-lucide="menu"></i>
+      <button class="topbar-toggle topbar-menu-btn" onclick="toggleSidebar()" aria-label="Abrir menú">
+        <i data-lucide="menu" style="width:18px;height:18px"></i>
       </button>
       <h1 class="topbar-title"><?= sanitize($pageTitle) ?></h1>
       <div class="topbar-actions" style="position:relative">
