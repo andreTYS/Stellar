@@ -65,12 +65,20 @@ if ($paso >= 4) {
          VALUES (?, ?, NOW())'
     )->execute([$userId, $moduloId]);
 
+    // Return cert_id so the client can link directly to the certificate page
+    $certRow = $pdo->prepare(
+        'SELECT id FROM certificados WHERE estudiante_id = ? AND modulo_id = ?'
+    );
+    $certRow->execute([$userId, $moduloId]);
+    $certId = (int)($certRow->fetchColumn() ?: 0);
+
     $completado = true;
 }
 
 // ── Return current state ──────────────────────────────────────
 echo json_encode([
-    'ok'            => true,
+    'ok'             => true,
     'siguiente_paso' => $siguientePaso,
-    'completado'    => $completado,
+    'completado'     => $completado,
+    'cert_id'        => $certId ?? 0,
 ]);

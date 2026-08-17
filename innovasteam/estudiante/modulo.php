@@ -460,7 +460,7 @@ require_once __DIR__ . '/../includes/header.php';
         <i data-lucide="layout-grid" style="width:14px;height:14px"></i>
         Mis cursos
       </a>
-      <a href="<?= BASE_URL ?>/estudiante/certificados.php" class="btn btn-primary">
+      <a href="<?= BASE_URL ?>/estudiante/certificados.php" class="btn btn-primary modal-cert-btn">
         <i data-lucide="award" style="width:14px;height:14px"></i>
         Ver certificado
       </a>
@@ -637,19 +637,28 @@ async function subirEntregable(moduloId) {
   }
 
   btn.disabled  = true;
-  btn.innerHTML = 'Completando modulo...';
+  btn.innerHTML = '<i data-lucide="loader" style="width:15px;height:15px;animation:spin 1s linear infinite"></i> Completando módulo...';
 
-  // 1. Marcar modulo como completado PRIMERO (genera certificado)
-  await avanzarPaso(moduloId, 4, false);
+  // 1. Marcar módulo como completado PRIMERO (genera certificado, devuelve cert_id)
+  const res = await avanzarPaso(moduloId, 4, false);
+  const certId = res?.cert_id ?? 0;
 
-  // 2. Mostrar modal de celebracion
-  const stars = <?= $estrellas > 0 ? $estrellas : 1 ?>;
+  // 2. Actualizar botón "Ver certificado" con el cert_id real
+  const certBtns = document.querySelectorAll('.modal-cert-btn');
+  certBtns.forEach(b => {
+    if (certId > 0) {
+      b.href = '<?= BASE_URL ?>/estudiante/certificado_ver.php?cert_id=' + certId;
+    }
+  });
+
+  // 3. Mostrar modal de celebración con estrellas SVG
+  const stars = Math.max(1, <?= $estrellas ?>);
   document.getElementById('modal-estrellas').innerHTML =
     starSvgFilled.repeat(stars) + starSvgEmpty.repeat(Math.max(0, 3 - stars));
   document.getElementById('modal-celebracion').classList.add('open');
   if (typeof lucide !== 'undefined') lucide.createIcons();
 
-  // 3. Subir archivo en segundo plano (no bloquea el flujo)
+  // 4. Subir archivo en segundo plano (no bloquea el flujo)
   try {
     const fd = new FormData(document.getElementById('form-entregable'));
     fetch('<?= BASE_URL ?>/api/entregable.php', { method: 'POST', body: fd }).catch(() => {});
@@ -657,15 +666,22 @@ async function subirEntregable(moduloId) {
 }
 
 // ══════════════════════════════════════════════
-// Progress API — advance step
+// Progress API — advance step (returns parsed JSON)
 // ══════════════════════════════════════════════
 async function avanzarPaso(moduloId, paso, reload = true) {
-  await fetch('<?= BASE_URL ?>/api/progreso.php', {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ modulo_id: moduloId, paso: paso })
-  });
-  if (reload) window.location.reload();
+  try {
+    const r = await fetch('<?= BASE_URL ?>/api/progreso.php', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ modulo_id: moduloId, paso: paso })
+    });
+    const data = await r.json();
+    if (reload) window.location.reload();
+    return data;
+  } catch (e) {
+    if (reload) window.location.reload();
+    return null;
+  }
 }
 
 // Spin animation for loader
