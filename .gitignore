@@ -1,0 +1,30 @@
+# INNOVA-STEAM — PHP/XAMPP project
+
+# Uploads (user files)
+/uploads/
+!/uploads/.gitkeep
+
+# PHP env / local config overrides
+.env
+.env.local
+config.local.php
+
+# IDE
+.idea/
+.vscode/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+error_log
+
+# Composer (if ever used)
+/vendor/
+
+# Node (leftover / tooling)
+/node_modules/
