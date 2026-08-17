@@ -5,25 +5,43 @@ require_once __DIR__ . '/../includes/functions.php';
 requireLogin('estudiante');
 
 $estudianteId = currentUserId();
-$certId       = (int)($_GET['cert_id'] ?? 0);
+$certId       = (int)($_GET['cert_id']   ?? 0);
+$moduloId     = (int)($_GET['modulo_id'] ?? 0);
 
-if ($certId <= 0) redirect(BASE_URL . '/estudiante/certificados.php');
+$pdo = getDB();
 
-$pdo  = getDB();
-$stmt = $pdo->prepare(
-    'SELECT cert.*, m.titulo AS modulo_titulo, c.nombre AS curso_nombre, c.color_hex,
-            u.nombre AS est_nombre, u.apellido AS est_apellido,
-            pe.estrellas_quiz
-     FROM certificados cert
-     JOIN modulos m ON m.id = cert.modulo_id
-     JOIN cursos  c ON c.id = m.curso_id
-     JOIN usuarios u ON u.id = cert.estudiante_id
-     JOIN progreso_estudiante pe ON pe.estudiante_id = cert.estudiante_id AND pe.modulo_id = cert.modulo_id
-     WHERE cert.id = ? AND cert.estudiante_id = ?'
-);
-$stmt->execute([$certId, $estudianteId]);
+// Look up by cert_id (from certificate list) OR by modulo_id (from completion modal)
+if ($certId > 0) {
+    $stmt = $pdo->prepare(
+        'SELECT cert.*, m.titulo AS modulo_titulo, c.nombre AS curso_nombre, c.color_hex,
+                u.nombre AS est_nombre, u.apellido AS est_apellido,
+                COALESCE(pe.estrellas_quiz, 0) AS estrellas_quiz
+         FROM certificados cert
+         JOIN modulos m ON m.id = cert.modulo_id
+         JOIN cursos  c ON c.id = m.curso_id
+         JOIN usuarios u ON u.id = cert.estudiante_id
+         LEFT JOIN progreso_estudiante pe ON pe.estudiante_id = cert.estudiante_id AND pe.modulo_id = cert.modulo_id
+         WHERE cert.id = ? AND cert.estudiante_id = ?'
+    );
+    $stmt->execute([$certId, $estudianteId]);
+} elseif ($moduloId > 0) {
+    $stmt = $pdo->prepare(
+        'SELECT cert.*, m.titulo AS modulo_titulo, c.nombre AS curso_nombre, c.color_hex,
+                u.nombre AS est_nombre, u.apellido AS est_apellido,
+                COALESCE(pe.estrellas_quiz, 0) AS estrellas_quiz
+         FROM certificados cert
+         JOIN modulos m ON m.id = cert.modulo_id
+         JOIN cursos  c ON c.id = m.curso_id
+         JOIN usuarios u ON u.id = cert.estudiante_id
+         LEFT JOIN progreso_estudiante pe ON pe.estudiante_id = cert.estudiante_id AND pe.modulo_id = cert.modulo_id
+         WHERE cert.estudiante_id = ? AND cert.modulo_id = ?'
+    );
+    $stmt->execute([$estudianteId, $moduloId]);
+} else {
+    redirect(BASE_URL . '/estudiante/certificados.php');
+}
+
 $cert = $stmt->fetch();
-
 if (!$cert) redirect(BASE_URL . '/estudiante/certificados.php');
 
 $color     = htmlspecialchars($cert['color_hex'] ?? '#4361ee', ENT_QUOTES, 'UTF-8');

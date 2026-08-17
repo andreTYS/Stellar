@@ -138,7 +138,7 @@ require_once __DIR__ . '/../includes/header.php';
         <i data-lucide="layout-grid" style="width:15px;height:15px"></i>
         Mis cursos
       </a>
-      <a href="<?= BASE_URL ?>/estudiante/certificados.php" class="btn btn-primary">
+      <a href="<?= BASE_URL ?>/estudiante/certificado_ver.php?modulo_id=<?= $moduloId ?>" target="_blank" class="btn btn-primary">
         <i data-lucide="award" style="width:15px;height:15px"></i>
         Ver certificado
       </a>
@@ -460,7 +460,7 @@ require_once __DIR__ . '/../includes/header.php';
         <i data-lucide="layout-grid" style="width:14px;height:14px"></i>
         Mis cursos
       </a>
-      <a href="<?= BASE_URL ?>/estudiante/certificados.php" class="btn btn-primary modal-cert-btn">
+      <a href="<?= BASE_URL ?>/estudiante/certificado_ver.php?modulo_id=<?= $moduloId ?>" target="_blank" class="btn btn-primary modal-cert-btn">
         <i data-lucide="award" style="width:14px;height:14px"></i>
         Ver certificado
       </a>
@@ -639,19 +639,10 @@ async function subirEntregable(moduloId) {
   btn.disabled  = true;
   btn.innerHTML = '<i data-lucide="loader" style="width:15px;height:15px;animation:spin 1s linear infinite"></i> Completando módulo...';
 
-  // 1. Marcar módulo como completado PRIMERO (genera certificado, devuelve cert_id)
-  const res = await avanzarPaso(moduloId, 4, false);
-  const certId = res?.cert_id ?? 0;
+  // 1. Marcar módulo como completado (genera certificado en BD)
+  await avanzarPaso(moduloId, 4, false);
 
-  // 2. Actualizar botón "Ver certificado" con el cert_id real
-  const certBtns = document.querySelectorAll('.modal-cert-btn');
-  certBtns.forEach(b => {
-    if (certId > 0) {
-      b.href = '<?= BASE_URL ?>/estudiante/certificado_ver.php?cert_id=' + certId;
-    }
-  });
-
-  // 3. Mostrar modal de celebración con estrellas SVG
+  // 2. Mostrar modal de celebración con estrellas SVG
   const stars = Math.max(1, <?= $estrellas ?>);
   document.getElementById('modal-estrellas').innerHTML =
     starSvgFilled.repeat(stars) + starSvgEmpty.repeat(Math.max(0, 3 - stars));
