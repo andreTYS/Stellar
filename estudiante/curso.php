@@ -70,7 +70,7 @@ include __DIR__ . '/../includes/header.php';
 <!-- Course hero card -->
 <div class="card mb-28"
      style="border-color:<?= $color ?>40;background:linear-gradient(135deg,<?= $color ?>0d,var(--bg-surface))">
-  <div class="flex items-center gap-20">
+  <div class="course-hero-inner">
     <div style="width:72px;height:72px;border-radius:16px;background:<?= $color ?>;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Syne',sans-serif;font-weight:800;font-size:36px;color:#fff;user-select:none"><?= htmlspecialchars($initial) ?></div>
     <div class="flex-1">
       <h1 class="page-title mb-8" style="color:<?= $color ?>"><?= sanitize($curso['nombre']) ?></h1>

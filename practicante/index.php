@@ -35,7 +35,7 @@ $activeNav = 'dashboard';
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<div class="page-header flex justify-between items-center">
+<div class="page-action-header">
   <div>
     <h1 class="page-title">¡Hola, <?= sanitize($user['nombre'] ?? 'Practicante') ?>!</h1>
     <p class="page-subtitle">Gestiona tus aulas y registra el progreso de las sesiones</p>

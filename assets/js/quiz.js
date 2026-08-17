@@ -78,8 +78,8 @@ const QuizEngine = {
     if (feedback) {
       feedback.className = `quiz-feedback show ${esCorrecta ? 'correct' : 'incorrect'}`;
       feedback.textContent = esCorrecta
-        ? '✓ ¡Correcto! Muy bien.'
-        : `✗ Incorrecto. La respuesta correcta era: ${q.opciones.find(o => o.correcta)?.texto}`;
+        ? '¡Correcto! Muy bien.'
+        : `Incorrecto. La respuesta correcta era: ${q.opciones.find(o => o.correcta)?.texto}`;
     }
 
     // Save response

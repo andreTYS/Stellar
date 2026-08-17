@@ -28,3 +28,6 @@ error_log
 
 # Node (leftover / tooling)
 /node_modules/
+
+# Claude Code tooling
+.claude/

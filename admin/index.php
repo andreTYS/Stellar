@@ -29,7 +29,7 @@ require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <!-- Page header -->
-<div class="page-header flex justify-between items-center">
+<div class="page-action-header">
   <div>
     <h1 class="page-title">Panel de Administración</h1>
     <p class="page-subtitle">Vista global de la plataforma · <?= date('d/m/Y') ?></p>
@@ -73,7 +73,7 @@ require_once __DIR__ . '/../includes/header.php';
 </div>
 
 <!-- Charts row -->
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+<div class="charts-row">
 
   <!-- Completaciones por curso -->
   <div class="card">

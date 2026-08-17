@@ -190,7 +190,7 @@ $extraCss  = ['sidebar.css'];
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<div class="page-header flex justify-between items-center">
+<div class="page-action-header">
   <div>
     <h1 class="page-title">Aulas</h1>
     <p class="page-subtitle">Crea y gestiona las aulas de tu colegio</p>

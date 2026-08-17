@@ -81,7 +81,7 @@ $activeNav = 'sesiones';
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<div class="page-header flex justify-between items-center">
+<div class="page-action-header">
   <div>
     <h1 class="page-title">Registrar Sesión</h1>
     <p class="page-subtitle">Documenta la sesión de clase y toma asistencia</p>
@@ -100,7 +100,7 @@ include __DIR__ . '/../includes/header.php';
   <form method="post" action="<?= BASE_URL ?>/practicante/asistencia.php"
         enctype="multipart/form-data" id="formSesion">
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <div class="form-row-2">
 
       <!-- Aula -->
       <div>

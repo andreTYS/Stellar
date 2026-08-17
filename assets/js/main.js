@@ -2,6 +2,14 @@
 // INNOVA-STEAM — main.js
 // ============================================================
 
+// ── Theme toggle ─────────────────────────────────────────────
+function toggleTheme() {
+  const curr = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = curr === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('is-theme', next);
+}
+
 // ── Sidebar toggle (mobile) ──────────────────────────────────
 function toggleSidebar() {
   const sidebar = document.getElementById('sidebar');

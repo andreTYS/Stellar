@@ -49,7 +49,7 @@ require_once __DIR__ . '/../includes/header.php';
 <div class="page-content">
   <?php if (isset($_GET['ok'])): ?>
     <div style="background:#22c55e22; border:1px solid #22c55e44; color:#22c55e; border-radius:10px; padding:12px 16px; margin-bottom:20px; font-size:14px;">
-      ✅ Comentario guardado correctamente.
+      Comentario guardado correctamente.
     </div>
   <?php endif; ?>
 
@@ -59,14 +59,14 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
     <div class="card" style="margin-bottom:24px;">
       <h1 style="font-family:'Syne',sans-serif; font-size:22px; font-weight:800; color:var(--text-primary);">
-        📁 Portafolio de <?= sanitize($estudiante['nombre'].' '.$estudiante['apellido']) ?>
+        Portafolio de <?= sanitize($estudiante['nombre'].' '.$estudiante['apellido']) ?>
       </h1>
       <p style="color:var(--text-secondary); font-size:13px; margin-top:4px;"><?= count($entregables) ?> entregable(s)</p>
     </div>
 
     <?php if (empty($entregables)): ?>
       <div style="text-align:center; padding:60px;">
-        <div style="font-size:56px; margin-bottom:16px;">📂</div>
+        <div class="empty-icon"><i data-lucide="folder-open" style="width:56px;height:56px;opacity:.4"></i></div>
         <p style="color:var(--text-secondary);">Este estudiante aún no ha subido entregables.</p>
       </div>
     <?php else: ?>
@@ -96,7 +96,7 @@ require_once __DIR__ . '/../includes/header.php';
             <p style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Tu comentario:</p>
             <p style="font-size:13px; color:var(--text-primary);"><?= sanitize($ent['comentario_docente']) ?></p>
             <?php if ($ent['calificacion']): ?>
-            <p style="color:var(--gold); font-size:14px; margin-top:4px;"><?= str_repeat('★', $ent['calificacion']) ?></p>
+            <p style="color:var(--gold); font-size:14px; margin-top:4px;"><span class="star-rating"><?= str_repeat('<i data-lucide="star" style="width:13px;height:13px;fill:var(--gold);color:var(--gold)"></i>', (int)$ent['calificacion']) ?></span></p>
             <?php endif; ?>
           </div>
           <?php endif; ?>

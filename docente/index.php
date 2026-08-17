@@ -45,7 +45,7 @@ require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <!-- Page header -->
-<div class="page-header flex justify-between items-center">
+<div class="page-action-header">
   <div>
     <h1 class="page-title">¡Hola, <?= sanitize($user['nombre'] ?? 'Docente') ?>!</h1>
     <p class="page-subtitle">Resumen de tus aulas y progreso de estudiantes</p>
@@ -114,7 +114,7 @@ require_once __DIR__ . '/../includes/header.php';
     <p class="empty-state-desc">Contacta al director para que te asigne un aula.</p>
   </div>
   <?php else: ?>
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px">
+  <div class="aulas-grid">
     <?php foreach ($aulas as $aula):
       $n     = (int)$aula['total_estudiantes'];
       $comp  = (int)$aula['modulos_completados'];

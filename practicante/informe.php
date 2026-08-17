@@ -73,7 +73,7 @@ require_once __DIR__ . '/../includes/header.php';
           <button type="submit" class="btn-primary" style="padding:8px 16px; font-size:13px;">Filtrar</button>
         </form>
         <button onclick="window.print()" class="btn-ghost" style="padding:8px 16px; font-size:13px;">
-          🖨️ Imprimir
+          <i data-lucide="printer" style="width:16px;height:16px"></i> Imprimir
         </button>
       </div>
     </div>
@@ -82,22 +82,22 @@ require_once __DIR__ . '/../includes/header.php';
   <!-- Stats -->
   <div class="stats-grid">
     <div class="stat-card">
-      <div class="stat-icon">📅</div>
+      <div class="stat-icon" style="background:rgba(74,158,255,.12);color:var(--blue)"><i data-lucide="calendar" style="width:22px;height:22px"></i></div>
       <div class="stat-value" style="color:var(--blue);"><?= count($sesiones) ?></div>
       <div class="stat-label">Sesiones realizadas</div>
     </div>
     <div class="stat-card">
-      <div class="stat-icon">👥</div>
+      <div class="stat-icon" style="background:rgba(62,207,142,.12);color:var(--green)"><i data-lucide="users" style="width:22px;height:22px"></i></div>
       <div class="stat-value" style="color:var(--green);"><?= $totalAsistentes ?></div>
       <div class="stat-label">Asistencias totales</div>
     </div>
     <div class="stat-card">
-      <div class="stat-icon">🏫</div>
+      <div class="stat-icon" style="background:rgba(167,139,250,.12);color:var(--purple)"><i data-lucide="building-2" style="width:22px;height:22px"></i></div>
       <div class="stat-value" style="color:var(--purple);"><?= count($aulas) ?></div>
       <div class="stat-label">Aulas atendidas</div>
     </div>
     <div class="stat-card">
-      <div class="stat-icon">⏱️</div>
+      <div class="stat-icon" style="background:rgba(245,200,66,.12);color:var(--gold)"><i data-lucide="timer" style="width:22px;height:22px"></i></div>
       <div class="stat-value" style="color:var(--gold);"><?= count($sesiones) * 45 ?></div>
       <div class="stat-label">Minutos de práctica</div>
     </div>
@@ -111,7 +111,7 @@ require_once __DIR__ . '/../includes/header.php';
 
     <?php if (empty($sesiones)): ?>
       <div style="text-align:center; padding:40px;">
-        <div style="font-size:48px; margin-bottom:12px;">📋</div>
+        <div class="empty-icon"><i data-lucide="clipboard-list" style="width:56px;height:56px;opacity:.4"></i></div>
         <p style="color:var(--text-secondary);">No hay sesiones registradas en <?= $meses[$mes] ?> <?= $anio ?></p>
       </div>
     <?php else: ?>
