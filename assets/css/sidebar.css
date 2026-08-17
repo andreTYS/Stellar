@@ -5,9 +5,9 @@
    ============================================================ */
 
 /* ── Layout Root ───────────────────────────────────────────── */
+/* Sidebar is position:fixed so it doesn't participate in grid/flex flow.
+   main-content uses margin-left to offset itself. */
 .layout {
-  display: grid;
-  grid-template-columns: var(--sidebar-width) 1fr;
   min-height: 100vh;
 }
 

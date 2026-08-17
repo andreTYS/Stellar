@@ -646,7 +646,14 @@ tbody td:first-child {
 }
 
 /* Aliases used by practicante pages */
-.table-wrap { width: 100%; overflow-x: auto; }
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--bg-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
 .table { width: 100%; border-collapse: collapse; font-size: 13px; }
 
 /* Compact progress bar (used in dashboard tables) */
