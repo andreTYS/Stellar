@@ -233,7 +233,7 @@ require_once __DIR__ . '/../includes/header.php';
     <?php if (!empty($contenido['dato_curioso'])): ?>
     <!-- Fun fact -->
     <div style="background:linear-gradient(135deg,<?= $color ?>12,<?= $color ?>06);border:1px solid <?= $color ?>30;border-radius:12px;padding:16px 20px;margin:20px 0;display:flex;gap:14px;align-items:flex-start;">
-      <span style="font-size:24px;flex-shrink:0;">💡</span>
+      <span style="flex-shrink:0;color:var(--gold)"><i data-lucide="lightbulb" style="width:22px;height:22px"></i></span>
       <div>
         <p style="font-size:11px;font-weight:800;color:<?= $color ?>;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Dato curioso</p>
         <p style="color:var(--text-primary);font-size:14px;line-height:1.7;"><?= sanitize($contenido['dato_curioso']) ?></p>
@@ -512,7 +512,7 @@ document.querySelectorAll('.opcion-btn').forEach(btn => {
     fb.style.borderLeft = '4px solid ' + (esCorrecta ? 'var(--success)' : 'var(--danger)');
     fb.style.color      = esCorrecta ? 'var(--success)' : 'var(--danger)';
     fb.textContent      = esCorrecta
-      ? '¡Correcto! ✓'
+      ? '¡Correcto!'
       : 'Incorrecto — la opción correcta está marcada en verde.';
 
     // Show next/result button

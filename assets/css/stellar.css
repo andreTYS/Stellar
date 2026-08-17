@@ -20,7 +20,7 @@
   /* Text */
   --text-primary:   #1a1f36;
   --text-secondary: #4e5d78;
-  --text-muted:     #8898aa;
+  --text-muted:     #5d6e8b;
   --text-inverse:   #ffffff;
 
   /* Brand / Accent */
@@ -1880,3 +1880,69 @@ select.form-control { height: 40px; }
 @media (max-width: 640px) {
   .form-row-2 { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   DARK MODE — overrides CSS tokens for html[data-theme="dark"]
+   ============================================================ */
+html[data-theme="dark"] {
+  /* Backgrounds */
+  --bg-page:     #0d1117;
+  --bg-surface:  #161b27;
+  --bg-card:     #1e2336;
+  --bg-input:    #161b27;
+  --bg-muted:    #161b27;
+  --bg-border:   #2d3561;
+  --bg-hover:    #252d4a;
+  --bg-elevated: #252d4a;
+
+  /* Text */
+  --text-primary:   #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted:     #7a8aa8;
+  --text-inverse:   #0d1117;
+
+  /* Accent — slightly brighter for dark bg */
+  --accent:        #6080f8;
+  --accent-hover:  #7090ff;
+  --accent-light:  rgba(96, 128, 248, .15);
+  --accent-border: rgba(96, 128, 248, .35);
+
+  /* Status */
+  --success:       #34d399;
+  --success-light: rgba(52, 211, 153, .15);
+  --danger:        #f87171;
+  --danger-light:  rgba(248, 113, 113, .15);
+  --warning:       #fbbf24;
+  --warning-light: rgba(251, 191, 36, .15);
+  --info:          #6080f8;
+  --info-light:    rgba(96, 128, 248, .15);
+
+  /* Extended palette */
+  --blue:   #60a5fa;
+  --green:  #34d399;
+  --purple: #c4b5fd;
+  --coral:  #fb7185;
+  --gold:   #fbbf24;
+  --teal:   #22d3ee;
+
+  /* Shadows — more prominent on dark */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, .40), 0 1px 2px rgba(0, 0, 0, .30);
+  --shadow:    0 4px 16px rgba(0, 0, 0, .50);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, .60);
+}
+
+/* Smooth background + text transition on theme switch */
+body,
+.card, .stat-card, .topbar,
+.table-wrapper, .table-wrap,
+.sidebar, .main-content {
+  transition: background-color .25s ease, border-color .2s ease, color .2s ease;
+}
+
+/* ── Theme toggle icon visibility ──────────────────────────── */
+/* Moon shown in light mode (click → switch to dark)  */
+/* Sun  shown in dark mode  (click → switch to light) */
+html[data-theme="dark"] .theme-icon-moon { display: none !important; }
+html[data-theme="dark"] .theme-icon-sun  { display: block !important; }
+html:not([data-theme="dark"]) .theme-icon-sun  { display: none !important; }
+html:not([data-theme="dark"]) .theme-icon-moon { display: block !important; }

@@ -59,7 +59,7 @@ require_once __DIR__ . '/../includes/header.php';
             <th>Código</th>
             <th>Módulos iniciados</th>
             <th>Completados</th>
-            <th>⭐ Estrellas</th>
+            <th><i data-lucide="star" style="width:12px;height:12px;color:var(--gold);fill:var(--gold);vertical-align:middle"></i> Estrellas</th>
             <th>Portafolio</th>
           </tr>
         </thead>
@@ -73,7 +73,7 @@ require_once __DIR__ . '/../includes/header.php';
             <td style="color:var(--blue); font-weight:700;"><?= $est['modulos_iniciados'] ?></td>
             <td style="color:var(--green); font-weight:700;"><?= $est['modulos_completados'] ?></td>
             <td style="color:var(--gold); font-weight:700;">
-              <?= str_repeat('★', min($est['estrellas_total'], 5)) ?>
+              <span class="star-display"><?= str_repeat('<i data-lucide="star" style="width:12px;height:12px;fill:var(--gold);color:var(--gold)"></i>', min((int)($est['estrellas_total'] ?? 0), 5)) ?></span>
               <span style="color:var(--text-secondary); font-size:12px;"><?= $est['estrellas_total'] ?>pts</span>
             </td>
             <td>

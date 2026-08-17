@@ -70,7 +70,7 @@ require_once __DIR__ . '/../includes/header.php';
   <?php endforeach; ?>
 
   <div style="text-align:center; margin-top:8px;">
-    <button onclick="window.print()" class="btn-ghost" style="padding:10px 24px;">🖨️ Imprimir reporte</button>
+    <button onclick="window.print()" class="btn-ghost" style="padding:10px 24px;"><i data-lucide="printer" style="width:16px;height:16px"></i> Imprimir reporte</button>
   </div>
 </div>
 

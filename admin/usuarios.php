@@ -121,7 +121,7 @@ require_once __DIR__ . '/../includes/header.php';
   <div style="background:var(--bg-surface); border:1px solid var(--bg-border); border-radius:16px; padding:32px; width:100%; max-width:480px; max-height:90vh; overflow-y:auto;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
       <h2 style="font-family:'Syne',sans-serif; font-size:18px; font-weight:700; color:var(--text-primary);">Nuevo usuario</h2>
-      <button onclick="document.getElementById('modal-crear').style.display='none'" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:20px;">✕</button>
+      <button onclick="document.getElementById('modal-crear').style.display='none'" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:20px;"><i data-lucide="x" style="width:18px;height:18px"></i></button>
     </div>
     <form method="POST" style="display:flex; flex-direction:column; gap:14px;">
       <input type="hidden" name="action" value="crear">

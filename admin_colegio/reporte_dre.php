@@ -103,7 +103,7 @@ require_once __DIR__ . '/../includes/header.php';
         </select>
         <button type="submit" class="btn-primary" style="padding:8px 14px;font-size:13px;">Filtrar</button>
       </form>
-      <button onclick="window.print()" class="btn-ghost" style="padding:8px 14px;font-size:13px;">🖨️ Imprimir</button>
+      <button onclick="window.print()" class="btn-ghost" style="padding:8px 14px;font-size:13px;"><i data-lucide="printer" style="width:16px;height:16px"></i> Imprimir</button>
     </div>
   </div>
 
@@ -127,10 +127,10 @@ require_once __DIR__ . '/../includes/header.php';
 
   <!-- Stats -->
   <div class="stats-grid" style="margin-bottom:24px;">
-    <div class="stat-card"><div class="stat-icon">👨‍🎓</div><div class="stat-value" style="color:var(--blue);"><?= $totalEstudiantes ?></div><div class="stat-label">Estudiantes inscritos</div></div>
-    <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value" style="color:var(--green);"><?= $modulosCompletados ?></div><div class="stat-label">Módulos completados</div></div>
-    <div class="stat-card"><div class="stat-icon">📁</div><div class="stat-value" style="color:var(--purple);"><?= $entregables ?></div><div class="stat-label">Entregables</div></div>
-    <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-value" style="color:var(--gold);"><?= $sesiones ?></div><div class="stat-label">Sesiones realizadas</div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:rgba(74,158,255,.12);color:var(--blue)"><i data-lucide="graduation-cap" style="width:22px;height:22px"></i></div><div class="stat-value" style="color:var(--blue);"><?= $totalEstudiantes ?></div><div class="stat-label">Estudiantes inscritos</div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:rgba(62,207,142,.12);color:var(--green)"><i data-lucide="check-circle-2" style="width:22px;height:22px"></i></div><div class="stat-value" style="color:var(--green);"><?= $modulosCompletados ?></div><div class="stat-label">Módulos completados</div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:rgba(167,139,250,.12);color:var(--purple)"><i data-lucide="folder" style="width:22px;height:22px"></i></div><div class="stat-value" style="color:var(--purple);"><?= $entregables ?></div><div class="stat-label">Entregables</div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:rgba(245,200,66,.12);color:var(--gold)"><i data-lucide="calendar" style="width:22px;height:22px"></i></div><div class="stat-value" style="color:var(--gold);"><?= $sesiones ?></div><div class="stat-label">Sesiones realizadas</div></div>
   </div>
 
   <!-- Progress per course -->

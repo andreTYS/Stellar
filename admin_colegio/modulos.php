@@ -67,11 +67,11 @@ require_once __DIR__ . '/../includes/header.php';
 <div class="page-content">
   <?php if (isset($_GET['ok'])): ?>
   <div style="background:#22c55e22;border:1px solid #22c55e44;color:var(--success);border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:14px;">
-    ✅ Módulo asignado correctamente.
+    Módulo asignado correctamente.
   </div>
   <?php endif; ?>
 
-  <div class="sidebar-layout">
+  <div style="display:grid;grid-template-columns:280px 1fr;gap:24px;align-items:start;">
     <!-- Aula selector -->
     <div class="card">
       <h2 class="card-title" style="margin-bottom:16px;">Seleccionar aula</h2>
@@ -93,7 +93,7 @@ require_once __DIR__ . '/../includes/header.php';
     <div>
       <?php if (!$aulaId): ?>
         <div class="card" style="text-align:center;padding:48px;">
-          <p style="font-size:32px;margin-bottom:12px;">📚</p>
+          <div class="empty-icon"><i data-lucide="book-open" style="width:48px;height:48px;opacity:.4"></i></div>
           <p style="color:var(--text-secondary);">Selecciona un aula para gestionar sus módulos.</p>
         </div>
       <?php else: ?>
@@ -152,7 +152,7 @@ require_once __DIR__ . '/../includes/header.php';
   <div style="background:var(--bg-surface);border:1px solid var(--bg-border);border-radius:16px;padding:28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
       <h2 style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text-primary);">Asignar módulo</h2>
-      <button onclick="document.getElementById('modal-asignar').style.display='none'" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:20px;">✕</button>
+      <button onclick="document.getElementById('modal-asignar').style.display='none'" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:20px;"><i data-lucide="x" style="width:18px;height:18px"></i></button>
     </div>
     <form method="POST" style="display:flex;flex-direction:column;gap:14px;">
       <input type="hidden" name="asignar" value="1">

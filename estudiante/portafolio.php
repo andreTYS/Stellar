@@ -49,7 +49,7 @@ require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <!-- Page header -->
-<div class="page-action-header">
+<div class="page-header flex justify-between items-center">
   <div>
     <h1 class="page-title">Mi Portafolio</h1>
     <p class="page-subtitle">
@@ -68,7 +68,7 @@ require_once __DIR__ . '/../includes/header.php';
 <!-- Empty state -->
 <?php if (empty($todos)): ?>
 <div class="empty-state">
-  <div class="empty-icon">🌱</div>
+  <div class="empty-icon"><i data-lucide="sprout" style="width:48px;height:48px;opacity:.4"></i></div>
   <h3>¡Aún no tienes trabajos aquí!</h3>
   <p>Completa el paso de entregable en cualquier módulo para ver tus creaciones.</p>
   <a href="<?= BASE_URL ?>/estudiante/index.php" class="btn btn-primary" style="margin-top:20px;text-decoration:none;">
@@ -118,8 +118,8 @@ require_once __DIR__ . '/../includes/header.php';
              onmouseout="this.style.transform=''">
       </a>
       <?php else: ?>
-      <div style="height:120px;background:linear-gradient(135deg,<?= $color ?>22,<?= $color ?>11);display:flex;align-items:center;justify-content:center;font-size:44px;flex-shrink:0;">
-        📄
+      <div style="height:120px;background:linear-gradient(135deg,<?= $color ?>22,<?= $color ?>11);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i data-lucide="file-text" style="width:16px;height:16px;color:var(--text-muted)"></i>
       </div>
       <?php endif; ?>
 

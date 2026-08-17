@@ -267,7 +267,7 @@
 
 /* ── Topbar ────────────────────────────────────────────────── */
 .topbar {
-  background: #ffffff;
+  background: var(--bg-surface);
   border-bottom: 1px solid var(--bg-border, #e4e8f0);
   padding: 0 28px;
   height: 56px;
@@ -494,4 +494,25 @@
   .page-content {
     padding: 16px 12px;
   }
+}
+
+/* ── Topbar icon button (theme toggle, etc.) ───────────────── */
+.topbar-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid var(--bg-border, #e4e8f0);
+  border-radius: var(--radius-sm, 8px);
+  color: var(--text-secondary, #4e5d78);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.topbar-icon-btn:hover {
+  background: var(--bg-hover, #f5f7fa);
+  color: var(--text-primary, #1a1f36);
+  border-color: var(--bg-border, #e4e8f0);
 }
