@@ -41,7 +41,7 @@ require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <!-- Page header -->
-<div class="page-header flex justify-between items-center" style="flex-wrap:wrap;gap:16px;">
+<div class="page-action-header">
   <div>
     <h1 class="page-title">Mis Certificados</h1>
     <p class="page-subtitle">

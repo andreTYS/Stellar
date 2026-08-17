@@ -49,7 +49,7 @@ require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <!-- Page header -->
-<div class="page-header flex justify-between items-center">
+<div class="page-action-header">
   <div>
     <h1 class="page-title">Mi Portafolio</h1>
     <p class="page-subtitle">

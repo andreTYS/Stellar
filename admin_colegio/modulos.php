@@ -71,7 +71,7 @@ require_once __DIR__ . '/../includes/header.php';
   </div>
   <?php endif; ?>
 
-  <div style="display:grid;grid-template-columns:280px 1fr;gap:24px;align-items:start;">
+  <div class="sidebar-layout">
     <!-- Aula selector -->
     <div class="card">
       <h2 class="card-title" style="margin-bottom:16px;">Seleccionar aula</h2>

@@ -74,7 +74,7 @@ include __DIR__ . '/../includes/header.php';
 </div>
 
 <!-- ── Page header ──────────────────────────────────────────── -->
-<div class="page-header flex justify-between items-center no-print">
+<div class="page-action-header no-print">
   <div>
     <a href="<?= BASE_URL ?>/practicante/index.php"
        class="flex items-center gap-8 text-muted text-sm mb-8"

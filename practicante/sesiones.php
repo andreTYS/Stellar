@@ -15,7 +15,7 @@ $activeNav = 'sesiones';
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<div class="page-header flex justify-between items-center">
+<div class="page-action-header">
   <div>
     <h1 class="page-title">Mis Sesiones</h1>
     <p class="page-subtitle">Historial de sesiones registradas</p>
