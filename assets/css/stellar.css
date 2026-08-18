@@ -1946,3 +1946,196 @@ html[data-theme="dark"] .theme-icon-moon { display: none !important; }
 html[data-theme="dark"] .theme-icon-sun  { display: block !important; }
 html:not([data-theme="dark"]) .theme-icon-sun  { display: none !important; }
 html:not([data-theme="dark"]) .theme-icon-moon { display: block !important; }
+
+/* ============================================================
+   STELLAR v4.1 — Extended components
+   ============================================================ */
+
+/* ── Stat trend badge ──────────────────────────────────────── */
+.stat-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 99px;
+  margin-top: 6px;
+}
+.stat-trend.up   { background: var(--success-light); color: var(--success); }
+.stat-trend.down { background: var(--danger-light);  color: var(--danger); }
+.stat-trend.flat { background: var(--bg-muted);      color: var(--text-muted); }
+.stat-trend svg  { width: 10px; height: 10px; flex-shrink: 0; }
+
+/* ── Welcome banner ────────────────────────────────────────── */
+.welcome-banner {
+  background: linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.welcome-banner::before {
+  content: '';
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.06);
+  pointer-events: none;
+}
+.welcome-banner::after {
+  content: '';
+  position: absolute;
+  bottom: -50px; right: 80px;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.04);
+  pointer-events: none;
+}
+.welcome-text { position: relative; z-index: 1; }
+.welcome-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.welcome-sub { font-size: 13px; color: rgba(255,255,255,.75); }
+.welcome-action { position: relative; z-index: 1; flex-shrink: 0; }
+.welcome-action .btn {
+  background: rgba(255,255,255,.15);
+  border-color: rgba(255,255,255,.3);
+  color: #fff;
+  backdrop-filter: blur(4px);
+}
+.welcome-action .btn:hover {
+  background: rgba(255,255,255,.25);
+}
+
+/* ── Stats grid 6-col ──────────────────────────────────────── */
+.stats-grid-6 {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+@media (max-width: 1100px) { .stats-grid-6 { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 640px)  { .stats-grid-6 { grid-template-columns: repeat(2, 1fr); } }
+
+/* ── Activity feed ─────────────────────────────────────────── */
+.activity-feed { display: flex; flex-direction: column; }
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--bg-border);
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.activity-dot svg, .activity-dot i { width: 14px; height: 14px; }
+.activity-text { flex: 1; min-width: 0; }
+.activity-title { font-size: 13px; font-weight: 600; color: var(--text-primary); line-height: 1.4; }
+.activity-meta  { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.activity-time  { font-size: 11px; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+
+/* ── Aula card ─────────────────────────────────────────────── */
+.aula-card {
+  background: var(--bg-card);
+  border: 1px solid var(--bg-border);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  transition: box-shadow .2s, border-color .2s, transform .2s;
+}
+.aula-card:hover {
+  box-shadow: var(--shadow);
+  border-color: var(--accent-border);
+  transform: translateY(-2px);
+}
+.aula-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 8px;
+}
+.aula-card-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+.aula-card-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+.aula-card-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.aula-card-stat { text-align: center; }
+.aula-card-stat-val { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; line-height: 1; }
+.aula-card-stat-lbl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; margin-top: 2px; }
+
+/* ── Progress ring (SVG-based, CSS-driven) ─────────────────── */
+.progress-ring { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.progress-ring-label {
+  position: absolute;
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+/* ── Chart skeleton / loading ──────────────────────────────── */
+.chart-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.chart-loading::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--bg-border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Number counter animation ──────────────────────────────── */
+.stat-value[data-count] { transition: none; }
+
+/* ── Aulas grid 3-col ──────────────────────────────────────── */
+.aulas-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 900px) { .aulas-grid-3 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 580px) { .aulas-grid-3 { grid-template-columns: 1fr; } }
+
+/* ── Inline metric pair ────────────────────────────────────── */
+.metric-pair { display: flex; gap: 20px; }
+.metric-item { }
+.metric-val { font-family: 'Syne',sans-serif; font-size: 22px; font-weight: 800; line-height: 1; }
+.metric-lbl { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; margin-top: 2px; }

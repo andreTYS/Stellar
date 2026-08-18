@@ -44,19 +44,25 @@ $activeNav = 'dashboard';
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
-<!-- Page header -->
-<div class="page-action-header">
-  <div>
-    <h1 class="page-title">¡Hola, <?= sanitize($user['nombre'] ?? 'Docente') ?>!</h1>
-    <p class="page-subtitle">Resumen de tus aulas y progreso de estudiantes</p>
+<!-- Welcome banner -->
+<div class="welcome-banner mb-32">
+  <div class="welcome-text">
+    <div class="welcome-title">¡Hola, <?= sanitize($user['nombre'] ?? 'Docente') ?>!</div>
+    <div class="welcome-sub">Resumen de tus aulas y progreso de estudiantes · <?= date('d/m/Y') ?></div>
   </div>
-  <a href="<?= BASE_URL ?>/docente/reportes.php" class="btn btn-primary">
-    <i data-lucide="bar-chart-2" style="width:16px;height:16px"></i>
-    Ver reportes
-  </a>
+  <div class="welcome-action">
+    <a href="<?= BASE_URL ?>/docente/reportes.php" class="btn btn-primary">
+      <i data-lucide="bar-chart-2" style="width:16px;height:16px"></i>
+      Ver reportes
+    </a>
+  </div>
 </div>
 
 <!-- Stats -->
+<?php
+$pctDocente = $totalEstudiantes > 0 ? round($totalCompletados / ($totalEstudiantes * max(1, count($modulosRecientes ?: [1]))) * 100) : 0;
+$pctDocente = min(100, $pctDocente);
+?>
 <div class="stats-grid mb-32">
   <div class="stat-card">
     <div class="stat-icon" style="background:rgba(74,158,255,.12);color:var(--blue)">
@@ -78,6 +84,13 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
     <div class="stat-value" style="color:var(--purple)"><?= $totalCompletados ?></div>
     <div class="stat-label">Módulos completados</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background:rgba(245,200,66,.12);color:var(--gold)">
+      <i data-lucide="calendar" style="width:22px;height:22px"></i>
+    </div>
+    <div class="stat-value" style="color:var(--gold)"><?= count($modulosRecientes) ?></div>
+    <div class="stat-label">Módulos planificados</div>
   </div>
 </div>
 
@@ -114,30 +127,38 @@ require_once __DIR__ . '/../includes/header.php';
     <p class="empty-state-desc">Contacta al director para que te asigne un aula.</p>
   </div>
   <?php else: ?>
-  <div class="aulas-grid">
+  <div class="aulas-grid-3">
     <?php foreach ($aulas as $aula):
-      $n     = (int)$aula['total_estudiantes'];
-      $comp  = (int)$aula['modulos_completados'];
+      $n    = (int)$aula['total_estudiantes'];
+      $comp = (int)$aula['modulos_completados'];
+      $pct  = $n > 0 ? round($comp / max($n, 1) * 100) : 0;
+      $pct  = min(100, $pct);
+      $clr  = $pct >= 80 ? 'var(--green)' : ($pct >= 40 ? 'var(--gold)' : 'var(--blue)');
     ?>
-    <div style="background:var(--bg-muted);border:1px solid var(--bg-border);border-radius:var(--radius);padding:20px">
-      <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--text-primary);margin-bottom:2px">
-        <?= (int)$aula['grado'] ?>° &ldquo;<?= sanitize($aula['seccion']) ?>&rdquo;
+    <div class="aula-card">
+      <div class="aula-card-header">
+        <div>
+          <div class="aula-card-title"><?= (int)$aula['grado'] ?>° &ldquo;<?= sanitize($aula['seccion']) ?>&rdquo;</div>
+          <div class="aula-card-sub"><?= sanitize($aula['colegio_nombre']) ?></div>
+        </div>
+        <span style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:<?= $clr ?>"><?= $pct ?>%</span>
       </div>
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:18px"><?= sanitize($aula['colegio_nombre']) ?></div>
-      <div style="display:flex;justify-content:space-between;margin-bottom:14px">
-        <div>
-          <div style="font-size:22px;font-weight:800;color:var(--blue)"><?= $n ?></div>
-          <div style="font-size:11px;color:var(--text-muted)">estudiantes</div>
+      <div class="metric-pair" style="margin-bottom:14px">
+        <div class="metric-item">
+          <div class="metric-val" style="color:var(--blue)"><?= $n ?></div>
+          <div class="metric-lbl">estudiantes</div>
         </div>
-        <div>
-          <div style="font-size:22px;font-weight:800;color:var(--green)"><?= $comp ?></div>
-          <div style="font-size:11px;color:var(--text-muted)">completados</div>
+        <div class="metric-item">
+          <div class="metric-val" style="color:var(--green)"><?= $comp ?></div>
+          <div class="metric-lbl">completados</div>
         </div>
+      </div>
+      <div class="progress-track" style="margin-bottom:12px">
+        <div class="progress-fill" style="width:<?= $pct ?>%;background:<?= $clr ?>"></div>
       </div>
       <a href="<?= BASE_URL ?>/docente/estudiantes.php?aula_id=<?= (int)$aula['id'] ?>"
          class="btn btn-ghost btn-sm btn-block" style="text-decoration:none;justify-content:center">
-        Ver estudiantes
-        <i data-lucide="arrow-right" style="width:13px;height:13px"></i>
+        Ver estudiantes <i data-lucide="arrow-right" style="width:13px;height:13px"></i>
       </a>
     </div>
     <?php endforeach; ?>

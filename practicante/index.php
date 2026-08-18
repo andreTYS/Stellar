@@ -1,49 +1,57 @@
 <?php
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/functions.php';
-
 requireLogin('practicante');
 
 $uid  = currentUserId();
 $user = currentUser();
+$db   = getDB();
 
-// ── Data ──────────────────────────────────────────────────────
-$aulas   = getAulasByPracticante($uid);
-$sesiones = getSesionesByPracticante($uid, 5);
+// ── Aulas with student counts in ONE query ────────────────────
+$stmtAulas = $db->prepare("
+    SELECT a.id, a.grado, a.seccion, col.nombre AS colegio_nombre,
+           COUNT(DISTINCT ea.estudiante_id) AS total_est
+    FROM practicante_aula pa
+    JOIN aulas a ON a.id = pa.aula_id
+    JOIN colegios col ON col.id = a.colegio_id
+    LEFT JOIN estudiante_aula ea ON ea.aula_id = a.id
+    WHERE pa.practicante_id = ?
+    GROUP BY a.id, a.grado, a.seccion, col.nombre
+    ORDER BY col.nombre, a.grado, a.seccion
+");
+$stmtAulas->execute([$uid]);
+$aulas = $stmtAulas->fetchAll();
 
-// Sesiones esta semana
-$db = getDB();
-$stmtSemana = $db->prepare(
-    'SELECT COUNT(*) FROM sesiones
-     WHERE practicante_id = ?
-       AND fecha_sesion >= DATE_SUB(NOW(), INTERVAL 7 DAY)'
-);
+$totalEstudiantes = array_sum(array_column($aulas, 'total_est'));
+
+// ── Sessions ──────────────────────────────────────────────────
+$stmtSemana = $db->prepare('SELECT COUNT(*) FROM sesiones WHERE practicante_id=? AND fecha_sesion >= DATE_SUB(NOW(), INTERVAL 7 DAY)');
 $stmtSemana->execute([$uid]);
 $sesionesSemana = (int)$stmtSemana->fetchColumn();
 
-// Total estudiantes (distinct across all aulas)
-$totalEstudiantes = 0;
-foreach ($aulas as $aula) {
-    $stmtEst = $db->prepare('SELECT COUNT(*) FROM estudiante_aula WHERE aula_id = ?');
-    $stmtEst->execute([$aula['id']]);
-    $totalEstudiantes += (int)$stmtEst->fetchColumn();
-}
+$stmtTotal = $db->prepare('SELECT COUNT(*) FROM sesiones WHERE practicante_id=?');
+$stmtTotal->execute([$uid]);
+$sesionesTotal = (int)$stmtTotal->fetchColumn();
 
-// ── View ──────────────────────────────────────────────────────
+$sesiones = getSesionesByPracticante($uid, 5);
+
 $pageTitle = 'Dashboard Practicante';
 $activeNav = 'dashboard';
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<div class="page-action-header">
-  <div>
-    <h1 class="page-title">¡Hola, <?= sanitize($user['nombre'] ?? 'Practicante') ?>!</h1>
-    <p class="page-subtitle">Gestiona tus aulas y registra el progreso de las sesiones</p>
+<!-- Welcome banner -->
+<div class="welcome-banner mb-32">
+  <div class="welcome-text">
+    <div class="welcome-title">¡Hola, <?= sanitize($user['nombre'] ?? 'Practicante') ?>!</div>
+    <div class="welcome-sub">Gestiona tus aulas y registra el progreso de cada sesión</div>
   </div>
-  <a href="<?= BASE_URL ?>/practicante/asistencia.php" class="btn btn-primary">
-    <i data-lucide="plus" style="width:16px;height:16px"></i>
-    Nueva sesión
-  </a>
+  <div class="welcome-action">
+    <a href="<?= BASE_URL ?>/practicante/asistencia.php" class="btn btn-primary">
+      <i data-lucide="plus" style="width:16px;height:16px"></i>
+      Nueva sesión
+    </a>
+  </div>
 </div>
 
 <!-- Stats -->
@@ -56,6 +64,13 @@ include __DIR__ . '/../includes/header.php';
     <div class="stat-label">Mis aulas</div>
   </div>
   <div class="stat-card">
+    <div class="stat-icon" style="background:rgba(167,139,250,.12);color:var(--purple)">
+      <i data-lucide="users" style="width:22px;height:22px"></i>
+    </div>
+    <div class="stat-value" style="color:var(--purple)"><?= $totalEstudiantes ?></div>
+    <div class="stat-label">Estudiantes totales</div>
+  </div>
+  <div class="stat-card">
     <div class="stat-icon" style="background:rgba(62,207,142,.12);color:var(--green)">
       <i data-lucide="calendar-check" style="width:22px;height:22px"></i>
     </div>
@@ -63,74 +78,68 @@ include __DIR__ . '/../includes/header.php';
     <div class="stat-label">Sesiones esta semana</div>
   </div>
   <div class="stat-card">
-    <div class="stat-icon" style="background:rgba(167,139,250,.12);color:var(--purple)">
-      <i data-lucide="users" style="width:22px;height:22px"></i>
+    <div class="stat-icon" style="background:rgba(245,200,66,.12);color:var(--gold)">
+      <i data-lucide="clipboard-list" style="width:22px;height:22px"></i>
     </div>
-    <div class="stat-value" style="color:var(--purple)"><?= $totalEstudiantes ?></div>
-    <div class="stat-label">Estudiantes totales</div>
+    <div class="stat-value" style="color:var(--gold)"><?= $sesionesTotal ?></div>
+    <div class="stat-label">Total sesiones registradas</div>
   </div>
 </div>
 
-<!-- Mis Aulas -->
+<!-- Mis aulas (cards) -->
 <div class="card mb-24">
-  <div class="card-header flex justify-between items-center">
-    <h2 class="card-title">Mis Aulas</h2>
-    <span class="badge"><?= count($aulas) ?> aulas</span>
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">Mis Aulas</h2>
+      <p class="card-subtitle"><?= count($aulas) ?> aulas asignadas</p>
+    </div>
   </div>
 
   <?php if (empty($aulas)): ?>
     <div class="empty-state">
       <div class="empty-icon"><i data-lucide="inbox" style="width:40px;height:40px;opacity:.4"></i></div>
       <h3>Sin aulas asignadas</h3>
-      <p>Contacta al director de tu colegio para que te asigne un aula.</p>
+      <p>Contacta al director de tu colegio.</p>
     </div>
   <?php else: ?>
-  <div class="table-wrap">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Colegio</th>
-          <th>Grado</th>
-          <th>Sección</th>
-          <th>Estudiantes</th>
-          <th>Acción</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php foreach ($aulas as $aula):
-          $stmtN = $db->prepare('SELECT COUNT(*) FROM estudiante_aula WHERE aula_id = ?');
-          $stmtN->execute([$aula['id']]);
-          $nEst = (int)$stmtN->fetchColumn();
-        ?>
-        <tr>
-          <td><?= sanitize($aula['colegio_nombre'] ?? '') ?></td>
-          <td><?= sanitize((string)($aula['grado'] ?? '')) ?>°</td>
-          <td><?= sanitize($aula['seccion'] ?? '') ?></td>
-          <td>
-            <span class="badge"><?= $nEst ?> estudiantes</span>
-          </td>
-          <td>
-            <a href="<?= BASE_URL ?>/practicante/asistencia.php?aula_id=<?= (int)$aula['id'] ?>"
-               class="btn btn-primary btn-sm">
-              <i data-lucide="clipboard-check" style="width:14px;height:14px"></i>
-              Registrar sesión
-            </a>
-          </td>
-        </tr>
-        <?php endforeach; ?>
-      </tbody>
-    </table>
+  <div class="aulas-grid-3" style="padding-bottom:4px">
+    <?php foreach ($aulas as $aula): ?>
+    <div class="aula-card">
+      <div class="aula-card-header">
+        <div>
+          <div class="aula-card-title"><?= (int)$aula['grado'] ?>° &ldquo;<?= sanitize($aula['seccion']) ?>&rdquo;</div>
+          <div class="aula-card-sub"><?= sanitize($aula['colegio_nombre']) ?></div>
+        </div>
+        <div class="activity-dot" style="background:rgba(74,158,255,.12);color:var(--blue)">
+          <i data-lucide="users" style="width:14px;height:14px"></i>
+        </div>
+      </div>
+      <div class="metric-pair" style="margin-bottom:16px">
+        <div class="metric-item">
+          <div class="metric-val" style="color:var(--blue)"><?= (int)$aula['total_est'] ?></div>
+          <div class="metric-lbl">estudiantes</div>
+        </div>
+      </div>
+      <a href="<?= BASE_URL ?>/practicante/asistencia.php?aula_id=<?= (int)$aula['id'] ?>"
+         class="btn btn-primary btn-sm btn-block" style="justify-content:center;text-decoration:none">
+        <i data-lucide="clipboard-check" style="width:14px;height:14px"></i>
+        Registrar sesión
+      </a>
+    </div>
+    <?php endforeach; ?>
   </div>
   <?php endif; ?>
 </div>
 
 <!-- Sesiones recientes -->
 <div class="card">
-  <div class="card-header flex justify-between items-center">
-    <h2 class="card-title">Sesiones recientes</h2>
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">Sesiones recientes</h2>
+      <p class="card-subtitle">Últimas 5 sesiones registradas</p>
+    </div>
     <a href="<?= BASE_URL ?>/practicante/sesiones.php" class="btn btn-ghost btn-sm">
-      Ver todo
-      <i data-lucide="arrow-right" style="width:14px;height:14px"></i>
+      Ver todo <i data-lucide="arrow-right" style="width:14px;height:14px"></i>
     </a>
   </div>
 
@@ -155,15 +164,11 @@ include __DIR__ . '/../includes/header.php';
       <tbody>
         <?php foreach ($sesiones as $s): ?>
         <tr>
-          <td>
-            <span class="text-muted text-sm"><?= sanitize(formatDate($s['fecha_sesion'])) ?></span>
-          </td>
+          <td><span style="font-size:12px;color:var(--text-muted)"><?= sanitize(formatDate($s['fecha_sesion'])) ?></span></td>
           <td><?= sanitize($s['colegio_nombre'] ?? '') ?></td>
-          <td><?= sanitize((string)($s['grado'] ?? '')) ?>° <?= sanitize($s['seccion'] ?? '') ?></td>
+          <td style="font-weight:600"><?= (int)($s['grado'] ?? 0) ?>° <?= sanitize($s['seccion'] ?? '') ?></td>
           <td><?= sanitize($s['modulo_titulo'] ?? '') ?></td>
-          <td>
-            <span class="badge badge-success"><?= (int)($s['asistentes'] ?? 0) ?></span>
-          </td>
+          <td><span class="badge" style="background:rgba(62,207,142,.12);color:var(--green)"><?= (int)($s['asistentes'] ?? 0) ?></span></td>
         </tr>
         <?php endforeach; ?>
       </tbody>
