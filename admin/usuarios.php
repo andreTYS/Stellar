@@ -32,23 +32,40 @@ if (isset($_GET['toggle'])) {
 }
 
 $rolFilter = $_GET['rol'] ?? '';
-$q = $_GET['q'] ?? '';
+$q         = $_GET['q']   ?? '';
+$page      = max(1, (int)($_GET['page'] ?? 1));
+$perPage   = 50;
+$offset    = ($page - 1) * $perPage;
 
-$where = '1=1';
+$where  = '1=1';
 $params = [];
 if ($rolFilter) { $where .= ' AND u.rol=?'; $params[] = $rolFilter; }
-if ($q) { $where .= ' AND (u.nombre LIKE ? OR u.apellido LIKE ? OR u.email LIKE ?)'; $params[] = "%$q%"; $params[] = "%$q%"; $params[] = "%$q%"; }
+if ($q) {
+    $where .= ' AND (u.nombre LIKE ? OR u.apellido LIKE ? OR u.email LIKE ? OR u.codigo_acceso LIKE ?)';
+    $params[] = "%$q%"; $params[] = "%$q%"; $params[] = "%$q%"; $params[] = "%$q%";
+}
 
-$usuarios = $pdo->prepare("
-    SELECT u.*, col.nombre as colegio_nombre
+$totalFiltered = (int)$pdo->prepare("SELECT COUNT(*) FROM usuarios u WHERE $where")->execute($params)
+    ? (int)$pdo->query("SELECT COUNT(*) FROM (SELECT u.id FROM usuarios u WHERE $where " . (!empty($params) ? '' : '') . " LIMIT 999999) sub")->fetchColumn()
+    : 0;
+
+// Re-count properly via prepared statement
+$cntStmt = $pdo->prepare("SELECT COUNT(*) FROM usuarios u WHERE $where");
+$cntStmt->execute($params);
+$totalFiltered = (int)$cntStmt->fetchColumn();
+$totalPages    = max(1, (int)ceil($totalFiltered / $perPage));
+
+$usuariosStmt = $pdo->prepare("
+    SELECT u.*, col.nombre as colegio_nombre,
+           (SELECT COUNT(*) FROM progreso_estudiante pe WHERE pe.estudiante_id=u.id AND pe.completado=1) as completados
     FROM usuarios u
     LEFT JOIN colegios col ON col.id=u.colegio_id
     WHERE $where
     ORDER BY u.rol, u.apellido, u.nombre
-    LIMIT 100
+    LIMIT $perPage OFFSET $offset
 ");
-$usuarios->execute($params);
-$usuarios = $usuarios->fetchAll();
+$usuariosStmt->execute($params);
+$usuarios = $usuariosStmt->fetchAll();
 
 $colegios = $pdo->query("SELECT id, nombre FROM colegios WHERE activo=1 ORDER BY nombre")->fetchAll();
 
@@ -85,26 +102,49 @@ require_once __DIR__ . '/../includes/header.php';
   </div>
 
   <div class="card">
+    <div class="card-header" style="padding:14px 16px">
+      <span style="font-size:13px;color:var(--text-muted)">
+        <?= number_format($totalFiltered) ?> usuarios
+        <?= $totalPages > 1 ? "· página $page de $totalPages" : '' ?>
+      </span>
+    </div>
     <div class="table-wrapper">
       <table>
-        <thead><tr><th>Nombre</th><th>Email / Código</th><th>Rol</th><th>Colegio</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Email / Código</th>
+            <th>Rol</th>
+            <th>Colegio</th>
+            <th style="text-align:center">Completados</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
         <tbody>
-          <?php foreach ($usuarios as $u): ?>
+          <?php
+          $rColors = ['admin'=>'var(--coral)','admin_colegio'=>'var(--gold)','docente'=>'var(--blue)','practicante'=>'var(--green)','estudiante'=>'var(--purple)'];
+          foreach ($usuarios as $u):
+          ?>
           <tr style="opacity:<?= $u['activo']?1:0.5 ?>">
-            <td style="font-weight:600;"><?= sanitize($u['apellido'].', '.$u['nombre']) ?></td>
-            <td style="font-size:12px; color:var(--text-secondary); font-family:monospace;">
+            <td style="font-weight:600"><?= sanitize($u['apellido'].', '.$u['nombre']) ?></td>
+            <td style="font-size:12px;color:var(--text-secondary);font-family:monospace">
               <?= sanitize($u['email'] ?? $u['codigo_acceso'] ?? '—') ?>
             </td>
             <td>
-              <?php $rColors = ['admin'=>'var(--coral)','admin_colegio'=>'var(--gold)','docente'=>'var(--blue)','practicante'=>'var(--green)','estudiante'=>'var(--purple)']; ?>
-              <span style="background:<?= $rColors[$u['rol']] ?>22; color:<?= $rColors[$u['rol']] ?>; border:1px solid <?= $rColors[$u['rol']] ?>44; padding:2px 10px; border-radius:20px; font-size:11px; font-weight:700;">
+              <span style="background:<?= $rColors[$u['rol']] ?>22;color:<?= $rColors[$u['rol']] ?>;border:1px solid <?= $rColors[$u['rol']] ?>44;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700">
                 <?= $u['rol'] ?>
               </span>
             </td>
-            <td style="color:var(--text-secondary); font-size:13px;"><?= sanitize($u['colegio_nombre'] ?? '—') ?></td>
-            <td><span style="color:<?= $u['activo']?'var(--success)':'var(--danger)' ?>"><?= $u['activo']?'Activo':'Inactivo' ?></span></td>
+            <td style="color:var(--text-secondary);font-size:13px"><?= sanitize($u['colegio_nombre'] ?? '—') ?></td>
+            <td style="text-align:center;font-weight:700;color:<?= $u['rol']==='estudiante' ? 'var(--accent)' : 'var(--text-muted)' ?>">
+              <?= $u['rol']==='estudiante' ? $u['completados'] : '—' ?>
+            </td>
+            <td><span style="color:<?= $u['activo']?'var(--success)':'var(--danger)' ?>;font-size:12px"><?= $u['activo']?'Activo':'Inactivo' ?></span></td>
             <td>
-              <a href="?toggle=<?= $u['id'] ?>" style="color:var(--text-secondary); font-size:12px; text-decoration:none;" onclick="return confirm('¿Cambiar estado del usuario?')">
+              <a href="?toggle=<?= $u['id'] ?>&q=<?= urlencode($q) ?>&rol=<?= urlencode($rolFilter) ?>&page=<?= $page ?>"
+                 style="color:var(--text-secondary);font-size:12px;text-decoration:none"
+                 onclick="return confirm('¿Cambiar estado del usuario?')">
                 <?= $u['activo']?'Desactivar':'Activar' ?>
               </a>
             </td>
@@ -113,6 +153,22 @@ require_once __DIR__ . '/../includes/header.php';
         </tbody>
       </table>
     </div>
+
+    <?php if ($totalPages > 1): ?>
+    <!-- Pagination -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:6px;padding:16px">
+      <?php
+      $baseUrl = '?' . http_build_query(array_filter(['q'=>$q,'rol'=>$rolFilter]));
+      for ($p = 1; $p <= $totalPages; $p++):
+        $active = $p === $page;
+      ?>
+      <a href="<?= $baseUrl ?>&page=<?= $p ?>"
+         style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;font-size:13px;font-weight:<?= $active?700:500 ?>;text-decoration:none;background:<?= $active?'var(--accent)':'var(--bg-card-alt)' ?>;color:<?= $active?'#fff':'var(--text-secondary)' ?>;border:1px solid <?= $active?'var(--accent)':'var(--bg-border)' ?>">
+        <?= $p ?>
+      </a>
+      <?php endfor; ?>
+    </div>
+    <?php endif; ?>
   </div>
 </div>
 

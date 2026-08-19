@@ -26,9 +26,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $colegios = $pdo->query("
-    SELECT col.*, COUNT(DISTINCT u.id) as total_usuarios
+    SELECT col.*,
+           COUNT(DISTINCT u.id)  as total_usuarios,
+           SUM(u.rol='estudiante' AND u.activo=1) as total_est,
+           SUM(u.rol='docente'    AND u.activo=1) as total_doc,
+           SUM(u.rol='practicante' AND u.activo=1) as total_prac,
+           (SELECT COUNT(*) FROM aulas a WHERE a.colegio_id=col.id AND a.activo=1) as total_aulas,
+           (SELECT COUNT(*) FROM progreso_estudiante pe
+            JOIN usuarios ue ON ue.id=pe.estudiante_id AND ue.colegio_id=col.id
+            WHERE pe.completado=1) as total_completaciones
     FROM colegios col
-    LEFT JOIN usuarios u ON u.colegio_id=col.id AND u.activo=1
+    LEFT JOIN usuarios u ON u.colegio_id=col.id
     WHERE col.activo=1
     GROUP BY col.id
     ORDER BY col.nombre
@@ -46,6 +54,14 @@ $pageTitle = 'Colegios';
 $activeNav = 'colegios';
 require_once __DIR__ . '/../includes/header.php';
 ?>
+
+<div class="page-action-header">
+  <div>
+    <h1 class="page-title">Colegios</h1>
+    <p class="page-subtitle"><?= count($colegios) ?> instituciones registradas</p>
+  </div>
+</div>
+
 <div class="page-content">
   <?php if ($msgText): ?>
   <div style="background:<?=$msgType==='success'?'#22c55e22':'#ef444422'?>; border:1px solid <?=$msgType==='success'?'#22c55e44':'#ef444444'?>; color:<?=$msgType==='success'?'var(--success)':'var(--danger)'?>; border-radius:10px; padding:12px 16px; margin-bottom:20px;">
@@ -62,15 +78,30 @@ require_once __DIR__ . '/../includes/header.php';
       </div>
       <div class="table-wrapper">
         <table>
-          <thead><tr><th>Nombre</th><th>Distrito</th><th>Director</th><th>Usuarios</th><th></th></tr></thead>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Distrito</th>
+              <th style="text-align:center">Aulas</th>
+              <th style="text-align:center">Est.</th>
+              <th style="text-align:center">Doc.</th>
+              <th style="text-align:center">Complet.</th>
+              <th></th>
+            </tr>
+          </thead>
           <tbody>
             <?php foreach ($colegios as $col): ?>
             <tr>
-              <td style="font-weight:600;"><?= sanitize($col['nombre']) ?></td>
-              <td style="color:var(--text-secondary);"><?= sanitize($col['distrito']) ?></td>
-              <td style="color:var(--text-secondary);"><?= sanitize($col['director'] ?? '—') ?></td>
-              <td style="color:var(--blue); font-weight:700;"><?= $col['total_usuarios'] ?></td>
-              <td><a href="?edit=<?= $col['id'] ?>" style="color:var(--blue); font-size:12px; text-decoration:none;">Editar</a></td>
+              <td>
+                <div style="font-weight:600;font-size:13px"><?= sanitize($col['nombre']) ?></div>
+                <div style="font-size:11px;color:var(--text-muted)"><?= sanitize($col['director'] ?? '—') ?></div>
+              </td>
+              <td style="color:var(--text-secondary);font-size:13px"><?= sanitize($col['distrito']) ?></td>
+              <td style="text-align:center;color:var(--gold);font-weight:700"><?= $col['total_aulas'] ?></td>
+              <td style="text-align:center;color:var(--accent);font-weight:700"><?= $col['total_est'] ?></td>
+              <td style="text-align:center;color:var(--blue);font-weight:700"><?= $col['total_doc'] ?></td>
+              <td style="text-align:center;color:var(--green);font-weight:700"><?= $col['total_completaciones'] ?></td>
+              <td><a href="?edit=<?= $col['id'] ?>" style="color:var(--accent);font-size:12px;text-decoration:none">Editar</a></td>
             </tr>
             <?php endforeach; ?>
           </tbody>
