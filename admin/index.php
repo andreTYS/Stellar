@@ -31,9 +31,10 @@ $tColegios    = trendPct($stats['colegios'],    $prev['colegios']);
 $tUsuarios    = trendPct($stats['usuarios'],    $prev['usuarios']);
 $tCompletados = trendPct($stats['completados'], $prev['completados']);
 
-// ── Last 5 completions (activity feed) ───────────────────────
+// ── Last 8 completions (activity feed) ───────────────────────
 $actividad = $pdo->query("
-    SELECT u.nombre, u.apellido, m.titulo AS modulo, c.nombre AS colegio
+    SELECT u.nombre, u.apellido, m.titulo AS modulo, c.nombre AS colegio,
+           pe.completado_en
     FROM progreso_estudiante pe
     JOIN usuarios u ON u.id = pe.estudiante_id
     JOIN modulos m ON m.id = pe.modulo_id
@@ -42,7 +43,20 @@ $actividad = $pdo->query("
     JOIN colegios c ON c.id = a.colegio_id
     WHERE pe.completado = 1
     ORDER BY pe.completado_en DESC
-    LIMIT 5
+    LIMIT 8
+")->fetchAll();
+
+// ── Extra metrics ────────────────────────────────────────────
+$stats['esta_semana'] = (int)$pdo->query("SELECT COUNT(*) FROM progreso_estudiante WHERE completado=1 AND completado_en >= DATE_SUB(NOW(), INTERVAL 7 DAY)")->fetchColumn();
+
+// ── Top 5 modules ─────────────────────────────────────────────
+$topModulos = $pdo->query("
+    SELECT m.titulo, c.nombre as curso, c.color_hex, COUNT(pe.id) as completaciones
+    FROM modulos m
+    JOIN cursos c ON c.id=m.curso_id
+    LEFT JOIN progreso_estudiante pe ON pe.modulo_id=m.id AND pe.completado=1
+    WHERE m.activo=1
+    GROUP BY m.id ORDER BY completaciones DESC LIMIT 5
 ")->fetchAll();
 
 // ── Colegios table ────────────────────────────────────────────
@@ -159,10 +173,18 @@ require_once __DIR__ . '/../includes/header.php';
     <?php endif; ?>
   </div>
 
+  <div class="stat-card" style="grid-column:span 1">
+    <div class="stat-icon" style="background:rgba(6,182,212,.12);color:#06b6d4">
+      <i data-lucide="zap" style="width:22px;height:22px"></i>
+    </div>
+    <div class="stat-value" style="color:#06b6d4"><?= $stats['esta_semana'] ?></div>
+    <div class="stat-label">Completaciones esta semana</div>
+  </div>
+
 </div>
 
 <!-- Charts + activity -->
-<div style="display:grid;grid-template-columns:1fr 1fr 320px;gap:20px;margin-bottom:24px">
+<div style="display:grid;grid-template-columns:1fr 1fr 300px;gap:20px;margin-bottom:24px">
 
   <div class="card">
     <div class="card-header">
@@ -208,6 +230,9 @@ require_once __DIR__ . '/../includes/header.php';
           <div class="activity-title"><?= sanitize($a['nombre'] . ' ' . $a['apellido']) ?></div>
           <div class="activity-meta"><?= sanitize($a['modulo']) ?> · <?= sanitize($a['colegio']) ?></div>
         </div>
+        <span style="font-size:10px;color:var(--text-muted);white-space:nowrap;flex-shrink:0">
+          <?= isset($a['completado_en']) ? date('d/m H:i', strtotime($a['completado_en'])) : '' ?>
+        </span>
       </div>
       <?php endforeach; ?>
     </div>
@@ -268,6 +293,69 @@ require_once __DIR__ . '/../includes/header.php';
   </div>
 </div>
 
+<!-- Top módulos + Quick links -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+
+  <!-- Top 5 modules -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Top módulos completados</h2>
+    </div>
+    <?php
+    $maxTopMod = max(1, $topModulos[0]['completaciones'] ?? 1);
+    foreach ($topModulos as $i => $tm):
+      $pctMod = round($tm['completaciones'] / $maxTopMod * 100);
+    ?>
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bg-border)">
+      <span style="width:20px;font-size:11px;font-weight:700;color:var(--text-muted);text-align:center;flex-shrink:0"><?= $i+1 ?></span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><?= sanitize($tm['titulo']) ?></div>
+        <div style="font-size:10px;color:<?= $tm['color_hex'] ?>;margin-top:2px"><?= sanitize($tm['curso']) ?></div>
+        <div class="progress-track" style="height:4px;margin-top:5px">
+          <div class="progress-fill" data-pct="<?= $pctMod ?>" style="background:<?= $tm['color_hex'] ?>;width:0%;transition:width .8s ease"></div>
+        </div>
+      </div>
+      <span style="font-size:14px;font-weight:700;color:var(--accent);flex-shrink:0"><?= $tm['completaciones'] ?></span>
+    </div>
+    <?php endforeach; ?>
+    <?php if (empty($topModulos)): ?>
+    <p style="color:var(--text-muted);font-size:13px;padding:16px 0;text-align:center">Sin actividad registrada</p>
+    <?php endif; ?>
+  </div>
+
+  <!-- Quick links -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Acceso rápido</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <?php
+    $links = [
+      ['href' => BASE_URL.'/admin/colegios.php',  'icon' => 'building-2',  'label' => 'Colegios',  'color' => 'var(--blue)'],
+      ['href' => BASE_URL.'/admin/usuarios.php',  'icon' => 'users',       'label' => 'Usuarios',  'color' => 'var(--purple)'],
+      ['href' => BASE_URL.'/admin/cursos.php',    'icon' => 'book-open',   'label' => 'Cursos',    'color' => 'var(--green)'],
+      ['href' => BASE_URL.'/admin/modulos.php',   'icon' => 'layers',      'label' => 'Módulos',   'color' => 'var(--gold)'],
+      ['href' => BASE_URL.'/admin/reportes.php',  'icon' => 'bar-chart-2', 'label' => 'Reportes',  'color' => 'var(--coral)'],
+      ['href' => BASE_URL.'/mensajes/',           'icon' => 'mail',        'label' => 'Mensajes',  'color' => 'var(--accent)'],
+    ];
+    foreach ($links as $l): ?>
+    <a href="<?= $l['href'] ?>"
+       style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;border:1px solid var(--bg-border);text-decoration:none;transition:border-color .15s,transform .15s;background:var(--bg-elevated)"
+       onmouseover="this.style.borderColor='<?= $l['color'] ?>55';this.style.transform='translateY(-1px)'"
+       onmouseout="this.style.borderColor='var(--bg-border)';this.style.transform=''">
+      <div style="width:34px;height:34px;border-radius:9px;background:<?= $l['color'] ?>18;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <i data-lucide="<?= $l['icon'] ?>" style="width:16px;height:16px;color:<?= $l['color'] ?>"></i>
+      </div>
+      <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--text-primary)"><?= $l['label'] ?></span>
+    </a>
+    <?php endforeach; ?>
+    </div>
+  </div>
+
+</div>
+
+<!-- Old quick links hidden, replaced above -->
+<div style="display:none">
 <!-- Quick links -->
 <div style="margin-bottom:10px">
   <h2 style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text-primary)">Acceso rápido</h2>
@@ -294,6 +382,7 @@ foreach ($links as $l): ?>
 </a>
 <?php endforeach; ?>
 </div>
+</div><!-- end hidden old quick links -->
 
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
