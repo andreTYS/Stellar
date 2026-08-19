@@ -48,22 +48,64 @@ $activeNav = 'portafolio';
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
-<!-- Page header -->
-<div class="page-header flex justify-between items-center">
+<div class="page-action-header">
   <div>
     <h1 class="page-title">Mi Portafolio</h1>
     <p class="page-subtitle">
-      <?= count($todos) ?> trabajo<?= count($todos) !== 1 ? 's' : '' ?> enviado<?= count($todos) !== 1 ? 's' : '' ?>
-      <?= !empty($porCurso) ? ' en ' . count($porCurso) . ' curso' . (count($porCurso) !== 1 ? 's' : '') : '' ?>
+      <?= count($todos) ?> trabajo<?= count($todos) !== 1 ? 's' : '' ?> en
+      <?= count($porCurso) ?> curso<?= count($porCurso) !== 1 ? 's' : '' ?>
     </p>
   </div>
-  <?php if (!empty($todos)): ?>
-  <div class="stat-card" style="min-width:120px;text-align:center;padding:16px 20px;">
-    <div class="stat-value" style="color:var(--purple);font-size:26px;"><?= count($todos) ?></div>
-    <div class="stat-label">Trabajos</div>
+</div>
+
+<?php if (!empty($todos)): ?>
+<!-- Mini stats row -->
+<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px">
+  <?php
+  $ultimo = $todos[0]['subido_en'] ?? null;
+  $califs = array_filter(array_column($todos, 'calificacion'));
+  $promCalif = $califs ? round(array_sum($califs)/count($califs),1) : null;
+  ?>
+  <div class="stat-card" style="flex:1;min-width:140px;padding:14px 18px">
+    <div class="stat-value" style="font-size:24px;color:var(--purple)"><?= count($todos) ?></div>
+    <div class="stat-label">Trabajos entregados</div>
+  </div>
+  <div class="stat-card" style="flex:1;min-width:140px;padding:14px 18px">
+    <div class="stat-value" style="font-size:24px;color:var(--accent)"><?= count($porCurso) ?></div>
+    <div class="stat-label">Cursos con entregables</div>
+  </div>
+  <?php if ($promCalif): ?>
+  <div class="stat-card" style="flex:1;min-width:140px;padding:14px 18px">
+    <div class="stat-value" style="font-size:24px;color:var(--gold)"><?= $promCalif ?> ★</div>
+    <div class="stat-label">Calificación promedio</div>
+  </div>
+  <?php endif; ?>
+  <?php if ($ultimo): ?>
+  <div class="stat-card" style="flex:1;min-width:140px;padding:14px 18px">
+    <div class="stat-value" style="font-size:18px;color:var(--green)"><?= date('d/m/Y', strtotime($ultimo)) ?></div>
+    <div class="stat-label">Último entregable</div>
   </div>
   <?php endif; ?>
 </div>
+
+<!-- Course filter chips -->
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px" id="filter-chips">
+  <button onclick="filterPortfolio('all')" class="chip-filter active" data-filter="all">
+    Todos (<?= count($todos) ?>)
+  </button>
+  <?php foreach ($porCurso as $cid => $curso): ?>
+  <button onclick="filterPortfolio(<?= (int)$cid ?>)" class="chip-filter" data-filter="<?= (int)$cid ?>"
+          style="--chip-color:<?= htmlspecialchars($curso['color']) ?>">
+    <?= $curso['icono'] ?> <?= sanitize($curso['nombre']) ?> (<?= count($curso['items']) ?>)
+  </button>
+  <?php endforeach; ?>
+</div>
+<style>
+.chip-filter{padding:6px 14px;border-radius:99px;font-size:12px;font-weight:600;border:1.5px solid var(--bg-border);background:var(--bg-elevated);color:var(--text-secondary);cursor:pointer;transition:all .15s}
+.chip-filter:hover{border-color:var(--chip-color,var(--accent));color:var(--chip-color,var(--accent))}
+.chip-filter.active{background:var(--chip-color,var(--accent));border-color:var(--chip-color,var(--accent));color:#fff}
+</style>
+<?php endif; ?>
 
 <!-- Empty state -->
 <?php if (empty($todos)): ?>
@@ -83,7 +125,7 @@ require_once __DIR__ . '/../includes/header.php';
   $color = htmlspecialchars($curso['color'], ENT_QUOTES, 'UTF-8');
   $icono = htmlspecialchars($curso['icono'], ENT_QUOTES, 'UTF-8');
 ?>
-<section class="mb-32">
+<section class="mb-32 portfolio-section" data-course="<?= (int)$cursoId ?>">
 
   <!-- Course section header -->
   <div class="flex items-center gap-12 mb-16" style="padding-bottom:14px;border-bottom:2px solid <?= $color ?>33;">
@@ -118,8 +160,9 @@ require_once __DIR__ . '/../includes/header.php';
              onmouseout="this.style.transform=''">
       </a>
       <?php else: ?>
-      <div style="height:120px;background:linear-gradient(135deg,<?= $color ?>22,<?= $color ?>11);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-        <i data-lucide="file-text" style="width:16px;height:16px;color:var(--text-muted)"></i>
+      <div style="height:120px;background:linear-gradient(135deg,<?= $color ?>22,<?= $color ?>11);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;flex-shrink:0;">
+        <i data-lucide="file-text" style="width:28px;height:28px;color:<?= $color ?>99"></i>
+        <span style="font-size:10px;color:<?= $color ?>aa;font-weight:600;text-transform:uppercase;letter-spacing:.06em"><?= sanitize($formato ?: 'Archivo') ?></span>
       </div>
       <?php endif; ?>
 
@@ -166,5 +209,20 @@ require_once __DIR__ . '/../includes/header.php';
 </section>
 <?php endforeach; ?>
 <?php endif; ?>
+
+<script>
+function filterPortfolio(courseId) {
+  document.querySelectorAll('.chip-filter').forEach(c => {
+    c.classList.toggle('active', String(c.dataset.filter) === String(courseId));
+  });
+  document.querySelectorAll('.portfolio-section').forEach(s => {
+    if (courseId === 'all' || s.dataset.course === String(courseId)) {
+      s.style.display = '';
+    } else {
+      s.style.display = 'none';
+    }
+  });
+}
+</script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
