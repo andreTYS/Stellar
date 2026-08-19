@@ -36,9 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Close sidebar on Escape key
+  // Close sidebar / search on Escape key
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeSidebar();
+    if (e.key === 'Escape') { closeSidebar(); closeSearch(); }
   });
 
   // Auto-close flash messages after 4s
@@ -78,6 +78,67 @@ async function apiPost(url, data) {
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
+
+// ── Global search modal ──────────────────────────────────────
+function openSearch() {
+  const modal = document.getElementById('search-modal');
+  if (!modal) return;
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => {
+    const inp = document.getElementById('search-input');
+    if (inp) inp.focus();
+  }, 50);
+}
+
+function closeSearch() {
+  const modal = document.getElementById('search-modal');
+  if (!modal) return;
+  modal.classList.remove('active');
+  document.body.style.overflow = '';
+  const inp = document.getElementById('search-input');
+  if (inp) inp.value = '';
+  const res = document.getElementById('search-results');
+  if (res) res.innerHTML = '';
+}
+
+let _searchTimer = null;
+function doSearch(q) {
+  const res = document.getElementById('search-results');
+  if (!res) return;
+  clearTimeout(_searchTimer);
+  if (!q || q.length < 2) { res.innerHTML = ''; return; }
+  res.innerHTML = '<div style="padding:16px;color:var(--text-muted);font-size:13px">Buscando…</div>';
+  _searchTimer = setTimeout(async () => {
+    try {
+      const r = await fetch('/api/search.php?q=' + encodeURIComponent(q));
+      const data = await r.json();
+      if (!data.results || data.results.length === 0) {
+        res.innerHTML = '<div style="padding:16px;color:var(--text-muted);font-size:13px">Sin resultados para "' + q + '"</div>';
+        return;
+      }
+      res.innerHTML = data.results.map(item => `
+        <a href="${item.url}" onclick="closeSearch()" style="display:flex;align-items:center;gap:12px;padding:10px 16px;text-decoration:none;border-bottom:1px solid var(--bg-border)" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''">
+          <span style="width:32px;height:32px;border-radius:8px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <i data-lucide="${item.icon}" style="width:15px;height:15px;color:var(--accent)"></i>
+          </span>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--text-primary)">${item.label}</div>
+            <div style="font-size:11px;color:var(--text-muted)">${item.sub}</div>
+          </div>
+          <span style="margin-left:auto;font-size:10px;padding:2px 8px;border-radius:20px;background:var(--bg-card-alt);color:var(--text-muted)">${item.type}</span>
+        </a>
+      `).join('');
+      if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [res] });
+    } catch(e) {
+      res.innerHTML = '<div style="padding:16px;color:var(--danger);font-size:13px">Error al buscar</div>';
+    }
+  }, 300);
+}
+
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
+});
 
 // ── Toast notifications ──────────────────────────────────────
 function showToast(message, type = 'info', duration = 3500) {
