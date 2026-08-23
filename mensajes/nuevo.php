@@ -44,6 +44,7 @@ if ($tableOk) {
 
 // Handle POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tableOk) {
+    verifyCsrf();
     $destId = (int)($_POST['destinatario_id'] ?? 0);
     $asunto = trim($_POST['asunto'] ?? '');
     $cuerpo = trim($_POST['cuerpo'] ?? '');
@@ -104,6 +105,7 @@ require_once __DIR__ . '/../includes/header.php';
 
 <div class="card" style="max-width:680px">
   <form method="POST" action="">
+    <?= csrfField() ?>
     <div class="form-group">
       <label class="form-label">Para</label>
       <select name="destinatario_id" class="form-control" required>

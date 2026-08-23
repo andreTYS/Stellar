@@ -62,8 +62,9 @@ if ($tableOk) {
 // Unread count
 $unread = 0;
 if ($tableOk) {
-    $unread = (int)$pdo->prepare('SELECT COUNT(*) FROM mensajes WHERE destinatario_id=? AND leido=0 AND archivado_dest=0')
-                       ->execute([$uid]) ? (int)$pdo->query("SELECT COUNT(*) FROM mensajes WHERE destinatario_id=$uid AND leido=0 AND archivado_dest=0")->fetchColumn() : 0;
+    $stmtU = $pdo->prepare('SELECT COUNT(*) FROM mensajes WHERE destinatario_id=? AND leido=0 AND archivado_dest=0');
+    $stmtU->execute([$uid]);
+    $unread = (int)$stmtU->fetchColumn();
 }
 
 $pageTitle = 'Mensajes';

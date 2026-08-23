@@ -12,6 +12,7 @@ $success = '';
 
 // ── Handle form submissions ───────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifyCsrf();
     $action = $_POST['action'] ?? '';
 
     // Update profile info
@@ -37,9 +38,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare('UPDATE usuarios SET nombre=?, apellido=?, email=? WHERE id=?');
             $stmt->execute([$nombre, $apellido, $email ?: null, $userId]);
             // Refresh session
-            $_SESSION['user']['nombre']   = $nombre;
-            $_SESSION['user']['apellido'] = $apellido;
-            $_SESSION['user']['email']    = $email;
+            $_SESSION['usuario']['nombre']   = $nombre;
+            $_SESSION['usuario']['apellido'] = $apellido;
+            $_SESSION['usuario']['email']    = $email;
             $success = 'perfil';
             $user = getUserById($userId);
         }
@@ -146,6 +147,7 @@ require_once __DIR__ . '/includes/header.php';
       </div>
       <form method="POST" action="" novalidate>
         <input type="hidden" name="action" value="profile">
+        <?= csrfField() ?>
         <div class="form-row-2">
           <div class="form-group">
             <label class="form-label">Nombre</label>
@@ -183,6 +185,7 @@ require_once __DIR__ . '/includes/header.php';
       </div>
       <form method="POST" action="" novalidate>
         <input type="hidden" name="action" value="password">
+        <?= csrfField() ?>
         <div class="form-group">
           <label class="form-label">Contraseña actual</label>
           <input type="password" name="password_actual" class="form-control" placeholder="••••••••">

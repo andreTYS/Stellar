@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $user = loginUser($emailOrCodigo, $password);
         if ($user) {
+            session_regenerate_id(true);
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['rol']     = $user['rol'];
             $_SESSION['usuario'] = $user;
