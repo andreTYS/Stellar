@@ -1,0 +1,1509 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Aldrin: Regreso a Casa — NASA Space Apps 2025 Premium</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" type="image/svg+xml" href="img/ICONOO.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+  /* ===== RESET ===== */
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow-x:hidden}
+  
+  /* ===== ANIMATIONS ===== */
+  @keyframes starfield {
+    0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+  }
+  
+  @keyframes nebula-pulse {
+    0%, 100% { 
+      opacity: 0.4; 
+      filter: blur(100px) hue-rotate(0deg); 
+      transform: scale(1); 
+    }
+    50% { 
+      opacity: 0.7; 
+      filter: blur(120px) hue-rotate(45deg); 
+      transform: scale(1.2); 
+    }
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-15px) rotate(5deg); }
+  }
+  
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% { 
+      box-shadow: 0 0 20px rgba(0,255,255,0.4), 
+                  0 0 40px rgba(0,255,255,0.2),
+                  inset 0 0 20px rgba(0,255,255,0.1);
+    }
+    50% { 
+      box-shadow: 0 0 40px rgba(0,255,255,0.8), 
+                  0 0 80px rgba(0,255,255,0.4),
+                  inset 0 0 30px rgba(0,255,255,0.2);
+    }
+  }
+  
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.85) rotateX(20deg); }
+    to { opacity: 1; transform: scale(1) rotateX(0deg); }
+  }
+  
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes particle-float {
+    0% { transform: translate(0, 0) scale(0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 0.8; }
+    100% { transform: translate(var(--tx), -120vh) scale(1.5); opacity: 0; }
+  }
+  
+  @keyframes orbit {
+    from { transform: rotate(0deg) translateX(300px) rotate(0deg); }
+    to { transform: rotate(360deg) translateX(300px) rotate(-360deg); }
+  }
+  
+  /* ===== BASE STYLES ===== */
+  body{
+    font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+    background: #000510;
+    color: #eaf8ff;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    cursor: none;
+    position: relative;
+  }
+  
+  /* Layered space background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse at 15% 20%, rgba(139, 92, 246, 0.25) 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 80%, rgba(59, 130, 246, 0.2) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(6, 182, 212, 0.15) 0%, transparent 60%);
+    animation: nebula-pulse 25s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+  
+  /* Animated starfield */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      radial-gradient(2px 2px at 20% 30%, white, transparent),
+      radial-gradient(2px 2px at 60% 70%, white, transparent),
+      radial-gradient(1px 1px at 50% 50%, white, transparent),
+      radial-gradient(2px 2px at 80% 10%, white, transparent),
+      radial-gradient(1px 1px at 90% 60%, white, transparent),
+      radial-gradient(1px 1px at 33% 80%, white, transparent),
+      radial-gradient(2px 2px at 15% 95%, white, transparent);
+    background-size: 250% 250%;
+    opacity: 0.5;
+    animation: starfield 100s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+  
+  /* ===== VARIABLES ===== */
+  :root{
+    --primary: #00ffff;
+    --primary-dark: #00cccc;
+    --accent: #ffd700;
+    --purple: #a855f7;
+    --panel: rgba(6, 18, 30, 0.92);
+    --glass: rgba(255, 255, 255, 0.1);
+    --shadow: 0 25px 80px rgba(0, 0, 0, 0.9);
+    --glow-cyan: 0 0 25px rgba(0, 255, 255, 0.5), 0 0 50px rgba(0, 255, 255, 0.3);
+    --glow-gold: 0 0 25px rgba(255, 215, 0, 0.5), 0 0 50px rgba(255, 215, 0, 0.3);
+  }
+  
+  /* ===== TOPBAR ===== */
+  header#topbar {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    z-index: 1100;
+    pointer-events: auto;
+    animation: slideDown 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  
+  .topbar-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, rgba(6, 18, 30, 0.95), rgba(15, 30, 55, 0.9));
+    border-radius: 20px;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(30px);
+    border: 2px solid rgba(0, 255, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .topbar-inner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg, 
+      transparent, 
+      rgba(0, 255, 255, 0.15), 
+      transparent
+    );
+    animation: shimmer 4s infinite;
+  }
+  
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    text-decoration: none;
+    color: #fff;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .brand img {
+    height: 45px;
+    filter: drop-shadow(0 0 20px var(--primary));
+    animation: float 4s ease-in-out infinite;
+  }
+  
+  .brand-name {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--primary);
+    font-weight: 900;
+    font-size: 1.4rem;
+    letter-spacing: 3px;
+    text-shadow: var(--glow-cyan);
+  }
+  
+  .brand-subtitle {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 300;
+  }
+  
+  .mini-nav {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .nav-pill {
+    background: rgba(0, 255, 255, 0.08);
+    border: 2px solid rgba(0, 255, 255, 0.4);
+    padding: 10px 18px;
+    border-radius: 14px;
+    color: var(--primary);
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .nav-pill::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.3), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  
+  .nav-pill:hover {
+    transform: translateY(-4px) scale(1.08);
+    box-shadow: var(--glow-cyan);
+    border-color: var(--primary);
+  }
+  
+  .nav-pill:hover::before {
+    opacity: 1;
+  }
+  
+  /* ===== START SCREEN ===== */
+  .start-screen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1200;
+    background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.2) 0%, #000510 70%);
+  }
+  
+  .start-card {
+    background: linear-gradient(135deg, rgba(6, 18, 30, 0.98), rgba(25, 40, 70, 0.95));
+    padding: 50px;
+    border-radius: 30px;
+    max-width: 1000px;
+    text-align: center;
+    border: 3px solid rgba(0, 255, 255, 0.4);
+    box-shadow: var(--shadow), var(--glow-cyan);
+    position: relative;
+    overflow: hidden;
+    animation: scaleIn 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  
+  .start-card::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    background: linear-gradient(
+      45deg, 
+      var(--primary), 
+      var(--purple), 
+      var(--accent), 
+      var(--primary)
+    );
+    background-size: 300% 300%;
+    border-radius: 30px;
+    z-index: -1;
+    opacity: 0.3;
+    animation: shimmer 6s linear infinite;
+  }
+  
+  .title {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--primary);
+    font-weight: 900;
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    text-shadow: var(--glow-cyan);
+    margin-bottom: 20px;
+    animation: float 4s ease-in-out infinite;
+    letter-spacing: 4px;
+  }
+  
+  .subtitle {
+    color: var(--accent);
+    font-size: 1.4rem;
+    margin: 20px 0;
+    text-shadow: var(--glow-gold);
+    font-weight: 700;
+  }
+  
+  .start-description {
+    margin: 24px 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
+    line-height: 1.8;
+  }
+  
+  .start-actions {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 32px;
+    flex-wrap: wrap;
+  }
+  
+  .btn-primary {
+    background: linear-gradient(135deg, #00ffff, #0066ff, #00ffff);
+    background-size: 200% 200%;
+    color: #001;
+    border: none;
+    padding: 18px 40px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 800;
+    font-size: 1.2rem;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: var(--glow-cyan);
+    position: relative;
+    overflow: hidden;
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 2px;
+  }
+  
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+  }
+  
+  .btn-primary:hover::before {
+    transform: translateX(100%);
+  }
+  
+  .btn-primary:hover {
+    transform: translateY(-6px) scale(1.08);
+    box-shadow: 0 0 50px rgba(0, 255, 255, 0.8), 0 0 100px rgba(0, 255, 255, 0.4);
+  }
+  
+  .btn-ghost {
+    background: transparent;
+    border: 3px solid rgba(0, 255, 255, 0.5);
+    color: var(--primary);
+    padding: 16px 36px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1.1rem;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 1px;
+  }
+  
+  .btn-ghost:hover {
+    background: rgba(0, 255, 255, 0.15);
+    border-color: var(--primary);
+    transform: translateY(-4px);
+    box-shadow: var(--glow-cyan);
+  }
+  
+  /* ===== INTRO VIDEO ===== */
+  .intro-screen {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1190;
+  }
+  
+  .intro-screen video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.7) contrast(1.2);
+  }
+  
+  .skip-btn {
+    position: absolute;
+    right: 30px;
+    bottom: 40px;
+    padding: 14px 28px;
+    border-radius: 999px;
+    border: 3px solid var(--primary);
+    background: rgba(0, 255, 255, 0.2);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    backdrop-filter: blur(15px);
+    box-shadow: var(--glow-cyan);
+    font-family: 'Orbitron', sans-serif;
+  }
+  
+  .skip-btn:hover {
+    transform: translateY(-4px) scale(1.1);
+    background: rgba(0, 255, 255, 0.35);
+    box-shadow: 0 0 40px rgba(0, 255, 255, 0.6);
+  }
+  
+  /* ===== FLOATING PROGRESS ===== */
+/* ===== FLOATING PROGRESS (OCULTO TOTALMENTE) ===== */
+.float-progress {
+  display: none !important;        /* No se muestra ni ocupa espacio */
+  opacity: 0 !important;           /* Invisible aunque se fuerce su visibilidad */
+  visibility: hidden !important;   /* No visible en ningún caso */
+  pointer-events: none !important; /* No clickeable ni detectable */
+  position: fixed;
+  top: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1090;
+  background: linear-gradient(135deg, rgba(6, 18, 30, 0.95), rgba(15, 30, 55, 0.9));
+  padding: 14px 24px;
+  border-radius: 20px;
+  border: 2px solid rgba(0, 255, 255, 0.4);
+  gap: 16px;
+  align-items: center;
+  box-shadow: var(--shadow), var(--glow-cyan);
+  backdrop-filter: blur(30px);
+  animation: slideDown 1s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
+}
+
+/* Mantiene estilos de badge y title por si el JS los toca */
+#levelBadge {
+  background: linear-gradient(135deg, #00ffff, #0099ff);
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 800;
+  color: #001;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.4);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  font-family: 'Orbitron', sans-serif;
+}
+
+#levelTitle {
+  font-family: 'Orbitron', sans-serif;
+  color: var(--primary);
+  font-weight: 700;
+  text-shadow: var(--glow-cyan);
+}
+
+
+  /* ===== MAIN CONTENT ===== */
+  .main {
+    position: relative;
+    display: block;
+    height: 100%;
+    overflow: auto;
+    padding: 200px 24px 100px;
+  }
+  
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding-bottom: 60px;
+  }
+  
+  /* ===== SCENE CARD ===== */
+  .scene {
+    display: flex;
+    gap: 30px;
+    align-items: stretch;
+    background: linear-gradient(135deg, rgba(15, 30, 55, 0.98), rgba(25, 40, 70, 0.95));
+    border-radius: 25px;
+    padding: 30px;
+    border: 3px solid rgba(0, 255, 255, 0.3);
+    box-shadow: var(--shadow), var(--glow-cyan);
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+    min-height: 500px;
+    transition: opacity 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    opacity: 0;
+    transform: translateY(50px);
+    backdrop-filter: blur(15px);
+  }
+  
+  .scene.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  .scene .bg {
+    position: absolute;
+    inset: -20px;
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.4) contrast(1.15);
+    z-index: 0;
+    transition: transform 15s ease-out;
+  }
+  
+  .scene:hover .bg {
+    transform: scale(1.08);
+  }
+  
+  .scene .overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg, 
+      rgba(6, 18, 30, 0.85), 
+      rgba(15, 30, 55, 0.75)
+    );
+    z-index: 1;
+  }
+  
+  .scene .content {
+    z-index: 2;
+    flex: 1;
+    padding: 20px 16px;
+  }
+  
+  .scene .media {
+    z-index: 2;
+    width: 380px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .scene .media img {
+    max-width: 100%;
+    border-radius: 20px;
+    border: 3px solid rgba(0, 255, 255, 0.4);
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.8), var(--glow-cyan);
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  
+  .scene .media img:hover {
+    transform: scale(1.08) rotate(2deg);
+  }
+  
+  /* ===== TEXT ELEMENTS ===== */
+  .page-title {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--primary);
+    margin-bottom: 24px;
+    font-size: 2.5rem;
+    text-shadow: var(--glow-cyan);
+    animation: fadeInUp 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+    letter-spacing: 2px;
+  }
+  
+  .story-text {
+    color: #e6f8ff;
+    line-height: 2;
+    margin-bottom: 20px;
+    font-size: 1.15rem;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  
+  .story-text.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  .dialogue {
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.18), rgba(0, 255, 255, 0.08));
+    border-left: 5px solid var(--primary);
+    padding: 20px;
+    border-radius: 16px;
+    font-style: italic;
+    margin: 20px 0;
+    box-shadow: inset 0 2px 4px rgba(0, 255, 255, 0.3), 
+                0 8px 24px rgba(0, 0, 0, 0.4);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .dialogue::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 5px;
+    height: 100%;
+    background: var(--primary);
+    box-shadow: var(--glow-cyan);
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  /* ===== EDUCATION BOX ===== */
+  .education-box {
+    background: linear-gradient(135deg, rgba(255, 190, 11, 0.2), rgba(168, 85, 247, 0.15));
+    padding: 26px;
+    border-radius: 20px;
+    margin-top: 28px;
+    border: 3px solid rgba(255, 190, 11, 0.4);
+    box-shadow: 0 12px 40px rgba(255, 190, 11, 0.3), 
+                inset 0 2px 4px rgba(255, 255, 255, 0.15);
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 1s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both;
+  }
+  
+  .education-box::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.2), transparent);
+    animation: float 8s ease-in-out infinite;
+  }
+  
+  .education-box h3 {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--accent);
+    margin-bottom: 16px;
+    font-size: 1.5rem;
+    text-shadow: var(--glow-gold);
+    letter-spacing: 1px;
+  }
+  
+  .education-box ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .education-box li {
+    padding: 12px 0 12px 36px;
+    position: relative;
+    transition: transform 0.3s;
+    font-size: 1.05rem;
+  }
+  
+  .education-box li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-weight: bold;
+    font-size: 1.3rem;
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+  
+  .education-box li:hover {
+    transform: translateX(12px);
+  }
+  
+  /* ===== CHOICES ===== */
+  .choices-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-top: 32px;
+  }
+  
+  .choice {
+    padding: 26px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.12), rgba(0, 150, 255, 0.08));
+    border: 3px solid rgba(0, 255, 255, 0.4);
+    cursor: pointer;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+  
+  .choice::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.3), transparent);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  
+  .choice:hover::before {
+    opacity: 1;
+  }
+  
+  .choice:hover {
+    transform: translateY(-12px) scale(1.05);
+    box-shadow: var(--glow-cyan), 0 30px 80px rgba(0, 255, 255, 0.2);
+    border-color: var(--primary);
+  }
+  
+  /* ===== CONTINUE BUTTON ===== */
+  .continue-wrap {
+    text-align: center;
+    margin-top: 32px;
+  }
+  
+  .continue-btn {
+    padding: 18px 42px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #00ffff, #0099ff, #00ffff);
+    background-size: 200% 200%;
+    color: #001;
+    font-weight: 800;
+    font-size: 1.15rem;
+    cursor: pointer;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: var(--glow-cyan);
+    position: relative;
+    overflow: hidden;
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 2px;
+  }
+  
+  .continue-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+  
+  .continue-btn:hover::after {
+    width: 400px;
+    height: 400px;
+  }
+  
+  .continue-btn:hover {
+    transform: translateY(-6px) scale(1.08);
+    box-shadow: 0 0 50px rgba(0, 255, 255, 0.9), 
+                0 0 100px rgba(0, 255, 255, 0.5);
+    background-position: 100% 50%;
+  }
+  
+  /* ===== CURSOR ===== */
+  .cursor {
+    position: fixed;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 3px solid var(--primary);
+    transform: translate(-50%, -50%);
+    z-index: 99999;
+    pointer-events: none;
+    transition: width 0.3s, height 0.3s, border-color 0.3s;
+    box-shadow: var(--glow-cyan), inset 0 0 15px rgba(0, 255, 255, 0.4);
+  }
+  
+  .cursor::before {
+    content: '';
+    position: absolute;
+    inset: -12px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 255, 255, 0.4);
+    animation: pulse 2.5s ease-out infinite;
+  }
+  
+  @keyframes pulse {
+    0% { transform: scale(0.9); opacity: 1; }
+    100% { transform: scale(2.5); opacity: 0; }
+  }
+  
+  /* ===== FADE OVERLAY ===== */
+  .fade-overlay {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 2000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  
+  /* ===== PARTICLES ===== */
+  .particle {
+    position: fixed;
+    width: 5px;
+    height: 5px;
+    background: var(--primary);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1;
+    box-shadow: 0 0 15px var(--primary);
+    animation: particle-float 20s linear infinite;
+    --tx: calc(var(--random-x) * 100px);
+  }
+  
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 1024px) {
+    .scene {
+      flex-direction: column;
+      padding: 24px;
+    }
+    .scene .media {
+      width: 100%;
+      margin-top: 24px;
+    }
+    .topbar-inner {
+      padding: 12px 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .brand {
+      flex: 1 1 100%;
+      justify-content: center;
+    }
+    .float-progress {
+      top: 160px;
+      font-size: 0.9rem;
+      padding: 12px 18px;
+    }
+    .mini-nav {
+      gap: 8px;
+    }
+    .nav-pill {
+      padding: 8px 14px;
+      font-size: 0.85rem;
+    }
+    .title {
+      font-size: clamp(2rem, 10vw, 3.5rem) !important;
+    }
+    .choices-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    .main {
+      padding: 200px 16px 80px;
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .start-card {
+      padding: 32px 24px;
+      margin: 20px;
+    }
+    .start-actions {
+      flex-direction: column;
+      width: 100%;
+    }
+    .btn-primary, .btn-ghost {
+      width: 100%;
+    }
+    .education-box {
+      padding: 20px;
+    }
+    .page-title {
+      font-size: 1.8rem;
+    }
+    .story-text {
+      font-size: 1rem;
+    }
+  }
+  </style>
+</head>
+<body>
+  <!-- Custom cursor -->
+  <div class="cursor" id="cursor"></div>
+
+  <!-- Topbar -->
+  <header id="topbar" aria-hidden="false">
+    <div class="topbar-inner">
+      <a href="#" class="brand">
+        <img src="img/faviconnasa.svg" alt="NASA Logo" />
+        <div>
+          <div class="brand-name">ALDRIN & CAT</div>
+          <div class="brand-subtitle">StellarScribe — NASA Visual Premium</div>
+        </div>
+      </a>
+
+      <div class="mini-nav" role="toolbar" aria-label="controles">
+        <button class="nav-pill" id="btn-toc">TOC</button>
+        <button class="nav-pill" id="music-toggle">🎵</button>
+        <button class="nav-pill" id="mute-narration">🔈</button>
+        <button class="nav-pill" id="fullscreen">⛶</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Start screen -->
+  <div id="startScreen" class="start-screen" aria-hidden="false">
+    <div class="start-card">
+      <div class="title">🚀 ALDRIN: REGRESO A CASA</div>
+      <div class="subtitle">Una Aventura Espacial Educativa Interactiva</div>
+      <div class="start-description">
+        Versión Premium — NASA Space Apps Challenge 2025<br>
+        Narración automática por escena · Gato con voz propia · Aldrin con voz propia
+      </div>
+      <div class="start-actions">
+        <button id="startBtn" class="btn-primary">INICIAR MISIÓN</button>
+        <button id="skipIntro" class="btn-ghost">COMENZAR SIN INTRO</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Intro screen -->
+  <div id="intro" class="intro-screen" aria-hidden="true">
+    <video id="introVideo" muted playsinline>
+      <source src="assets/intro_nasa.mp4" type="video/mp4" />
+      Tu navegador no soporta video.
+    </video>
+    <button id="skipBtn" class="skip-btn">⏩ Saltar Intro</button>
+  </div>
+
+  <!-- Floating progress -->
+  <div class="float-progress" id="floatProgress" style="display:none">
+    <div id="levelBadge"></div> 
+    <div id="levelTitle"></div>
+  </div>
+  
+
+  <!-- Main content -->
+  <main id="main" class="main" style="display:none" aria-live="polite">
+    <div class="container" id="gameArea"></div>
+  </main>
+
+  <!-- Fade overlay -->
+  <div class="fade-overlay" id="fadeOverlay"></div>
+
+  <!-- Background music -->
+  <audio id="bgMusic" loop>
+    <source src="assets/music.mp3" type="audio/mpeg" />
+  </audio>
+
+  <script>
+  /* ===== CONFIG & DOM REFS ===== */
+  const config = {
+    current: 1,
+    blockSize: 2,
+    narrationOn: true,
+    speaking: false,
+    voicesReady: false
+  };
+
+  const d = {
+    cursor: document.getElementById('cursor'),
+    startScreen: document.getElementById('startScreen'),
+    startBtn: document.getElementById('startBtn'),
+    skipIntro: document.getElementById('skipIntro'),
+    intro: document.getElementById('intro'),
+    introVideo: document.getElementById('introVideo'),
+    skipBtn: document.getElementById('skipBtn'),
+    main: document.getElementById('main'),
+    gameArea: document.getElementById('gameArea'),
+    fade: document.getElementById('fadeOverlay'),
+    bgMusic: document.getElementById('bgMusic'),
+    musicToggle: document.getElementById('music-toggle'),
+    muteNarration: document.getElementById('mute-narration'),
+    floatProgress: document.getElementById('floatProgress'),
+    levelBadge: document.getElementById('levelBadge'),
+    levelTitle: document.getElementById('levelTitle'), 
+    topbar: document.getElementById('topbar')
+  };
+
+  /* ===== STORY DATA ===== */
+  const story = {
+    1: {
+      title: "Nivel 1: El Despertar",
+      bg: "img/chap1-bg.jpg",
+      leftChar: "img/aldrin.gif",
+      rightChar: "img/char-aldrin.jpg",
+      education: {
+        title: "Tormentas Solares y Radiación Cósmica",
+        points: [
+          "Las tormentas solares son explosiones de partículas energéticas del Sol",
+          "Pueden dañar sistemas electrónicos y de comunicación en el espacio",
+          "La radiación cósmica puede alterar sistemas biológicos y tecnológicos",
+          "Los escudos magnéticos protegen a las naves espaciales",
+          "Las supernovas cercanas pueden generar radiación extrema"
+        ]
+      },
+      paragraphs: [
+        {type:'narr', text: "Cuando Aldrin abrió los ojos, la cabina estaba en silencio. El último recuerdo que tenía era el destello cegador que atravesó los escudos de la nave, seguido de un vacío absoluto. La tormenta solar había golpeado de lleno el casco de su nave; nunca había visto algo tan poderoso en sus años como astronauta."},
+        {type:'narr', text: "A su lado, no estaba solo. Su compañero, un gato generado por IA, el gato blanco que siempre lo acompañaba en misiones de larga duración, lo miraba fijamente. Pero había algo distinto: sus ojos brillaban con una intensidad azulada, casi humanos con un destello sorprendente como el de una nebulosa, y en el aire vibraba una ligera descarga eléctrica."},
+        {type:'dialog', who:'cat', text: "—Aldrin… ¡Despierta! —dijo el gato con una voz clara y profunda."},
+        {type:'narr', text: "El astronauta, atónito, se incorporó lentamente y un poco impactado."},
+        {type:'narr', text: "—¿Estoy… soñando? —murmuró Aldrin, con la voz rota por la confusión."},
+        {type:'narr', text: "—No. Llevas 11 días inconsciente. La radiación de la nube cósmica alteró mi sistema pero me pude recuperar. Ahora pienso, hablo… y siento cosas que antes no podía; a diferencia de ti, aún conservas tu humanidad —explicó el gato con calma."},
+        {type:'narr', text: "El gato levantó la pata izquierda, y un campo magnético chisporroteó, atrayendo un destornillador metálico que flotó hasta él."},
+        {type:'dialog', who:'cat', text: "—Te ayudaré a reparar la nave. El oxígeno comienza a escasear y debemos encontrar una fuente de energía alterna para poner a volar esta cosa. Hemos perdido todo contacto con Houston."}
+      ]
+    },
+    2: {
+      title: "Nivel 2: El Dilema Energético",
+      bg: "img/chap2-bg.jpg",
+      leftChar: "img/escena2_1.png",
+      rightChar: "img/escena2_2.gif",
+      education: {
+        title: "Electrólisis del Agua",
+        points: [
+          "La electrólisis divide moléculas de agua (H₂O) en hidrógeno (H₂) y oxígeno (O₂)",
+          "Se necesita electricidad para romper enlaces químicos",
+          "El hidrógeno es combustible eficiente y limpio",
+          "Este proceso es clave para la exploración espacial futura",
+          "En la Tierra, la electrólisis es un método conocido para obtener combustibles limpios"
+        ]
+      },
+      paragraphs: [
+        {type:'narr', text: "Tras revisar los sistemas de la nave, Aldrin comprendió la gravedad de la situación: los paneles solares apenas captaban energía. En la órbita de aquel planeta helado donde habían logrado aterrizar de emergencia, la luz de un sol era escasa y débil."},
+        {type:'dialog', who:'cat', text: "—Si no encontramos una nueva fuente de energía, mi estimado Aldrin, quedaremos varados aquí para siempre —murmuró el gato."},
+        {type:'narr', text: "El gato miró a Aldrin con determinación y comenzó a explicar: 'Te explicaré como si de un niño de escuela primaria se tratara. La energía está en todas partes. El hielo que cubre este planeta podría contener secretos que aún no imaginas. Si logramos dividir sus moléculas de agua, podemos liberar hidrógeno y oxígeno.'"},
+        {type:'narr', text: "—Y el hidrógeno… es combustible en su estado más puro para una nave de la NASA. —Debemos fabricar una celda. Por electrólisis lograremos descomponer y dividir las moléculas."}
+      ]
+    },
+    3: {
+      title: "Nivel 3: Baterías Caseras",
+      bg: "img/chap3-bg.gif",
+      leftChar: "escena3.gif",
+      rightChar: "escena3_1.jpg",
+      education: {
+        title: "Celdas Galvánicas (Baterías de Limón)",
+        points: [
+          "Una batería de limón funciona mediante reacciones químicas ácido-base",
+          "El ácido cítrico del limón actúa como electrolito conductor",
+          "Los metales diferentes (cobre y zinc) crean una diferencia de potencial",
+          "Conectadas en serie, múltiples celdas aumentan el voltaje total",
+          "La sal y el vinagre aumentan la conductividad del medio"
+        ]
+      },
+      paragraphs: [
+        {type:'narr', text: "Aldrin revisó el tablero de energía: la nave estaba en modo de emergencia, apenas alimentando el sistema de soporte vital. El gato tuvo una idea brillante."},
+        {type:'dialog', who:'cat', text: "—No subestimes lo pequeño, Aldrin. La energía puede venir de algo tan simple como la química de los ácidos."},
+        {type:'narr', text: "Con una descarga luminosa, el gato abrió un compartimiento auxiliar de la nave. Dentro había provisiones olvidadas: un cajón de limones deshidratados, paquetes de sal y frascos de vinagre."},
+        {type:'narr', text: "Improvisaron un laboratorio. Aldrin cortó los limones, los empapó con vinagre y añadió sal en cada corte. Insertaron cobre y zinc reciclados y conectaron cables: una tenue corriente comenzó a fluir."},
+        {type:'narr', text: "Encendiendo luces que parpadeaban como luciérnagas en la penumbra del cañón helado, lograron acumular energía suficiente para poner en marcha un módulo de electrólisis improvisado."}
+      ]
+    },
+    4: {
+      title: "Nivel 4: Señales en el Hielo",
+      bg: "chap4-bg.jpg",
+      leftChar: "monolith.gif",
+      rightChar: "escena4.gif",
+      education: {
+        title: "Comunicaciones Espaciales",
+        points: [
+          "Las ondas electromagnéticas viajan a la velocidad de la luz",
+          "Las antenas deben estar alineadas para recibir señales",
+          "Los campos electromagnéticos pueden amplificar o modular señales",
+          "La búsqueda de señales extraterrestres (SETI) es una ciencia real",
+          "Las frecuencias pueden transportar información compleja"
+        ]
+      },
+      paragraphs: [
+        {type:'narr', text: "Con el banco de limones funcionando, lograron iniciar la electrólisis del hielo. Mientras tanto, reconstruían la antena con partes recicladas."},
+        {type:'narr', text: "Al encender el módulo receptor, un fuerte zumbido recorrió la cabina. De pronto, entre las interferencias, emergió un pulso repetitivo: Bip… bip… bip…"},
+        {type:'dialog', who:'aldrin', text: "—Eso… ¡eso no es la NASA! —exclamó Aldrin."},
+        {type:'narr', text: "Siguiendo la dirección de la señal, descubrieron una estructura metálica enterrada bajo capas de hielo: un monolito cubierto de runas luminosas de color violeta, vibrando con la misma frecuencia detectada. El gato tocó la estructura con su garra. La señal cambió y una voz resonó en la mente de Aldrin: 'Aldrin…'."}
+      ]
+    }
+  };
+
+  const branchStories = {
+    A: [
+      {type:'narr', text:'La curiosidad es más fuerte. Aldrin se acerca al monolito mientras el gato salta sobre la estructura, concentrando su poder electromagnético.'},
+      {type:'narr', text:'En su interior, encuentran proyecciones holográficas de una antigua civilización que habitó este planeta hace eones.'},
+      {type:'dialog', who:'cat', text:'—¡Esto es increíble! Con esta tecnología, no solo podemos regresar a casa... ¡podemos cambiar el futuro energético de la humanidad!'}
+    ],
+    B: [
+      {type:'narr', text:'La prioridad es regresar a casa. Aldrin y el gato concentran sus esfuerzos en optimizar el banco de limones y la electrólisis del hielo.'},
+      {type:'narr', text:'Después de varios días de trabajo arduo, logran llenar los tanques de hidrógeno de la nave y reparar las antenas utilizando componentes reciclados.'}
+    ],
+    C: [
+      {type:'narr', text:'Aldrin y el gato configuran el equipo para enviar una respuesta a la señal. El gato canaliza su energía electromagnética para modular un mensaje de paz.'},
+      {type:'dialog', who:'cat', text:'—Forastero… Has despertado a los Guardianes de Kael. Somos los custodios de este planeta.'}
+    ]
+  };
+
+  /* ===== VOICE / TTS ===== */
+  let voices = [];
+  
+  function loadVoices() {
+    voices = speechSynthesis.getVoices() || [];
+    config.voicesReady = voices.length > 0;
+  }
+  
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+  loadVoices();
+
+  function pickVoice(langPrefix='es', hint='') {
+    let v = voices.find(x => x.lang && x.lang.startsWith(langPrefix) && (hint ? x.name.toLowerCase().includes(hint.toLowerCase()) : true));
+    if(!v) v = voices.find(x => x.lang && x.lang.startsWith(langPrefix));
+    return v || voices[0] || null;
+  }
+
+  function speak(text, role='narrator') {
+    return new Promise(resolve => {
+      if(!config.narrationOn || !('speechSynthesis' in window) || !text || text.trim()==='') { 
+        resolve(); 
+        return; 
+      }
+
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'es-ES';
+      
+      if(role==='cat') {
+        u.rate = 1.12; u.pitch = 1.15; u.volume = 0.78;
+        const v = pickVoice('es','Google') || pickVoice('es');
+        if(v) u.voice = v;
+      } else if(role==='aldrin') {
+        u.rate = 0.98; u.pitch = 0.98; u.volume = 0.78;
+        const v = pickVoice('es','Carlos') || pickVoice('es');
+        if(v) u.voice = v;
+      } else {
+        u.rate = 0.92; u.pitch = 0.92; u.volume = 0.65;
+        const v = pickVoice('es','Juan') || pickVoice('es');
+        if(v) u.voice = v;
+      }
+
+      const music = d.bgMusic;
+      const origVol = music ? music.volume : 0;
+      if(music && !music.paused) music.volume = Math.max(0.08, origVol * 0.35);
+
+      u.onend = () => {
+        if(music && !music.paused) {
+          setTimeout(() => { 
+            try { music.volume = Math.min(0.35, origVol); } catch(e){} 
+          }, 120);
+        }
+        resolve();
+      };
+      
+      u.onerror = () => {
+        if(music && !music.paused) music.volume = Math.min(0.35, origVol);
+        resolve();
+      };
+
+      try { speechSynthesis.cancel(); } catch(e){}
+      speechSynthesis.speak(u);
+    });
+  }
+
+  /* ===== UI HELPERS ===== */
+  function fadeIn(duration=500) {
+    d.fade.style.opacity = '1';
+    d.fade.style.pointerEvents = 'auto';
+    d.fade.style.transition = `opacity ${duration/1000}s ease`;
+  }
+  
+  function fadeOut(delay=200) {
+    setTimeout(() => {
+      d.fade.style.opacity = '0';
+      d.fade.style.pointerEvents = 'none';
+    }, delay);
+  }
+  
+  function scrollMainTop() {
+    const topY = d.main.getBoundingClientRect().top + window.scrollY - 100;
+    window.scrollTo({ top: topY, behavior: 'smooth' });
+    d.gameArea.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  /* ===== RENDER CHAPTER ===== */
+  async function renderChapter(n) {
+    const ch = story[n];
+    if(!ch) { 
+      renderBranchPoint(); 
+      return; 
+    }
+
+    d.levelBadge.textContent = `NIVEL ${n}`;
+    d.levelTitle.textContent = ch.title.split(':')[1] ? ch.title.split(':')[1].trim() : ch.title;
+    if(d.floatProgress.style.display==='none') d.floatProgress.style.display = 'flex';
+
+    fadeIn();
+    await new Promise(r=>setTimeout(r, 400));
+
+    d.gameArea.innerHTML = `
+      <article class="scene visible" id="scene-${n}">
+        <div class="bg" style="background-image:url('${ch.bg}');"></div>
+        <div class="overlay"></div>
+
+        <div class="content">
+          <h2 class="page-title">${ch.title}</h2>
+          <div id="textBlock"></div>
+
+          <div class="education-box">
+            <h3>📚 ${ch.education.title}</h3>
+            <ul>${ch.education.points.map(p=>`<li>${p}</li>`).join('')}</ul>
+          </div>
+
+          <div class="continue-wrap">
+            <button id="continueBtn" class="continue-btn">CONTINUAR →</button>
+          </div>
+        </div>
+
+        <div class="media">
+          <div style="display:flex;flex-direction:column;gap:16px;align-items:center">
+            <img id="leftChar" src="${ch.leftChar}" alt="Personaje izquierda" style="width:160px;"/>
+            <img id="rightChar" src="${ch.rightChar}" alt="Personaje derecha" style="width:160px;"/>
+          </div>
+        </div>
+      </article>
+    `;
+
+    fadeOut(250);
+    scrollMainTop();
+
+    const textBlock = document.getElementById('textBlock');
+    const continueBtn = document.getElementById('continueBtn');
+    const paragraphs = ch.paragraphs;
+    let cursor = 0;
+
+    async function revealBlock() {
+      if(config.speaking) return;
+      const start = cursor;
+      const end = Math.min(cursor + config.blockSize, paragraphs.length);
+
+      for(let i = start; i < end; i++) {
+        const p = paragraphs[i];
+        const el = document.createElement('div');
+        el.className = 'story-text';
+        el.innerHTML = (p.type==='dialog') ? `<div class="dialogue">${p.text}</div>` : `<div>${p.text}</div>`;
+        textBlock.appendChild(el);
+        await new Promise(r=>setTimeout(r, 260));
+        el.classList.add('visible');
+
+        config.speaking = true;
+        await speak(p.text, p.who || (p.type==='dialog' ? 'cat' : 'narrator'));
+        config.speaking = false;
+        await new Promise(r=>setTimeout(r, 240));
+      }
+
+      cursor = end;
+      continueBtn.textContent = cursor >= paragraphs.length ? 'SIGUIENTE CAPÍTULO →' : 'CONTINUAR →';
+      scrollMainTop();
+    }
+
+    setTimeout(() => { revealBlock(); }, 600);
+
+    continueBtn.onclick = async () => {
+      if(config.speaking) return;
+      if(cursor >= paragraphs.length) {
+        fadeIn();
+        await new Promise(r=>setTimeout(r, 400));
+        config.current = n + 1;
+        fadeOut(260);
+        renderChapter(config.current);
+      } else {
+        await revealBlock();
+      }
+    };
+  }
+
+  /* ===== BRANCH POINT ===== */
+  function renderBranchPoint() {
+    d.levelBadge.textContent = 'DECISIÓN';
+    d.levelTitle.textContent = 'Punto de Inflexión';
+    fadeIn();
+    
+    setTimeout(() => {
+      d.gameArea.innerHTML = `
+        <section class="scene visible">
+          <div class="bg" style="background-image:url('chap4-bg.jpg');"></div>
+          <div class="overlay"></div>
+          <div class="content">
+            <h2 class="page-title">🔀 PUNTO DE DECISIÓN CRÍTICO</h2>
+            <p class="story-text visible">Aldrin y el gato se encuentran frente al misterioso monolito. ¿Qué camino decides tomar?</p>
+            <div class="choices-grid">
+              <div class="choice" data-branch="A">OPCIÓN A — Investigar el Monolito</div>
+              <div class="choice" data-branch="B">OPCIÓN B — Autosuficiencia</div>
+              <div class="choice" data-branch="C">OPCIÓN C — Comunicación Pacífica</div>
+            </div>
+          </div>
+          <div class="media"><img src="monolith.gif" alt="monolito" style="width:240px"/></div>
+        </section>
+      `;
+      
+      document.querySelectorAll('.choice').forEach(c => {
+        c.onclick = () => selectBranch(c.dataset.branch);
+      });
+      
+      speak('Has llegado a un punto de decisión. Escoge con sabiduría.', 'narrator');
+      fadeOut(250);
+      scrollMainTop();
+    }, 400);
+  }
+
+  /* ===== BRANCH SELECTION ===== */
+  async function selectBranch(b) {
+    fadeIn();
+    await new Promise(r=>setTimeout(r, 350));
+    const sel = branchStories[b] || branchStories['B'];
+    
+    d.gameArea.innerHTML = `
+      <article class="scene visible">
+        <div class="bg" style="background-image:url('img/bg-anim.jpg');"></div>
+        <div class="overlay"></div>
+        <div class="content">
+          <h2 class="page-title">Ramificación ${b}</h2>
+          <div id="branchText"></div>
+          <div class="continue-wrap">
+            <button id="branchContinue" class="continue-btn">VER CONCLUSIÓN →</button>
+          </div>
+        </div>
+        <div class="media"><img src="img/animaion.gif" alt="animación" style="width:240px"/></div>
+      </article>
+    `;
+
+    const bt = document.getElementById('branchText');
+    for(let i=0; i<sel.length; i++) {
+      const p = sel[i];
+      const div = document.createElement('div');
+      div.className = 'story-text visible';
+      div.innerHTML = (p.type==='dialog') ? `<div class="dialogue">${p.text}</div>` : `<div>${p.text}</div>`;
+      bt.appendChild(div);
+      await new Promise(r=>setTimeout(r, 450));
+      await speak(p.text, p.who || (p.type==='dialog' ? 'cat' : 'narrator'));
+    }
+
+    document.getElementById('branchContinue').onclick = showConclusion;
+    fadeOut(250);
+    scrollMainTop();
+  }
+
+  /* ===== CONCLUSION ===== */
+  async function showConclusion() {
+    fadeIn();
+    await new Promise(r=>setTimeout(r, 350));
+    
+    d.gameArea.innerHTML = `
+      <section class="scene visible">
+        <div class="bg" style="background-image:url('img/bg_final.jpg');"></div>
+        <div class="overlay"></div>
+        <div class="content">
+          <h2 class="page-title">🏠 REGRESO A CASA</h2>
+          <p class="story-text visible">Con la nave reparada y los sistemas operativos, Aldrin y su fiel compañero se preparan para el viaje de regreso a casa. La experiencia en el planeta helado los ha cambiado para siempre, demostrando que incluso en los confines del universo, la ciencia, el ingenio y la conexión con lo inesperado son las claves para superar cualquier adversidad.</p>
+          <p class="story-text visible">Luego de un tiempo, Aldrin pudo llegar a la órbita del planeta Tierra y logró enviar un mensaje a la NASA para que prepararan su aterrizaje. El gato ayudó en el aterrizaje de emergencia y, más tarde, estableció una alianza con los Guardianes.</p>
+          <div class="education-box">
+            <h3>🎓 Lecciones Aprendidas</h3>
+            <ul>
+              <li>Resiliencia ante la adversidad</li>
+              <li>Ciencia aplicada en situaciones extremas</li>
+              <li>Trabajo en equipo y cooperación</li>
+              <li>Innovación y pensamiento creativo</li>
+            </ul>
+          </div>
+          <div class="continue-wrap">
+            <button id="restartBtn" class="continue-btn">🔄 REINICIAR AVENTURA</button>
+          </div>
+        </div>
+        <div class="media"><img src="img/final.gif" alt="final" style="width:240px"/></div>
+      </section>
+    `;
+    
+    await speak('Final: regreso a casa. Gracias por acompañar a Aldrin y al gato.', 'narrator');
+    
+    document.getElementById('restartBtn').onclick = () => {
+      config.current = 1;
+      renderChapter(1);
+    };
+    
+    fadeOut(250);
+    scrollMainTop();
+  }
+
+  /* ===== INIT / EVENTS ===== */
+  d.startBtn.onclick = () => {
+    d.startScreen.style.display = 'none';
+    if(d.introVideo && d.introVideo.querySelector('source')) {
+      d.intro.style.display = 'flex';
+      try { 
+        d.introVideo.currentTime = 0; 
+        d.introVideo.play(); 
+      } catch(e){}
+    } else {
+      enterMainFlow();
+    }
+    try { 
+      d.bgMusic.volume = 0.28; 
+      d.bgMusic.play().catch(()=>{}); 
+    } catch(e){}
+  };
+
+  d.skipIntro.onclick = enterMainFlow;
+  if(d.skipBtn) d.skipBtn.onclick = enterMainFlow;
+  if(d.introVideo) d.introVideo.onended = enterMainFlow;
+
+  function enterMainFlow() {
+    d.intro.style.display = 'none';
+    d.startScreen.style.display = 'none';
+    d.main.style.display = 'block';
+    d.floatProgress.style.display = 'flex';
+    document.body.style.overflow = 'auto';
+    d.topbar.style.display = 'block';
+    renderChapter(config.current);
+  }
+
+  d.musicToggle.onclick = () => {
+    if(d.bgMusic.paused) { 
+      d.bgMusic.play(); 
+      d.musicToggle.textContent = '🎵'; 
+    } else { 
+      d.bgMusic.pause(); 
+      d.musicToggle.textContent = '🔇'; 
+    }
+  };
+
+  d.muteNarration.onclick = () => {
+    config.narrationOn = !config.narrationOn;
+    d.muteNarration.textContent = config.narrationOn ? '🔈' : '🔕';
+    if(!config.narrationOn) speechSynthesis.cancel();
+  };
+
+  document.getElementById('fullscreen').onclick = () => {
+    if(!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(()=>{});
+    } else {
+      document.exitFullscreen().catch(()=>{});
+    }
+  };
+
+  document.addEventListener('mousemove', e => {
+    if(!d.cursor) return;
+    d.cursor.style.left = e.clientX + 'px';
+    d.cursor.style.top = e.clientY + 'px';
+  });
+
+  document.getElementById('btn-toc').onclick = () => {
+    if(d.main.style.display !== 'none') scrollMainTop();
+  };
+
+  [d.startBtn, d.introVideo].forEach(el => {
+    if(el) el.addEventListener('contextmenu', e => e.preventDefault());
+  });
+
+  /* ===== PARTICLES GENERATOR ===== */
+  function createParticles() {
+    const particleCount = 40;
+    for(let i = 0; i < particleCount; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      particle.style.left = Math.random() * 100 + '%';
+      particle.style.top = Math.random() * 100 + '%';
+      particle.style.animationDelay = Math.random() * 20 + 's';
+      particle.style.animationDuration = (18 + Math.random() * 12) + 's';
+      particle.style.setProperty('--random-x', (Math.random() - 0.5) * 2);
+      document.body.appendChild(particle);
+    }
+  }
+
+  /* ===== INITIALIZATION ===== */
+  window.addEventListener('DOMContentLoaded', () => {
+    try {
+      loadVoices();
+      const u = new SpeechSynthesisUtterance('');
+      u.volume = 0;
+      speechSynthesis.speak(u);
+    } catch(e){}
+    
+    createParticles();
+    
+    // Add interactive hover effects for buttons
+    document.addEventListener('mouseover', e => {
+      if(e.target.matches('button, .choice, .nav-pill')) {
+        if(d.cursor) {
+          d.cursor.style.width = '40px';
+          d.cursor.style.height = '40px';
+          d.cursor.style.borderColor = 'var(--accent)';
+        }
+      }
+    });
+    
+    document.addEventListener('mouseout', e => {
+      if(e.target.matches('button, .choice, .nav-pill')) {
+        if(d.cursor) {
+          d.cursor.style.width = '28px';
+          d.cursor.style.height = '28px';
+          d.cursor.style.borderColor = 'var(--primary)';
+        }
+      }
+    });
+  });
+
+  console.log('🚀 Aldrin NASA Visual Premium Edition v2.0');
+  console.log('✨ Características: Diseño premium, animaciones avanzadas, efectos de partículas');
+  console.log('🎯 Optimizado para NASA Space Apps Challenge 2025');
+  </script>
+</body>
+</html>

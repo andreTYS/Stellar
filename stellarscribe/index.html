@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perú Es Clave - NASA Space Apps 2025</title>
+<style>
+/* ==================== RESET Y BODY ==================== */
+* { box-sizing: border-box; margin:0; padding:0; }
+html, body { height: 100%; width: 100%; }
+body {
+  font-family: 'Arial', sans-serif;
+
+  /* ====== FONDO LOCAL ====== */
+  background: url('img/chap1-bg.jpg') no-repeat center center fixed;
+  background-size: cover;
+
+  color: #ccc;
+  overflow-x: hidden;
+  perspective: 1000px;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.95) 0%, rgba(0,0,0,1) 100%);
+  z-index: 0;
+}
+
+/* ==================== NEBULAS ==================== */
+.nebula {
+  position: fixed;
+  top: -20%; left: -20%;
+  width: 140%; height: 140%;
+  background: radial-gradient(circle at 30% 30%, rgba(150,0,200,0.05), transparent 40%),
+              radial-gradient(circle at 70% 70%, rgba(0,150,200,0.05), transparent 50%);
+  animation: nebMove 60s linear infinite;
+  z-index: 1; pointer-events: none;
+}
+@keyframes nebMove { 0% {transform: translate(0,0) scale(1);} 50% {transform: translate(50px,-50px) scale(1.05);} 100% {transform: translate(0,0) scale(1);} }
+
+/* ==================== HEADER ==================== */
+header {
+  text-align: center;
+  padding: 40px 20px 20px 20px;
+  position: relative; z-index: 3;
+}
+header h1 {
+  font-size: 2.8em;
+  color: #0ff;
+  text-shadow: 0 0 20px #0ff, 0 0 40px #0ff;
+}
+
+/* ==================== NAV ==================== */
+nav {
+  text-align: center;
+  margin: 20px 0 50px 0;
+  position: relative; z-index: 3;
+}
+nav button {
+  background: linear-gradient(135deg, #001122, #004040);
+  border: 2px solid #00ffff;
+  color: #0ff;
+  padding: 15px 30px;
+  margin: 12px;
+  font-size: 1.1em;
+  cursor: pointer;
+  border-radius: 12px;
+  box-shadow: 0 0 20px #00ffff;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+nav button:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 40px #0ff;
+}
+
+/* ==================== MOSAICO FLOTANTE ==================== */
+.mosaic-container {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+  padding-bottom: 60px;
+  z-index: 3;
+}
+
+.mosaic-container img {
+  width: 180px;   /* tamaño base más pequeño */
+  max-width: 80%;
+  border-radius: 20px;
+  border: 2px solid rgba(0,255,255,0.5);
+  box-shadow: 0 0 20px rgba(0,255,255,0.4), 0 5px 10px rgba(0,255,255,0.15) inset;
+  transition: transform 0.5s ease, box-shadow 0.5s ease, filter 0.5s ease;
+  cursor: grab;
+  background: rgba(0,0,0,0.3);
+}
+.mosaic-container img:hover {
+  transform: scale(1.1) rotateY(3deg) rotateX(2deg);
+  filter: brightness(1.3);
+  box-shadow: 0 0 40px #0ff, 0 8px 20px rgba(0,255,255,0.5) inset;
+}
+
+/* ==================== FOOTER ==================== */
+footer {
+  text-align: center;
+  padding: 25px;
+  font-size: 1em;
+  color: #888;
+  position: relative;
+  z-index: 3;
+}
+
+/* ==================== PLANETAS ==================== */
+.planet {
+  position: fixed;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #cc9900, #664400);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 2;
+  animation: blink 4s infinite alternate;
+}
+@keyframes blink {
+  0% { opacity: 0.2; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.05); }
+  100% { opacity: 0.2; transform: scale(1); }
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 1024px) {
+  header h1 { font-size: 2.4em; }
+  nav button { padding: 12px 25px; font-size: 1em; }
+  .mosaic-container { gap: 25px; }
+  .mosaic-container img { width: 150px; max-width: 70%; }
+}
+
+@media (max-width: 768px) {
+  header h1 { font-size: 2em; }
+  nav button { padding: 10px 20px; font-size: 0.95em; }
+  .mosaic-container { gap: 20px; }
+  .mosaic-container img { width: 130px; max-width: 80%; }
+}
+
+@media (max-width: 480px) {
+  header h1 { font-size: 1.6em; }
+  nav button { padding: 8px 16px; font-size: 0.85em; }
+  .mosaic-container { gap: 15px; padding-bottom: 40px; }
+  .mosaic-container img { width: 110px; max-width: 90%; }
+}
+</style>
+</head>
+<body>
+
+<div class="nebula"></div>
+
+<header>
+  <h1>Perú Es Clave - NASA Space Apps Challenge 2025</h1>
+</header>
+
+<nav>
+  <button onclick="window.open('https://stellarscribe.moqueguatech.com/index2.html','_blank')">Cuento</button>
+  <button onclick="window.open('https://stellarscribe.moqueguatech.com/web/index.html','_blank')">Entretenimiento</button>
+  <button onclick="window.open('https://stellarscribe.moqueguatech.com/apk/peruesclave.apk','_blank')">Descarga El apk</button>
+</nav>
+
+<div class="mosaic-container" id="mosaic">
+  <img src="https://stellarscribe.moqueguatech.com/images/imagen1.jpg" alt="Imagen historia 1">
+  <img src="https://stellarscribe.moqueguatech.com/images/imagen2.jpg" alt="Imagen historia 2">
+  <img src="https://stellarscribe.moqueguatech.com/images/imagen3.jpg" alt="Imagen historia 3">
+  <img src="https://stellarscribe.moqueguatech.com/images/imagen4.jpg" alt="Imagen historia 4">
+</div>
+
+<footer>
+  &copy; 2025 Perú Es Clave - NASA Space Apps Challenge | Todos los derechos reservados
+</footer>
+
+<script>
+// ==================== ESTRELLAS ====================
+const stars=[];
+for(let i=0;i<100;i++){
+  const s=document.createElement('div');
+  s.classList.add('star');
+  s.style.width=s.style.height=(Math.random()*2+1)+'px';
+  s.style.top=Math.random()*100+'%';
+  s.style.left=Math.random()*100+'%';
+  s.dataset.speed=Math.random()*0.5+0.1;
+  document.body.appendChild(s);
+  stars.push(s);
+}
+
+// ==================== PLANETAS ====================
+const planets=[];
+for(let i=0;i<4;i++){
+  const p=document.createElement('div');
+  p.classList.add('planet');
+  p.style.width=p.style.height=(Math.random()*40+20)+'px';
+  p.style.top=Math.random()*70+'%';
+  p.style.left=Math.random()*70+'%';
+  document.body.appendChild(p);
+  planets.push(p);
+}
+
+// ==================== PARTICULAS ====================
+const particles=[];
+for(let i=0;i<40;i++){
+  const p=document.createElement('div');
+  p.classList.add('particle');
+  p.style.top=Math.random()*100+'%';
+  p.style.left=Math.random()*100+'%';
+  document.body.appendChild(p);
+  particles.push(p);
+}
+
+// ==================== MOSAICO FLOTANTE ====================
+const mosaic = document.getElementById('mosaic');
+const images = mosaic.querySelectorAll('img');
+images.forEach(img => {
+  img.dataset.x = Math.random()*200 - 100;
+  img.dataset.y = Math.random()*200 - 100;
+  img.dataset.dx = (Math.random()*0.4-0.2);
+  img.dataset.dy = (Math.random()*0.4-0.2);
+});
+
+function animateMosaic(){
+  images.forEach(img=>{
+    let x = parseFloat(img.dataset.x);
+    let y = parseFloat(img.dataset.y);
+    let dx = parseFloat(img.dataset.dx);
+    let dy = parseFloat(img.dataset.dy);
+    x += dx;
+    y += dy;
+    if(x>60 || x<-60) img.dataset.dx = -dx;
+    if(y>60 || y<-60) img.dataset.dy = -dy;
+    img.dataset.x = x;
+    img.dataset.y = y;
+    img.style.transform = `translate(${x}px, ${y}px)`;
+  });
+  requestAnimationFrame(animateMosaic);
+}
+animateMosaic();
+
+// ==================== PARALLAX ====================
+document.addEventListener('mousemove',e=>{
+  const x=e.clientX/window.innerWidth-0.5;
+  const y=e.clientY/window.innerHeight-0.5;
+  particles.forEach((p,i)=>{
+    const speed=(i+1)/100;
+    p.style.transform=`translate(${x*speed*40}px, ${y*speed*40}px)`;
+  });
+});
+</script>
+</body>
+</html>
+
+

@@ -11,12 +11,14 @@ $navItems = match ($rol) {
         ['href' => BASE_URL . '/estudiante/index.php',        'icon' => 'home',              'label' => 'Inicio',        'key' => 'inicio'],
         ['href' => BASE_URL . '/estudiante/portafolio.php',   'icon' => 'folder',            'label' => 'Portafolio',    'key' => 'portafolio'],
         ['href' => BASE_URL . '/estudiante/certificados.php', 'icon' => 'award',             'label' => 'Certificados',  'key' => 'certificados'],
+        ['href' => BASE_URL . '/stellarscribe/portal.php',    'icon' => 'rocket',            'label' => 'StellarScribe', 'key' => 'stellarscribe'],
         ['href' => BASE_URL . '/mensajes/',                   'icon' => 'mail',              'label' => 'Mensajes',      'key' => 'mensajes'],
     ],
     'practicante' => [
         ['href' => BASE_URL . '/practicante/index.php',       'icon' => 'layout-dashboard',  'label' => 'Dashboard',     'key' => 'dashboard'],
         ['href' => BASE_URL . '/practicante/sesiones.php',    'icon' => 'calendar-days',     'label' => 'Sesiones',      'key' => 'sesiones'],
         ['href' => BASE_URL . '/practicante/informe.php',     'icon' => 'file-text',         'label' => 'Informe',       'key' => 'informe'],
+        ['href' => BASE_URL . '/stellarscribe/portal.php',    'icon' => 'rocket',            'label' => 'StellarScribe', 'key' => 'stellarscribe'],
         ['href' => BASE_URL . '/mensajes/',                   'icon' => 'mail',              'label' => 'Mensajes',      'key' => 'mensajes'],
     ],
     'docente' => [
@@ -24,6 +26,7 @@ $navItems = match ($rol) {
         ['href' => BASE_URL . '/docente/estudiantes.php',     'icon' => 'users',             'label' => 'Estudiantes',   'key' => 'estudiantes'],
         ['href' => BASE_URL . '/docente/portafolios.php',     'icon' => 'folder-open',       'label' => 'Portafolios',   'key' => 'portafolios'],
         ['href' => BASE_URL . '/docente/reportes.php',        'icon' => 'bar-chart-2',       'label' => 'Reportes',      'key' => 'reportes'],
+        ['href' => BASE_URL . '/stellarscribe/portal.php',    'icon' => 'rocket',            'label' => 'StellarScribe', 'key' => 'stellarscribe'],
         ['href' => BASE_URL . '/mensajes/',                   'icon' => 'mail',              'label' => 'Mensajes',      'key' => 'mensajes'],
     ],
     'admin_colegio' => [
@@ -31,6 +34,7 @@ $navItems = match ($rol) {
         ['href' => BASE_URL . '/admin_colegio/aulas.php',         'icon' => 'layers',           'label' => 'Aulas',       'key' => 'aulas'],
         ['href' => BASE_URL . '/admin_colegio/modulos.php',       'icon' => 'book-open',        'label' => 'Modulos',     'key' => 'modulos'],
         ['href' => BASE_URL . '/admin_colegio/reporte_dre.php',   'icon' => 'download',         'label' => 'Reporte DRE', 'key' => 'reporte_dre'],
+        ['href' => BASE_URL . '/stellarscribe/portal.php',        'icon' => 'rocket',           'label' => 'StellarScribe','key' => 'stellarscribe'],
         ['href' => BASE_URL . '/mensajes/',                        'icon' => 'mail',             'label' => 'Mensajes',    'key' => 'mensajes'],
     ],
     'admin' => [
@@ -39,6 +43,7 @@ $navItems = match ($rol) {
         ['href' => BASE_URL . '/admin/usuarios.php', 'icon' => 'users',            'label' => 'Usuarios',  'key' => 'usuarios'],
         ['href' => BASE_URL . '/admin/modulos.php',  'icon' => 'book-open',        'label' => 'Modulos',   'key' => 'modulos'],
         ['href' => BASE_URL . '/admin/reportes.php', 'icon' => 'bar-chart-2',      'label' => 'Reportes',  'key' => 'reportes'],
+        ['href' => BASE_URL . '/stellarscribe/portal.php', 'icon' => 'rocket',          'label' => 'StellarScribe','key' => 'stellarscribe'],
         ['href' => BASE_URL . '/mensajes/',          'icon' => 'mail',             'label' => 'Mensajes',  'key' => 'mensajes'],
     ],
     default => [],
