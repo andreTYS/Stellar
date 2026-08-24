@@ -64,8 +64,14 @@ $rolLabel = match ($rol) {
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title><?= sanitize($pageTitle) ?> — INNOVA-STEAM</title>
+  <link rel="manifest" href="<?= BASE_URL ?>/manifest.json"/>
+  <meta name="theme-color" content="#4361ee"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <!-- Prevent flash of wrong theme — must run before stylesheets -->
   <script>(function(){var t=localStorage.getItem('is-theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);})();</script>
+  <!-- PWA service worker -->
+  <script>if('serviceWorker'in navigator)navigator.serviceWorker.register('<?= BASE_URL ?>/sw.js');</script>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>

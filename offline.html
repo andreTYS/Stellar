@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Sin conexión — INNOVA-STEAM</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root{--bg:#080c18;--blue:#4361ee;--text:#c7d9ff;--muted:#5c7ab0}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:800;color:#e8f0fe;margin-bottom:12px}
+  p{color:var(--muted);font-size:15px;max-width:360px;margin:0 auto 28px}
+  .icon{font-size:64px;margin-bottom:24px;display:block}
+  button{background:var(--blue);color:#fff;border:none;border-radius:10px;padding:12px 28px;font-size:15px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+  button:hover{opacity:.85}
+</style>
+</head>
+<body>
+  <div>
+    <span class="icon">🛸</span>
+    <h1>Sin señal espacial</h1>
+    <p>No hay conexión a internet. Las páginas que visitaste anteriormente pueden estar disponibles en caché.</p>
+    <button onclick="window.location.reload()">Intentar de nuevo</button>
+  </div>
+</body>
+</html>

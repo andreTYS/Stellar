@@ -188,6 +188,34 @@ require_once __DIR__ . '/../includes/header.php';
       </div>
     </div>
 
+    <!-- Simuladores -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title" style="font-size:15px">🔭 Simuladores interactivos</h2>
+        <a href="<?= BASE_URL ?>/stellarscribe/simuladores/" style="font-size:12px;color:var(--accent);text-decoration:none;font-weight:600">Ver todos →</a>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <a href="<?= BASE_URL ?>/stellarscribe/simuladores/sistema-solar.php" style="text-decoration:none">
+          <div style="background:var(--bg-elevated);border:1px solid rgba(251,146,60,.3);border-radius:12px;padding:16px;transition:border-color .2s,transform .2s"
+               onmouseover="this.style.borderColor='rgba(251,146,60,.7)';this.style.transform='translateY(-2px)'"
+               onmouseout="this.style.borderColor='rgba(251,146,60,.3)';this.style.transform=''">
+            <div style="font-size:28px;margin-bottom:8px">☀️</div>
+            <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:4px">Sistema Solar</div>
+            <div style="font-size:11px;color:var(--text-muted)">8 planetas · llamaradas · Canvas 2D</div>
+          </div>
+        </a>
+        <a href="<?= BASE_URL ?>/stellarscribe/simuladores/clima-espacial.php" style="text-decoration:none">
+          <div style="background:var(--bg-elevated);border:1px solid rgba(67,97,238,.3);border-radius:12px;padding:16px;transition:border-color .2s,transform .2s"
+               onmouseover="this.style.borderColor='rgba(67,97,238,.7)';this.style.transform='translateY(-2px)'"
+               onmouseout="this.style.borderColor='rgba(67,97,238,.3)';this.style.transform=''">
+            <div style="font-size:28px;margin-bottom:8px">🌌</div>
+            <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:4px">Clima Espacial</div>
+            <div style="font-size:11px;color:var(--text-muted)">Kp index · CME · auroras · datos reales</div>
+          </div>
+        </a>
+      </div>
+    </div>
+
     <!-- CME Events -->
     <?php if (!empty($recentCme)): ?>
     <div class="card">

@@ -1,0 +1,49 @@
+{
+  "name": "innova-steam",
+  "productName": "INNOVA-STEAM",
+  "version": "1.0.0",
+  "description": "Plataforma educativa STEAM con StellarScribe — NASA Space Apps 2025",
+  "main": "main.js",
+  "scripts": {
+    "start":      "electron .",
+    "build:win":  "electron-builder --win",
+    "build:mac":  "electron-builder --mac",
+    "build:linux":"electron-builder --linux",
+    "build:all":  "electron-builder --win --mac --linux"
+  },
+  "devDependencies": {
+    "electron":         "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.innovasteam.app",
+    "productName": "INNOVA-STEAM",
+    "copyright": "Copyright © 2025 INNOVA-STEAM",
+    "directories": { "output": "dist" },
+    "files": ["main.js", "splash.html", "assets/**/*"],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64", "ia32"] }],
+      "icon": "assets/icon.ico",
+      "publisherName": "INNOVA-STEAM"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "assets/icon.ico",
+      "installerHeaderIcon": "assets/icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "INNOVA-STEAM"
+    },
+    "mac": {
+      "category": "public.app-category.education",
+      "icon": "assets/icon.icns",
+      "target": ["dmg", "zip"]
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "icon": "assets/icon.png",
+      "category": "Education"
+    }
+  }
+}

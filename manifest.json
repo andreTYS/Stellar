@@ -1,0 +1,50 @@
+{
+  "name": "INNOVA-STEAM",
+  "short_name": "INNOVA-STEAM",
+  "description": "Plataforma educativa STEAM con StellarScribe y simuladores NASA",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#4361ee",
+  "background_color": "#080c18",
+  "lang": "es",
+  "categories": ["education", "science"],
+  "icons": [
+    {
+      "src": "/assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/assets/screenshots/home.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Dashboard principal"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "StellarScribe",
+      "url": "/stellarscribe/portal.php",
+      "description": "Historia NASA interactiva",
+      "icons": [{ "src": "/assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Simuladores",
+      "url": "/stellarscribe/simuladores/",
+      "description": "Simuladores interactivos del espacio",
+      "icons": [{ "src": "/assets/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
