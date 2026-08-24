@@ -139,7 +139,7 @@ require_once __DIR__ . '/../includes/header.php';
     <!-- Chapter launch cards -->
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title" style="font-size:15px">📖 Experiencias interactivas</h2>
+        <h2 class="card-title" style="font-size:15px;display:flex;align-items:center;gap:7px"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> Experiencias interactivas</h2>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
 
@@ -150,7 +150,7 @@ require_once __DIR__ . '/../includes/header.php';
                onmouseout="this.style.borderColor='var(--bg-border)';this.style.transform=''">
             <div style="height:120px;background:linear-gradient(135deg,#0d1024,#1a1f3c);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;position:relative;overflow:hidden">
               <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:24px 24px"></div>
-              <span style="font-size:40px;position:relative">🌍</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
               <span style="font-size:11px;color:#818cf8;font-weight:700;letter-spacing:.06em;position:relative">CAPÍTULO 1</span>
             </div>
             <div style="padding:14px 16px">
@@ -171,7 +171,7 @@ require_once __DIR__ . '/../includes/header.php';
                onmouseout="this.style.borderColor='rgba(139,92,246,.3)';this.style.transform=''">
             <div style="height:120px;background:linear-gradient(135deg,#0d1024,#2d1b4e);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;position:relative;overflow:hidden">
               <div style="position:absolute;top:-30px;right:-30px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.3) 0%,transparent 70%)"></div>
-              <span style="font-size:40px;position:relative">🚀</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>
               <span style="font-size:11px;color:#c4b5fd;font-weight:700;letter-spacing:.06em;position:relative">CAPÍTULO 2 — PREMIUM</span>
             </div>
             <div style="padding:14px 16px">
@@ -191,7 +191,7 @@ require_once __DIR__ . '/../includes/header.php';
     <!-- Simuladores -->
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title" style="font-size:15px">🔭 Simuladores interactivos</h2>
+        <h2 class="card-title" style="font-size:15px;display:flex;align-items:center;gap:7px"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg> Simuladores interactivos</h2>
         <a href="<?= BASE_URL ?>/stellarscribe/simuladores/" style="font-size:12px;color:var(--accent);text-decoration:none;font-weight:600">Ver todos →</a>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -199,7 +199,7 @@ require_once __DIR__ . '/../includes/header.php';
           <div style="background:var(--bg-elevated);border:1px solid rgba(251,146,60,.3);border-radius:12px;padding:16px;transition:border-color .2s,transform .2s"
                onmouseover="this.style.borderColor='rgba(251,146,60,.7)';this.style.transform='translateY(-2px)'"
                onmouseout="this.style.borderColor='rgba(251,146,60,.3)';this.style.transform=''">
-            <div style="font-size:28px;margin-bottom:8px">☀️</div>
+            <div style="margin-bottom:8px;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;background:rgba(251,146,60,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></div>
             <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:4px">Sistema Solar</div>
             <div style="font-size:11px;color:var(--text-muted)">8 planetas · llamaradas · Canvas 2D</div>
           </div>
@@ -208,7 +208,7 @@ require_once __DIR__ . '/../includes/header.php';
           <div style="background:var(--bg-elevated);border:1px solid rgba(67,97,238,.3);border-radius:12px;padding:16px;transition:border-color .2s,transform .2s"
                onmouseover="this.style.borderColor='rgba(67,97,238,.7)';this.style.transform='translateY(-2px)'"
                onmouseout="this.style.borderColor='rgba(67,97,238,.3)';this.style.transform=''">
-            <div style="font-size:28px;margin-bottom:8px">🌌</div>
+            <div style="margin-bottom:8px;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;background:rgba(67,97,238,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4361ee" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6a6 6 0 0 0 6 6"/><circle cx="18" cy="6" r="2" fill="#4361ee"/></svg></div>
             <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:4px">Clima Espacial</div>
             <div style="font-size:11px;color:var(--text-muted)">Kp index · CME · auroras · datos reales</div>
           </div>
@@ -220,13 +220,13 @@ require_once __DIR__ . '/../includes/header.php';
     <?php if (!empty($recentCme)): ?>
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title" style="font-size:15px">☄️ Eyecciones de masa coronal (CME) recientes</h2>
+        <h2 class="card-title" style="font-size:15px;display:flex;align-items:center;gap:7px"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg> Eyecciones de masa coronal (CME) recientes</h2>
         <span style="font-size:11px;padding:3px 10px;border-radius:99px;background:rgba(251,99,64,.1);color:var(--coral);font-weight:600">NOAA / NASA</span>
       </div>
       <div style="display:flex;flex-direction:column;gap:0">
         <?php foreach ($recentCme as $c): ?>
         <div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--bg-border)">
-          <div style="width:40px;height:40px;border-radius:10px;background:rgba(251,99,64,.1);color:var(--coral);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">☄️</div>
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(251,99,64,.1);color:var(--coral);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
           <div style="flex:1;min-width:0">
             <div style="font-size:13px;font-weight:600;color:var(--text-primary)"><?= htmlspecialchars($c['event_id'] ?? 'CME') ?></div>
             <div style="font-size:11px;color:var(--text-muted);margin-top:2px">
@@ -251,7 +251,7 @@ require_once __DIR__ . '/../includes/header.php';
     <!-- Solar flares -->
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title" style="font-size:15px">🔥 Llamaradas solares</h2>
+        <h2 class="card-title" style="font-size:15px;display:flex;align-items:center;gap:7px"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fb6340" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg> Llamaradas solares</h2>
         <span style="font-size:11px;color:var(--text-muted)"><?= count($flares) ?> registros</span>
       </div>
       <div style="display:flex;flex-direction:column;gap:0">
@@ -286,15 +286,22 @@ require_once __DIR__ . '/../includes/header.php';
     <?php if (!empty($eduContent['science_topics'])): ?>
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title" style="font-size:15px">🎓 Temas del currículo</h2>
+        <h2 class="card-title" style="font-size:15px;display:flex;align-items:center;gap:7px"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg> Temas del currículo</h2>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px">
         <?php foreach (array_slice($eduContent['science_topics'], 0, 6) as $topic):
-          $icons = ['🌞','🌌','⚡','🛰️','🔬','📡'];
+          $svgIcons = [
+            '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4a9eff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/><path d="M2 12h20"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3ecf8e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor"/></svg>',
+          ];
           static $ti = 0;
         ?>
         <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-elevated);border-radius:9px">
-          <span style="font-size:18px;flex-shrink:0"><?= $icons[$ti % 6] ?></span>
+          <span style="width:28px;height:28px;border-radius:7px;background:var(--bg-muted);display:flex;align-items:center;justify-content:center;flex-shrink:0"><?= $svgIcons[$ti % 6] ?></span>
           <div>
             <div style="font-size:12px;font-weight:600;color:var(--text-primary)"><?= htmlspecialchars($topic['topic'] ?? $topic) ?></div>
             <?php if (!empty($topic['subtopics'])): ?>

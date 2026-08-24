@@ -145,28 +145,28 @@ require_once __DIR__ . '/../../includes/header.php';
   <div class="sim-card">
     <div class="sim-h">Escenarios — ¿Qué pasaría si…?</div>
     <button class="scenario-btn" onclick="runScenario('carrington')">
-      <span style="font-size:20px">⚡</span>
+      <span style="width:36px;height:36px;border-radius:9px;background:rgba(251,99,64,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fb6340" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>
       <div>
         <div style="font-weight:700;color:#e8f0fe">Evento Carrington (1859)</div>
         <div style="font-size:11px;color:#5c7ab0">La tormenta geomagnética más potente registrada</div>
       </div>
     </button>
     <button class="scenario-btn" onclick="runScenario('halloween')">
-      <span style="font-size:20px">🎃</span>
+      <span style="width:36px;height:36px;border-radius:9px;background:rgba(168,85,247,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></span>
       <div>
         <div style="font-weight:700;color:#e8f0fe">Tormentas de Halloween 2003</div>
         <div style="font-size:11px;color:#5c7ab0">Llamaradas X17 y X28 que afectaron satélites</div>
       </div>
     </button>
     <button class="scenario-btn" onclick="runScenario('aurora-peru')">
-      <span style="font-size:20px">🌄</span>
+      <span style="width:36px;height:36px;border-radius:9px;background:rgba(62,207,142,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3ecf8e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6a6 6 0 0 0 6 6"/><circle cx="18" cy="6" r="2" fill="#3ecf8e"/></svg></span>
       <div>
         <div style="font-weight:700;color:#e8f0fe">Aurora sobre Perú</div>
         <div style="font-size:11px;color:#5c7ab0">¿Cuándo podría verse aurora en Lima?</div>
       </div>
     </button>
     <button class="scenario-btn" onclick="runScenario('calm')">
-      <span style="font-size:20px">😴</span>
+      <span style="width:36px;height:36px;border-radius:9px;background:rgba(74,158,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4a9eff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/></svg></span>
       <div>
         <div style="font-weight:700;color:#e8f0fe">Día de Calma Solar</div>
         <div style="font-size:11px;color:#5c7ab0">Viento solar mínimo, actividad baja</div>
@@ -336,34 +336,34 @@ function updateAurora(kp) {
     const barLatVal = document.getElementById('bar-lat-val');
     const barIntVal = document.getElementById('bar-int-val');
 
-    let bgClr, emoji, label, desc, latPct, intPct, latLabel;
+    let bgClr, dotClr, label, desc, latPct, intPct, latLabel;
     if (kp < 4) {
-        bgClr='linear-gradient(135deg,#0a1628,#0f2040)'; emoji='🌙'; label='Sin actividad';
+        bgClr='linear-gradient(135deg,#0a1628,#0f2040)'; dotClr='#4a9eff'; label='Sin actividad';
         desc='Condiciones de calma. Aurora visible solo en el Ártico y Antártida.';
         latPct=10; intPct=10; latLabel='70°N';
     } else if (kp < 5) {
-        bgClr='linear-gradient(135deg,#0a1a2e,#0d2a4a)'; emoji='🌌'; label='Aurora menor';
+        bgClr='linear-gradient(135deg,#0a1a2e,#0d2a4a)'; dotClr='#818cf8'; label='Aurora menor';
         desc='Aurora visible en latitudes altas (Noruega, Alaska). Kp en ascenso.';
         latPct=25; intPct=30; latLabel='65°N';
     } else if (kp < 6) {
-        bgClr='linear-gradient(135deg,#0d2040,#1a3060)'; emoji='🟢'; label='Aurora moderada';
+        bgClr='linear-gradient(135deg,#0d2040,#1a3060)'; dotClr='#3ecf8e'; label='Aurora moderada';
         desc='Aurora visible en Canadá, norte de Europa y partes de Rusia.';
         latPct=45; intPct=50; latLabel='55°N';
     } else if (kp < 7) {
-        bgClr='linear-gradient(135deg,#1a1040,#2d1060)'; emoji='💚'; label='Aurora fuerte';
+        bgClr='linear-gradient(135deg,#1a1040,#2d1060)'; dotClr='#22c55e'; label='Aurora fuerte';
         desc='Aurora visible en latitudes medias: norte de EE.UU., Europa central.';
         latPct=65; intPct=70; latLabel='45°N';
     } else if (kp < 8) {
-        bgClr='linear-gradient(135deg,#2d0a40,#4a1070)'; emoji='🟣'; label='Aurora severa';
+        bgClr='linear-gradient(135deg,#2d0a40,#4a1070)'; dotClr='#a855f7'; label='Aurora severa';
         desc='Aurora visible desde los Alpes, norte de España. Colores intensos.';
         latPct=80; intPct=85; latLabel='35°N';
     } else {
-        bgClr='linear-gradient(135deg,#3d0010,#600020)'; emoji='🔴'; label='🚨 Aurora EXTREMA G5';
+        bgClr='linear-gradient(135deg,#3d0010,#600020)'; dotClr='#ef4444'; label='Aurora EXTREMA G5';
         desc='¡Aurora potencialmente visible desde Perú (latitude -12°)! Evento histórico como 2003.';
         latPct=100; intPct=100; latLabel='Perú';
     }
     vis.style.background = bgClr;
-    vis.textContent = emoji;
+    vis.innerHTML = `<span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:${dotClr};box-shadow:0 0 16px ${dotClr}"></span>`;
     lbl.textContent = label;
     txt.textContent = desc;
     barLat.style.width = latPct + '%';

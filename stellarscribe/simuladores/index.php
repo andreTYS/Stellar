@@ -23,7 +23,7 @@ require_once __DIR__ . '/../../includes/header.php';
 
 <div class="page-action-header">
   <div>
-    <h1 class="page-title">🔭 Simuladores Interactivos</h1>
+    <h1 class="page-title" style="display:flex;align-items:center;gap:10px"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Simuladores Interactivos</h1>
     <p class="page-subtitle">Explora el espacio con datos reales de la NASA</p>
   </div>
   <a href="<?= BASE_URL ?>/stellarscribe/portal.php" class="btn btn-ghost">
@@ -39,7 +39,7 @@ require_once __DIR__ . '/../../includes/header.php';
     [
       'slug'  => 'sistema-solar',
       'href'  => BASE_URL . '/stellarscribe/simuladores/sistema-solar.php',
-      'icon'  => '☀️',
+      'icon'  => '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>',
       'name'  => 'Sistema Solar',
       'desc'  => 'Explora las 8 órbitas planetarias con animación en tiempo real. Haz clic en cada planeta para que Aldrin te cuente sus secretos. Activa llamaradas solares y controla la velocidad orbital.',
       'tags'  => ['Astronomía','Física','Órbitas'],
@@ -49,7 +49,7 @@ require_once __DIR__ . '/../../includes/header.php';
     [
       'slug'  => 'clima-espacial',
       'href'  => BASE_URL . '/stellarscribe/simuladores/clima-espacial.php',
-      'icon'  => '🌌',
+      'icon'  => '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4361ee" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/></svg>',
       'name'  => 'Clima Espacial',
       'desc'  => 'Monitorea el índice Kp, viento solar y llamaradas en tiempo real con datos NASA. Simula tormentas geomagnéticas históricas y descubre cuándo una aurora podría ser visible desde Perú.',
       'tags'  => ['Datos NASA','CMEs','Auroras'],
@@ -59,7 +59,7 @@ require_once __DIR__ . '/../../includes/header.php';
     [
       'slug'  => 'proximos',
       'href'  => '#',
-      'icon'  => '🛸',
+      'icon'  => '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6a6 6 0 0 0 6 6"/><circle cx="18" cy="6" r="2" fill="#a855f7"/></svg>',
       'name'  => 'Más próximamente',
       'desc'  => 'Simulador de llamaradas solares por clase (X/M/C/B), formación de auroras boreales, viaje interplanetario y más. En desarrollo.',
       'tags'  => ['En desarrollo'],
@@ -99,7 +99,7 @@ require_once __DIR__ . '/../../includes/header.php';
         <i data-lucide="rocket" style="width:14px;height:14px"></i>
       </a>
       <?php else: ?>
-      <span style="font-size:12px;color:#5c7ab0">🔒 En desarrollo</span>
+      <span style="font-size:12px;color:#5c7ab0;display:flex;align-items:center;gap:4px"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> En desarrollo</span>
       <?php endif; ?>
     </div>
   </div>
