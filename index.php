@@ -5,6 +5,17 @@ require_once __DIR__ . '/includes/config.php';
 if (isLoggedIn()) {
     redirect(dashboardUrl());
 }
+
+// Live stats from DB
+try {
+    $_pdo = getDB();
+    $_statColegios  = (int)$_pdo->query("SELECT COUNT(*) FROM colegios WHERE activo=1")->fetchColumn();
+    $_statEst       = (int)$_pdo->query("SELECT COUNT(*) FROM usuarios WHERE rol='estudiante' AND activo=1")->fetchColumn();
+    $_statModulos   = (int)$_pdo->query("SELECT COUNT(*) FROM progreso_estudiante WHERE completado=1")->fetchColumn();
+    $_statCerts     = (int)$_pdo->query("SELECT COUNT(*) FROM certificados")->fetchColumn();
+} catch (\Throwable $e) {
+    $_statColegios = 12; $_statEst = 347; $_statModulos = 1204; $_statCerts = 98;
+}
 ?>
 <!DOCTYPE html>
 <html lang="es" data-theme="light">
@@ -659,20 +670,20 @@ if (isLoggedIn()) {
 <div class="lp-statsbar">
   <div class="lp-statsbar-inner">
     <div class="lp-stat">
-      <div class="lp-stat-value">12</div>
+      <div class="lp-stat-value"><?= number_format($_statColegios) ?></div>
       <div class="lp-stat-label">Colegios activos</div>
     </div>
     <div class="lp-stat">
-      <div class="lp-stat-value">347</div>
+      <div class="lp-stat-value"><?= number_format($_statEst) ?></div>
       <div class="lp-stat-label">Estudiantes registrados</div>
     </div>
     <div class="lp-stat">
-      <div class="lp-stat-value">1,204</div>
+      <div class="lp-stat-value"><?= number_format($_statModulos) ?></div>
       <div class="lp-stat-label">Módulos completados</div>
     </div>
     <div class="lp-stat">
-      <div class="lp-stat-value">98%</div>
-      <div class="lp-stat-label">Satisfacción docente</div>
+      <div class="lp-stat-value"><?= number_format($_statCerts) ?></div>
+      <div class="lp-stat-label">Certificados emitidos</div>
     </div>
   </div>
 </div>

@@ -27,6 +27,22 @@ $pctGlobal               = $modulosTotalGlobal > 0 ? round($modulosCompletadosTo
 
 $estrellasTotal = getEstrellasTotal($estudianteId);
 
+// StellarScribe activity
+$stellarData = ['capitulos' => 0, 'seg' => 0, 'logros' => 0];
+try {
+    $stCap = $pdo->prepare('SELECT COUNT(*) FROM capitulos_progreso WHERE usuario_id=?');
+    $stCap->execute([$estudianteId]);
+    $stellarData['capitulos'] = (int)$stCap->fetchColumn();
+
+    $stSim = $pdo->prepare('SELECT COALESCE(SUM(duracion_seg),0) FROM simulador_sesiones WHERE usuario_id=? AND completado=1');
+    $stSim->execute([$estudianteId]);
+    $stellarData['seg'] = (int)$stSim->fetchColumn();
+
+    $stLog = $pdo->prepare('SELECT COUNT(*) FROM usuario_logros WHERE usuario_id=?');
+    $stLog->execute([$estudianteId]);
+    $stellarData['logros'] = (int)$stLog->fetchColumn();
+} catch (\Throwable $e) {}
+
 $pageTitle = 'Mis Cursos';
 $activeNav = 'inicio';
 include __DIR__ . '/../includes/header.php';
@@ -83,6 +99,48 @@ include __DIR__ . '/../includes/header.php';
   <h2 style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text-primary)">Mis Cursos</h2>
   <span style="font-size:12px;color:var(--text-muted)"><?= count($cursosData) ?> cursos · <?= $pctGlobal ?>% completado</span>
 </div>
+
+<?php if ($stellarData['capitulos'] > 0 || $stellarData['seg'] > 0 || $stellarData['logros'] > 0): ?>
+<!-- StellarScribe activity strip -->
+<div style="margin-bottom:32px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+    <h2 style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:8px">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4361ee" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/><path d="M20 3v4M22 5h-4"/></svg>
+      Tu actividad espacial
+    </h2>
+    <a href="<?= BASE_URL ?>/stellarscribe/portal.php" style="font-size:12px;color:var(--accent);text-decoration:none;font-weight:600">Ver StellarScribe →</a>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+    <div style="background:linear-gradient(135deg,#0d1b33,#1a2d4a);border:1px solid #1e3058;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:12px">
+      <div style="width:40px;height:40px;border-radius:10px;background:rgba(67,97,238,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c9fff" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      </div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#7c9fff;line-height:1"><?= $stellarData['capitulos'] ?></div>
+        <div style="font-size:11px;color:#5c7ab0;margin-top:2px">Capítulos leídos</div>
+      </div>
+    </div>
+    <div style="background:linear-gradient(135deg,#0d1b33,#1a2d4a);border:1px solid #1e3058;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:12px">
+      <div style="width:40px;height:40px;border-radius:10px;background:rgba(124,58,237,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      </div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#a78bfa;line-height:1"><?= round($stellarData['seg'] / 60) ?></div>
+        <div style="font-size:11px;color:#5c7ab0;margin-top:2px">Min. en simuladores</div>
+      </div>
+    </div>
+    <a href="<?= BASE_URL ?>/estudiante/logros.php" style="background:linear-gradient(135deg,#0d1b33,#1a2d4a);border:1px solid #1e3058;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:12px;text-decoration:none">
+      <div style="width:40px;height:40px;border-radius:10px;background:rgba(245,158,11,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+      </div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fbbf24;line-height:1"><?= $stellarData['logros'] ?></div>
+        <div style="font-size:11px;color:#5c7ab0;margin-top:2px">Logros ganados →</div>
+      </div>
+    </a>
+  </div>
+</div>
+<?php endif; ?>
 
 <?php if (empty($cursosData)): ?>
   <div class="empty-state">

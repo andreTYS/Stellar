@@ -150,8 +150,13 @@ require_once __DIR__ . '/../includes/header.php';
          onmouseover="this.style.borderColor='<?= $color ?>66';this.style.transform='translateY(-2px)'"
          onmouseout="this.style.borderColor='var(--bg-border)';this.style.transform=''">
 
-      <!-- Thumbnail -->
-      <?php if ($hasImage): ?>
+      <!-- Thumbnail / Preview -->
+      <?php
+        $rawFormato = strtolower($ent['formato'] ?? '');
+        $isImg = in_array($rawFormato, ['jpg','jpeg','png','gif','webp','imagen']);
+        $isPdf = $rawFormato === 'pdf';
+      ?>
+      <?php if ($hasImage && $isImg): ?>
       <a href="<?= sanitize($ent['archivo_url']) ?>" target="_blank" rel="noopener"
          style="display:block;overflow:hidden;flex-shrink:0;">
         <img src="<?= sanitize($ent['archivo_url']) ?>" alt="Trabajo"
@@ -159,8 +164,23 @@ require_once __DIR__ . '/../includes/header.php';
              onmouseover="this.style.transform='scale(1.04)'"
              onmouseout="this.style.transform=''">
       </a>
+      <?php elseif ($hasImage && $isPdf): ?>
+      <div style="flex-shrink:0;background:var(--bg-elevated);padding:8px">
+        <embed src="<?= sanitize($ent['archivo_url']) ?>#toolbar=0&navpanes=0" type="application/pdf"
+               style="width:100%;height:160px;border:none;border-radius:8px;pointer-events:none">
+        <a href="<?= sanitize($ent['archivo_url']) ?>" target="_blank" rel="noopener"
+           style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--accent);margin-top:6px;text-decoration:none;font-weight:600">
+          <i data-lucide="external-link" style="width:11px;height:11px"></i> Abrir PDF
+        </a>
+      </div>
+      <?php elseif ($hasImage): ?>
+      <a href="<?= sanitize($ent['archivo_url']) ?>" target="_blank" rel="noopener"
+         style="height:100px;background:linear-gradient(135deg,<?= $color ?>22,<?= $color ?>11);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;flex-shrink:0;text-decoration:none">
+        <i data-lucide="file-text" style="width:24px;height:24px;color:<?= $color ?>99"></i>
+        <span style="font-size:10px;color:<?= $color ?>aa;font-weight:600;text-transform:uppercase;letter-spacing:.06em"><?= sanitize($formato ?: 'Archivo') ?></span>
+      </a>
       <?php else: ?>
-      <div style="height:120px;background:linear-gradient(135deg,<?= $color ?>22,<?= $color ?>11);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;flex-shrink:0;">
+      <div style="height:100px;background:linear-gradient(135deg,<?= $color ?>22,<?= $color ?>11);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;flex-shrink:0;">
         <i data-lucide="file-text" style="width:28px;height:28px;color:<?= $color ?>99"></i>
         <span style="font-size:10px;color:<?= $color ?>aa;font-weight:600;text-transform:uppercase;letter-spacing:.06em"><?= sanitize($formato ?: 'Archivo') ?></span>
       </div>

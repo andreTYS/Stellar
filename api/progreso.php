@@ -73,6 +73,19 @@ if ($paso >= 4) {
     $certId = (int)($certRow->fetchColumn() ?: 0);
 
     $completado = true;
+
+    // Award achievements
+    try {
+        $totalComp = (int)$pdo->prepare('SELECT COUNT(*) FROM progreso_estudiante WHERE estudiante_id=? AND completado=1')
+            ->execute([$userId]) ? $pdo->query("SELECT COUNT(*) FROM progreso_estudiante WHERE estudiante_id=$userId AND completado=1")->fetchColumn() : 0;
+        $slugs = ['primer-modulo'];
+        if ($totalComp >= 5)  $slugs[] = 'explorador-aprendiz';
+        if ($totalComp >= 10) $slugs[] = 'maestro-steam';
+        foreach ($slugs as $slug) {
+            $lid = $pdo->query("SELECT id FROM logros WHERE slug='$slug'")->fetchColumn();
+            if ($lid) $pdo->prepare('INSERT IGNORE INTO usuario_logros (usuario_id,logro_id,ganado_en) VALUES (?,?,NOW())')->execute([$userId,$lid]);
+        }
+    } catch (\Throwable $e) {}
 }
 
 // ── Return current state ──────────────────────────────────────

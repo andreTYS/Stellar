@@ -125,6 +125,14 @@ $pdo->prepare(
         intentos_quiz  = intentos_quiz + 1'
 )->execute([$userId, $moduloId, $estrellas, $estrellas]);
 
+// ── Award logro for perfect quiz ─────────────────────────────
+if ($estrellas === 3) {
+    try {
+        $lid = $pdo->query("SELECT id FROM logros WHERE slug='quiz-perfecto'")->fetchColumn();
+        if ($lid) $pdo->prepare('INSERT IGNORE INTO usuario_logros (usuario_id,logro_id,ganado_en) VALUES (?,?,NOW())')->execute([$userId,$lid]);
+    } catch (\Throwable $e) {}
+}
+
 // ── Response ──────────────────────────────────────────────────
 echo json_encode([
     'ok'        => true,

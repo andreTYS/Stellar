@@ -79,6 +79,30 @@ $aulas = $aulas->fetchAll();
 
 $meses = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
+// CSV export
+if (isset($_GET['export']) && $_GET['export'] === 'csv') {
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="reporte_dre_' . $meses[$mes] . '_' . $anio . '.csv"');
+    $out = fopen('php://output', 'w');
+    fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
+    fputcsv($out, ['REPORTE DRE/UGEL — INNOVA-STEAM']);
+    fputcsv($out, ['Colegio', $colegio['nombre'] ?? '']);
+    fputcsv($out, ['Período', $meses[$mes] . ' ' . $anio]);
+    fputcsv($out, ['UGEL', $colegio['ugel_codigo'] ?? '']);
+    fputcsv($out, []);
+    fputcsv($out, ['Estudiantes inscritos', $totalEstudiantes]);
+    fputcsv($out, ['Módulos completados', $modulosCompletados]);
+    fputcsv($out, ['Entregables subidos', $entregables]);
+    fputcsv($out, ['Sesiones realizadas', $sesiones]);
+    fputcsv($out, []);
+    fputcsv($out, ['Aula','Docente','Practicante(s)','Estudiantes','Módulos completados']);
+    foreach ($aulas as $a) {
+        fputcsv($out, [$a['grado'].'"'.$a['seccion'].'"', $a['docente_apellido'].', '.$a['docente_nombre'], $a['practicantes'] ?? '', $a['estudiantes'], $a['modulos_completados']]);
+    }
+    fclose($out);
+    exit;
+}
+
 $pageTitle = 'Reporte DRE/UGEL';
 $activeNav = 'reporte';
 require_once __DIR__ . '/../includes/header.php';
@@ -103,6 +127,7 @@ require_once __DIR__ . '/../includes/header.php';
         </select>
         <button type="submit" class="btn-primary" style="padding:8px 14px;font-size:13px;">Filtrar</button>
       </form>
+      <a href="?mes=<?=$mes?>&anio=<?=$anio?>&export=csv" class="btn-ghost" style="padding:8px 14px;font-size:13px;text-decoration:none;display:inline-flex;align-items:center;gap:6px"><i data-lucide="download" style="width:16px;height:16px"></i> CSV</a>
       <button onclick="window.print()" class="btn-ghost" style="padding:8px 14px;font-size:13px;"><i data-lucide="printer" style="width:16px;height:16px"></i> Imprimir</button>
     </div>
   </div>

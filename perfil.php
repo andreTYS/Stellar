@@ -72,6 +72,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $initials = strtoupper(substr($user['nombre'] ?? 'U', 0, 1) . substr($user['apellido'] ?? '', 0, 1));
+
+// Extra stats for students
+$profileStats = null;
+if (($user['rol'] ?? '') === 'estudiante') {
+    try {
+        $stEst = $pdo->query("SELECT COALESCE(SUM(estrellas_quiz),0) as estrellas, COUNT(CASE WHEN completado=1 THEN 1 END) as completados FROM progreso_estudiante WHERE estudiante_id=$userId");
+        $row = $stEst->fetch();
+        $logrosGanados = (int)$pdo->query("SELECT COUNT(*) FROM usuario_logros WHERE usuario_id=$userId")->fetchColumn();
+        $profileStats = ['estrellas' => (int)$row['estrellas'], 'completados' => (int)$row['completados'], 'logros' => $logrosGanados];
+    } catch (\Throwable $e) {}
+}
+
 $rolLabel = match($user['rol'] ?? '') {
     'admin'         => 'Administrador',
     'admin_colegio' => 'Director',
@@ -130,6 +142,26 @@ require_once __DIR__ . '/includes/header.php';
           Código: <?= sanitize($user['codigo_acceso']) ?>
         </span>
       </div>
+      <?php endif; ?>
+      <?php if ($profileStats): ?>
+      <div style="display:flex;justify-content:center;gap:16px;margin-top:20px;padding-top:16px;border-top:1px solid var(--bg-border)">
+        <div style="text-align:center">
+          <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--gold)"><?= $profileStats['estrellas'] ?></div>
+          <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Estrellas</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--green)"><?= $profileStats['completados'] ?></div>
+          <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Módulos</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--purple)"><?= $profileStats['logros'] ?></div>
+          <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Logros</div>
+        </div>
+      </div>
+      <a href="<?= BASE_URL ?>/estudiante/logros.php" style="display:inline-flex;align-items:center;gap:5px;margin-top:12px;font-size:12px;color:var(--accent);text-decoration:none;font-weight:600">
+        <i data-lucide="trophy" style="width:12px;height:12px"></i>
+        Ver mis logros
+      </a>
       <?php endif; ?>
     </div>
   </div>

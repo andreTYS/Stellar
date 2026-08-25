@@ -82,12 +82,29 @@ require_once __DIR__ . '/../includes/header.php';
             <?= sanitize($ent['formato']) ?> · <?= date('d/m/Y', strtotime($ent['subido_en'])) ?>
           </p>
 
-          <!-- Thumbnail -->
+          <!-- Thumbnail / Preview -->
           <?php if ($ent['archivo_url']): ?>
+          <?php $fmt = strtolower($ent['formato'] ?? ''); $isPdf = $fmt === 'pdf'; $isImg = in_array($fmt, ['jpg','jpeg','png','gif','webp','imagen']); ?>
+          <?php if ($isImg): ?>
           <a href="<?= sanitize($ent['archivo_url']) ?>" target="_blank">
             <img src="<?= sanitize($ent['archivo_url']) ?>" alt="Entregable"
                  style="width:100%; height:140px; object-fit:cover; border-radius:10px; margin-bottom:12px; border:1px solid var(--bg-border);">
           </a>
+          <?php elseif ($isPdf): ?>
+          <div style="background:var(--bg-elevated);border-radius:10px;padding:6px;margin-bottom:12px">
+            <embed src="<?= sanitize($ent['archivo_url']) ?>#toolbar=0&navpanes=0" type="application/pdf"
+                   style="width:100%;height:140px;border:none;border-radius:8px;pointer-events:none">
+          </div>
+          <a href="<?= sanitize($ent['archivo_url']) ?>" target="_blank"
+             style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--blue);margin-bottom:12px;text-decoration:none">
+            <i data-lucide="file-text" style="width:12px;height:12px"></i> Abrir PDF
+          </a>
+          <?php else: ?>
+          <a href="<?= sanitize($ent['archivo_url']) ?>" target="_blank"
+             style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--accent);margin-bottom:12px;text-decoration:none;font-weight:600">
+            <i data-lucide="download" style="width:14px;height:14px"></i> Descargar archivo
+          </a>
+          <?php endif; ?>
           <?php endif; ?>
 
           <!-- Existing comment -->

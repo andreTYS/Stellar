@@ -11,6 +11,7 @@ $navItems = match ($rol) {
         ['href' => BASE_URL . '/estudiante/index.php',        'icon' => 'home',              'label' => 'Inicio',        'key' => 'inicio'],
         ['href' => BASE_URL . '/estudiante/portafolio.php',   'icon' => 'folder',            'label' => 'Portafolio',    'key' => 'portafolio'],
         ['href' => BASE_URL . '/estudiante/certificados.php', 'icon' => 'award',             'label' => 'Certificados',  'key' => 'certificados'],
+        ['href' => BASE_URL . '/estudiante/logros.php',       'icon' => 'trophy',            'label' => 'Logros',        'key' => 'logros'],
         ['href' => BASE_URL . '/stellarscribe/portal.php',    'icon' => 'rocket',            'label' => 'StellarScribe', 'key' => 'stellarscribe'],
         ['href' => BASE_URL . '/mensajes/',                   'icon' => 'mail',              'label' => 'Mensajes',      'key' => 'mensajes'],
     ],

@@ -79,6 +79,25 @@ for ($i = 13; $i >= 0; $i--) {
     $dailyValues[] = $dailyRows[$d] ?? 0;
 }
 
+// CSV export
+if (isset($_GET['export']) && $_GET['export'] === 'csv') {
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="reporte_global_' . date('Y-m-d') . '.csv"');
+    $out = fopen('php://output', 'w');
+    fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF)); // BOM for Excel
+    fputcsv($out, ['Colegio','Distrito','Docentes','Estudiantes','Completaciones']);
+    foreach ($porColegio as $col) {
+        fputcsv($out, [$col['nombre'],$col['distrito'],$col['docentes'],$col['estudiantes'],$col['completaciones']]);
+    }
+    fputcsv($out, []);
+    fputcsv($out, ['Curso','Módulos','Estudiantes activos','Completaciones']);
+    foreach ($porCurso as $c) {
+        fputcsv($out, [$c['nombre'],$c['modulos'],$c['estudiantes_activos'],$c['completaciones']]);
+    }
+    fclose($out);
+    exit;
+}
+
 $pageTitle = 'Reportes Globales';
 $activeNav = 'reportes';
 require_once __DIR__ . '/../includes/header.php';
@@ -96,6 +115,10 @@ require_once __DIR__ . '/../includes/header.php';
       <input type="date" name="hasta" value="<?= $hasta ?>" class="form-control" style="width:140px;padding:7px 10px;font-size:12px">
       <button type="submit" class="btn btn-ghost" style="padding:7px 14px;font-size:12px">Filtrar</button>
     </form>
+    <a href="?desde=<?= $desde ?>&hasta=<?= $hasta ?>&export=csv" class="btn btn-ghost">
+      <i data-lucide="download" style="width:15px;height:15px"></i>
+      Exportar CSV
+    </a>
     <button onclick="window.print()" class="btn btn-ghost">
       <i data-lucide="printer" style="width:15px;height:15px"></i>
       Imprimir
