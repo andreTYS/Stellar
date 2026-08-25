@@ -9,11 +9,8 @@ define('DB_USER', 'root');
 define('DB_PASS', '');
 define('APP_NAME', 'INNOVA-STEAM');
 define('APP_VERSION', '2.0');
-// Auto-detect base URL from document root so the app works in any subdirectory
-$_docRoot  = rtrim(str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT'] ?? '')), '/');
-$_appRoot  = rtrim(str_replace('\\', '/', realpath(dirname(__DIR__))), '/');
-$_relative = $_docRoot !== '' ? substr($_appRoot, strlen($_docRoot)) : '/innovasteam';
-define('BASE_URL', $_relative ?: '/innovasteam');
+// Base URL — fixed for symlinked deployment under /srv/www/innovasteam
+define('BASE_URL', '/innovasteam');
 define('UPLOAD_DIR', dirname(__DIR__) . '/uploads/');
 define('UPLOAD_URL', BASE_URL . '/uploads/');
 define('MAX_UPLOAD_MB', 5);
