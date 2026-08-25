@@ -53,6 +53,31 @@ $porcentaje       = $totalCount > 0 ? round(($completadosCount / $totalCount) * 
 $color            = sanitize($curso['color_hex'] ?? '#4a9eff');
 $initial          = strtoupper(mb_substr(trim($curso['nombre'] ?? 'C'), 0, 1));
 
+// Aula ranking for this course
+$ranking = [];
+try {
+    $pdo = getDB();
+    // Find student's aula
+    $aulaRow = $pdo->prepare('SELECT ea.aula_id FROM estudiante_aula ea WHERE ea.estudiante_id=? LIMIT 1');
+    $aulaRow->execute([$estudianteId]);
+    $aulaId = $aulaRow->fetchColumn();
+    if ($aulaId) {
+        $stRank = $pdo->prepare("
+            SELECT u.id, u.nombre, u.apellido,
+                   COALESCE(SUM(pe.estrellas_quiz),0) as estrellas,
+                   COUNT(CASE WHEN pe.completado=1 THEN 1 END) as completados
+            FROM estudiante_aula ea
+            JOIN usuarios u ON u.id=ea.estudiante_id
+            LEFT JOIN progreso_estudiante pe ON pe.estudiante_id=u.id
+                AND pe.modulo_id IN (SELECT id FROM modulos WHERE curso_id=?)
+            WHERE ea.aula_id=?
+            GROUP BY u.id ORDER BY estrellas DESC, completados DESC LIMIT 10
+        ");
+        $stRank->execute([$cursoId, $aulaId]);
+        $ranking = $stRank->fetchAll();
+    }
+} catch (\Throwable $e) {}
+
 // ── View ──────────────────────────────────────────────────────
 $pageTitle = sanitize($curso['nombre']);
 $activeNav = 'inicio';
@@ -178,6 +203,41 @@ include __DIR__ . '/../includes/header.php';
   <?php endif; ?>
 
   <?php endforeach; ?>
+</div>
+<?php endif; ?>
+
+<?php if (!empty($ranking)): ?>
+<!-- Aula ranking for this course -->
+<div class="card" style="margin-top:28px;border-color:<?= $color ?>33">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title" style="display:flex;align-items:center;gap:8px">
+        <i data-lucide="trophy" style="width:16px;height:16px;color:var(--gold)"></i>
+        Ranking de mi aula
+      </h2>
+      <p class="card-subtitle">Posición en <?= sanitize($curso['nombre']) ?></p>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <?php foreach ($ranking as $i => $est):
+      $isMe = $est['id'] == $estudianteId;
+      $medal = match($i) { 0 => '🥇', 1 => '🥈', 2 => '🥉', default => '#' . ($i+1) };
+    ?>
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:<?= $isMe ? $color.'18' : 'var(--bg-elevated)' ?>;border:1px solid <?= $isMe ? $color.'44' : 'transparent' ?>">
+      <span style="width:28px;text-align:center;font-size:<?= $i<3?'16':'12' ?>px;font-weight:700;flex-shrink:0"><?= $medal ?></span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:<?= $isMe?'700':'500' ?>;color:<?= $isMe ? $color : 'var(--text-primary)' ?>;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+          <?= sanitize($est['nombre'] . ' ' . $est['apellido']) ?><?= $isMe ? ' (tú)' : '' ?>
+        </div>
+        <div style="font-size:10px;color:var(--text-muted)"><?= (int)$est['completados'] ?> módulos completados</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+        <span style="font-size:14px;font-weight:700;color:var(--gold)"><?= (int)$est['estrellas'] ?></span>
+        <i data-lucide="star" style="width:13px;height:13px;color:var(--gold);fill:var(--gold)"></i>
+      </div>
+    </div>
+    <?php endforeach; ?>
+  </div>
 </div>
 <?php endif; ?>
 

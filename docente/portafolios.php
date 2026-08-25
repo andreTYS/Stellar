@@ -14,6 +14,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comentar'])) {
     $calificacion = (int)$_POST['calificacion'];
     $pdo->prepare("UPDATE entregables SET comentario_docente=?, calificacion=?, comentado_por=? WHERE id=?")
         ->execute([$comentario, $calificacion, $user['id'], $entregableId]);
+
+    // Notify student
+    try {
+        $ent = $pdo->prepare('SELECT e.estudiante_id, m.titulo FROM entregables e JOIN modulos m ON m.id=e.modulo_id WHERE e.id=?');
+        $ent->execute([$entregableId]);
+        $entRow = $ent->fetch();
+        if ($entRow) {
+            $stars = $calificacion > 0 ? " ({$calificacion}★)" : '';
+            $pdo->prepare(
+                'INSERT INTO notificaciones (usuario_id,tipo,titulo,mensaje,url)
+                 VALUES (?,?,?,?,?)'
+            )->execute([
+                $entRow['estudiante_id'],
+                'mensaje',
+                'Tu docente calificó tu entregable',
+                trim(($user['nombre'] ?? '') . ' ' . ($user['apellido'] ?? '')) . ' comentó tu trabajo en "' . $entRow['titulo'] . '"' . $stars,
+                BASE_URL . '/estudiante/portafolio.php'
+            ]);
+        }
+    } catch (\Throwable $e) {}
+
     redirect('/innovasteam/docente/portafolios.php?estudiante_id='.$estudianteId.'&ok=1');
 }
 

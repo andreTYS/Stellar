@@ -47,6 +47,9 @@ $navItems = match ($rol) {
         ['href' => BASE_URL . '/stellarscribe/portal.php', 'icon' => 'rocket',          'label' => 'StellarScribe','key' => 'stellarscribe'],
         ['href' => BASE_URL . '/mensajes/',          'icon' => 'mail',             'label' => 'Mensajes',  'key' => 'mensajes'],
     ],
+    'apoderado' => [
+        ['href' => BASE_URL . '/apoderado/index.php', 'icon' => 'home', 'label' => 'Inicio', 'key' => 'dashboard'],
+    ],
     default => [],
 };
 
@@ -56,6 +59,7 @@ $rolLabel = match ($rol) {
     'docente'       => 'Docente',
     'practicante'   => 'Practicante',
     'estudiante'    => 'Estudiante',
+    'apoderado'     => 'Apoderado',
     default         => ucfirst($rol),
 };
 ?>

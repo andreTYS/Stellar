@@ -35,6 +35,22 @@ $sesionesTotal = (int)$stmtTotal->fetchColumn();
 
 $sesiones = getSesionesByPracticante($uid, 5);
 
+// Upcoming planned modules from aula_modulos
+$stmtCal = $db->prepare("
+    SELECT am.fecha_planificada, m.titulo as modulo_titulo, c.nombre as curso_nombre, c.color_hex,
+           a.grado, a.seccion
+    FROM aula_modulos am
+    JOIN aulas a ON a.id = am.aula_id
+    JOIN modulos m ON m.id = am.modulo_id
+    JOIN cursos c ON c.id = m.curso_id
+    JOIN practicante_aula pa ON pa.aula_id = a.id AND pa.practicante_id = ?
+    WHERE am.fecha_planificada >= CURDATE()
+    ORDER BY am.fecha_planificada ASC
+    LIMIT 8
+");
+$stmtCal->execute([$uid]);
+$proximasSesiones = $stmtCal->fetchAll();
+
 $pageTitle = 'Dashboard Practicante';
 $activeNav = 'dashboard';
 include __DIR__ . '/../includes/header.php';
@@ -176,5 +192,40 @@ include __DIR__ . '/../includes/header.php';
   </div>
   <?php endif; ?>
 </div>
+
+<?php if (!empty($proximasSesiones)): ?>
+<!-- Upcoming sessions calendar -->
+<div class="card mt-24">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title" style="display:flex;align-items:center;gap:8px">
+        <i data-lucide="calendar-days" style="width:16px;height:16px;color:var(--accent)"></i>
+        Próximas sesiones planificadas
+      </h2>
+      <p class="card-subtitle">Módulos con fecha asignada en tus aulas</p>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <?php foreach ($proximasSesiones as $ps):
+      $dias = (int)ceil((strtotime($ps['fecha_planificada']) - time()) / 86400);
+      $diaLabel = $dias === 0 ? 'Hoy' : ($dias === 1 ? 'Mañana' : 'En ' . $dias . ' días');
+      $urgColor = $dias <= 1 ? 'var(--danger)' : ($dias <= 7 ? 'var(--gold)' : 'var(--text-muted)');
+    ?>
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;background:var(--bg-elevated)">
+      <div style="width:48px;text-align:center;flex-shrink:0">
+        <div style="font-size:18px;font-weight:800;font-family:'Syne',sans-serif;color:var(--accent);line-height:1"><?= date('d', strtotime($ps['fecha_planificada'])) ?></div>
+        <div style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase"><?= date('M', strtotime($ps['fecha_planificada'])) ?></div>
+      </div>
+      <div style="width:1px;height:36px;background:var(--bg-border);flex-shrink:0"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= sanitize($ps['modulo_titulo']) ?></div>
+        <div style="font-size:11px;color:var(--text-muted)"><?= (int)$ps['grado'] ?>° "<?= sanitize($ps['seccion']) ?>" · <span style="color:<?= $ps['color_hex'] ?>;font-weight:600"><?= sanitize($ps['curso_nombre']) ?></span></div>
+      </div>
+      <span style="font-size:11px;font-weight:700;color:<?= $urgColor ?>;flex-shrink:0"><?= $diaLabel ?></span>
+    </div>
+    <?php endforeach; ?>
+  </div>
+</div>
+<?php endif; ?>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

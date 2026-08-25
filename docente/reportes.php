@@ -63,6 +63,22 @@ foreach ($aulas as $aula) {
 // Max modules (for % column in student table)
 $maxMod = (int)$pdo->query("SELECT COUNT(*) FROM modulos WHERE activo=1")->fetchColumn() ?: 1;
 
+// Recent sessions with photos across all aulas
+$aulaIds = array_column($aulas, 'id');
+$sesionesConFoto = [];
+if ($aulaIds) {
+    $in = implode(',', array_map('intval', $aulaIds));
+    $sesionesConFoto = $pdo->query("
+        SELECT s.id, s.fecha_sesion, s.notas, s.fotos_actividad, s.asistentes,
+               a.grado, a.seccion, m.titulo as modulo_titulo
+        FROM sesiones s
+        JOIN aulas a ON a.id=s.aula_id
+        LEFT JOIN modulos m ON m.id=s.modulo_id
+        WHERE s.aula_id IN ($in) AND s.fotos_actividad IS NOT NULL
+        ORDER BY s.fecha_sesion DESC LIMIT 20
+    ")->fetchAll();
+}
+
 $pageTitle = 'Reportes del Aula';
 $activeNav = 'reportes';
 require_once __DIR__ . '/../includes/header.php';
@@ -222,5 +238,44 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
+
+<?php if (!empty($sesionesConFoto)): ?>
+<div class="card" style="margin-top:20px">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">Galería de sesiones</h2>
+      <p class="card-subtitle">Fotos de actividades registradas por practicantes</p>
+    </div>
+    <span style="font-size:12px;color:var(--text-muted)"><?= count($sesionesConFoto) ?> sesiones con foto</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px">
+    <?php foreach ($sesionesConFoto as $ses):
+      $fotos = json_decode($ses['fotos_actividad'] ?? '[]', true);
+      if (empty($fotos)) continue;
+      foreach ($fotos as $fotoUrl):
+    ?>
+    <div style="border-radius:12px;overflow:hidden;background:var(--bg-elevated);border:1px solid var(--bg-border)">
+      <a href="<?= sanitize($fotoUrl) ?>" target="_blank" rel="noopener">
+        <img src="<?= sanitize($fotoUrl) ?>" alt="Sesión"
+             style="width:100%;height:140px;object-fit:cover;display:block;transition:transform .3s"
+             onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform=''">
+      </a>
+      <div style="padding:8px 10px">
+        <div style="font-size:12px;font-weight:600;color:var(--text-primary)"><?= sanitize($ses['modulo_titulo'] ?? '') ?></div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:2px">
+          <?= (int)$ses['grado'] ?>° "<?= sanitize($ses['seccion']) ?>" · <?= date('d/m/Y', strtotime($ses['fecha_sesion'])) ?>
+          · <?= (int)$ses['asistentes'] ?> asistentes
+        </div>
+        <?php if (!empty($ses['notas'])): ?>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;font-style:italic;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">
+          <?= sanitize($ses['notas']) ?>
+        </div>
+        <?php endif; ?>
+      </div>
+    </div>
+    <?php endforeach; endforeach; ?>
+  </div>
+</div>
+<?php endif; ?>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

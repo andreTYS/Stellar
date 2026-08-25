@@ -94,7 +94,11 @@ $fecha     = formatDate($cert['emitido_en']);
     .print-btn:hover{opacity:.9;transform:translateY(-1px)}
     .actions{display:flex;gap:10px;justify-content:center;margin-top:4px;flex-wrap:wrap}
     @media print{body{background:#fff;padding:0}#no-print{display:none}.cert{box-shadow:none;border-radius:0}}
+    .dl-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:#1a1f36;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif}
+    .dl-btn:hover{opacity:.85;transform:translateY(-1px)}
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
   <a href="<?= BASE_URL ?>/estudiante/certificados.php" class="back-btn" id="no-print">
@@ -168,7 +172,31 @@ $fecha     = formatDate($cert['emitido_en']);
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
         Imprimir / Guardar PDF
       </button>
+      <button class="dl-btn" id="dlBtn" onclick="downloadPdf()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Descargar PDF
+      </button>
     </div>
   </div>
+<script>
+async function downloadPdf() {
+  const btn = document.getElementById('dlBtn');
+  btn.disabled = true;
+  btn.textContent = 'Generando…';
+  try {
+    const el  = document.querySelector('.cert');
+    const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#fff' });
+    const img  = canvas.toDataURL('image/jpeg', 0.95);
+    const { jsPDF } = window.jspdf;
+    const pdf  = new jsPDF({ orientation: 'portrait', unit: 'px', format: [canvas.width / 2, canvas.height / 2] });
+    pdf.addImage(img, 'JPEG', 0, 0, canvas.width / 2, canvas.height / 2);
+    pdf.save('certificado-<?= str_pad($cert['id'], 6, '0', STR_PAD_LEFT) ?>.pdf');
+  } catch (e) {
+    alert('No se pudo generar el PDF. Usa Imprimir para guardarlo.');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Descargar PDF';
+}
+</script>
 </body>
 </html>

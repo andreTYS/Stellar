@@ -1343,6 +1343,14 @@
     fadeOut(250);
     scrollMainTop();
 
+    // Track chapter progress in DB (silently; no-op if not logged in)
+    const _capStart = Date.now();
+    const _capHandler = () => {
+      const seg = Math.round((Date.now() - _capStart) / 1000);
+      navigator.sendBeacon('../api/capitulo_progreso.php', JSON.stringify({ capitulo: n, tiempo_seg: seg }));
+    };
+    document.getElementById('continueBtn')?.addEventListener('click', _capHandler, { once: true });
+
     // Wire collapsible education box
     const eduToggle = document.getElementById('eduToggle');
     const eduBody = document.getElementById('eduBody');

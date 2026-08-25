@@ -147,7 +147,11 @@ require_once __DIR__ . '/../includes/header.php';
             <td style="color:var(--text-secondary); font-size:13px;"><?= $m['grado_ciclo'] ?></td>
             <td style="color:var(--text-secondary); font-size:13px;"><?= $m['minutos_estimados'] ?> min</td>
             <td style="color:var(--green); font-weight:700; text-align:center;"><?= $m['completaciones'] ?></td>
-            <td>
+            <td style="display:flex;gap:6px;align-items:center">
+              <a href="<?= BASE_URL ?>/admin/modulo_pasos.php?modulo_id=<?= (int)$m['id'] ?>"
+                 class="btn btn-ghost" style="font-size:11px;padding:4px 10px">
+                Editar pasos
+              </a>
               <form method="POST" style="display:inline">
                 <?= csrfField() ?>
                 <input type="hidden" name="action" value="toggle_modulo">

@@ -99,6 +99,7 @@ function dashboardUrl(): string
         'docente'        => BASE_URL . '/docente/index.php',
         'practicante'    => BASE_URL . '/practicante/index.php',
         'estudiante'     => BASE_URL . '/estudiante/index.php',
+        'apoderado'      => BASE_URL . '/apoderado/index.php',
         default          => BASE_URL . '/login.php',
     };
 }
