@@ -9,7 +9,8 @@ $pdo         = getDB();
 
 // Fetch linked students
 $stmtEst = $pdo->prepare("
-    SELECT u.id, u.nombre, u.apellido, u.email,
+    SELECT u.id, u.nombre, u.apellido, u.email, u.ultimo_acceso,
+           DATEDIFF(NOW(), u.ultimo_acceso) AS dias_sin_entrar,
            ae.relacion,
            COALESCE(pe_comp.total, 0) AS modulos_completados,
            COALESCE(pe_est.total, 0)  AS estrellas_total,
@@ -64,6 +65,75 @@ require_once __DIR__ . '/../includes/header.php';
   </div>
   <?php endforeach; ?>
 </div>
+
+<?php if (count($estudiantes) > 1):
+  // Con un solo hijo la comparación no dice nada; con varios es lo
+  // primero que un apoderado quiere ver.
+  $maxComp = max(1, max(array_map(fn($e) => (int)$e['modulos_completados'], $estudiantes)));
+?>
+<!-- Comparativa entre hijos -->
+<div class="card mb-32">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">Comparativa</h2>
+      <p class="card-subtitle">Progreso de tus <?= count($estudiantes) ?> hijos, uno al lado del otro</p>
+    </div>
+  </div>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Estudiante</th>
+          <th>Módulos completados</th>
+          <th style="text-align:center">Estrellas</th>
+          <th style="text-align:center">Logros</th>
+          <th>Última conexión</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($estudiantes as $est):
+          $comp = (int)$est['modulos_completados'];
+          $dias = $est['ultimo_acceso'] === null ? null : (int)$est['dias_sin_entrar'];
+        ?>
+        <tr>
+          <td style="font-weight:600;color:var(--text-primary)">
+            <?= sanitize(trim($est['nombre'] . ' ' . $est['apellido'])) ?>
+          </td>
+          <td>
+            <!-- Barra a escala común: comparar exige el mismo eje -->
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="progress-track" style="flex:1;min-width:90px">
+                <div class="progress-fill" data-pct="<?= round($comp / $maxComp * 100) ?>"
+                     style="width:<?= round($comp / $maxComp * 100) ?>%;background:var(--accent)"></div>
+              </div>
+              <span class="num" style="font-weight:700;color:var(--text-primary);min-width:20px"><?= $comp ?></span>
+            </div>
+          </td>
+          <td style="text-align:center;font-weight:700;color:var(--gold)" class="num">
+            <?= (int)$est['estrellas_total'] ?>
+          </td>
+          <td style="text-align:center;font-weight:700;color:var(--purple)" class="num">
+            <?= (int)$est['logros_ganados'] ?>
+          </td>
+          <td style="font-size:12.5px">
+            <?php if ($dias === null): ?>
+              <span style="color:var(--danger);font-weight:600">Nunca ha entrado</span>
+            <?php elseif ($dias >= 7): ?>
+              <span style="color:var(--warning);font-weight:600">Hace <?= $dias ?> días</span>
+            <?php elseif ($dias <= 1): ?>
+              <span style="color:var(--success);font-weight:600">Hoy</span>
+            <?php else: ?>
+              <span style="color:var(--text-muted)">Hace <?= $dias ?> días</span>
+            <?php endif; ?>
+          </td>
+        </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  </div>
+</div>
+<?php endif; ?>
 
 <!-- Per-student detail cards -->
 <?php foreach ($estudiantes as $est):

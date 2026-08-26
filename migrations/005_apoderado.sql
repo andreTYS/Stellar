@@ -15,5 +15,17 @@ CREATE TABLE IF NOT EXISTS apoderado_estudiante (
     CONSTRAINT fk_ae_est   FOREIGN KEY (estudiante_id) REFERENCES usuarios(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Ensure 'apoderado' is a valid rol value
--- (usuarios.rol is VARCHAR so no ALTER needed on most setups)
+-- ── usuarios.rol debe aceptar 'apoderado' ────────────────────────
+-- Esto NO es opcional: en schema.sql la columna es un ENUM, no un
+-- VARCHAR. Sin este ALTER, insertar un apoderado guarda '' en modo
+-- permisivo (o falla en modo estricto), y el usuario resultante no
+-- puede iniciar sesión en ningún panel. El rol entero queda muerto.
+ALTER TABLE usuarios
+    MODIFY COLUMN rol ENUM(
+        'admin',
+        'admin_colegio',
+        'docente',
+        'practicante',
+        'estudiante',
+        'apoderado'
+    ) NOT NULL;
