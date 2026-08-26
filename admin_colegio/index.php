@@ -9,9 +9,12 @@ $userId = currentUserId();
 $pdo    = getDB();
 
 // ── Resolve colegio ───────────────────────────────────────────
-$stmtColegio = $pdo->prepare('SELECT * FROM colegios WHERE director_id = ? AND activo = 1 LIMIT 1');
-$stmtColegio->execute([$userId]);
-$colegio = $stmtColegio->fetch();
+// El vínculo director→colegio vive en usuarios.colegio_id. La tabla
+// colegios nunca tuvo director_id: su campo 'director' es el nombre en
+// texto, no una clave foránea. La consulta que lo buscaba reventaba la
+// página entera antes de llegar a la vía correcta, que ya estaba
+// escrita justo debajo como respaldo.
+$colegio = null;
 
 if (!$colegio) {
     $stmtFb = $pdo->prepare('SELECT colegio_id FROM usuarios WHERE id = ? LIMIT 1');

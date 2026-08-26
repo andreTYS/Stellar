@@ -145,24 +145,65 @@ require_once __DIR__ . '/../includes/header.php';
   <p>Agrega hasta 4 pasos para este módulo.</p>
 </div>
 <?php else: ?>
-<div style="display:flex;flex-direction:column;gap:20px">
-  <?php foreach ($pasos as $paso):
+<?php $puedeReordenar = count($pasos) > 1; ?>
+<?php if ($puedeReordenar): ?>
+<div class="reordenar-ayuda" style="display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:12.5px;color:var(--text-muted)">
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M8 18 12 22 16 18"/><path d="M8 6 12 2 16 6"/><path d="M12 2v20"/></svg>
+  <span>Arrastra la cabecera de un paso para reordenarlo, o usa las flechas <strong>↑ ↓</strong> (funcionan con teclado y en tablet). El orden se guarda solo.</span>
+</div>
+<?php endif; ?>
+<div id="pasos-lista"
+     class="pasos-lista"
+     data-modulo-id="<?= (int)$moduloId ?>"
+     data-endpoint="<?= BASE_URL ?>/api/paso_orden.php"
+     data-csrf="<?= htmlspecialchars(csrfToken(), ENT_QUOTES) ?>"
+     style="display:flex;flex-direction:column;gap:20px">
+  <?php foreach ($pasos as $i => $paso):
     $icon  = $tiposIcon[$paso['tipo']] ?? 'circle';
     $label = $tiposLabel[$paso['tipo']] ?? $paso['tipo'];
     $contenidoPretty = json_encode(json_decode($paso['contenido'], true), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
   ?>
-  <div class="card">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+  <div class="card paso-card" data-paso-id="<?= (int)$paso['id'] ?>">
+    <div class="paso-cabecera" <?= $puedeReordenar ? 'draggable="true" data-arrastre' : '' ?>
+         style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <?php if ($puedeReordenar): ?>
+      <?php /* SVG en línea: los iconos de Lucide vienen de un CDN y estas
+               páginas deben funcionar sin internet (colegios sin conexión). */ ?>
+      <span class="paso-asa" aria-hidden="true" data-tip="Arrastra para reordenar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/>
+          <circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/>
+          <circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/>
+        </svg>
+      </span>
+      <?php endif; ?>
       <div style="width:40px;height:40px;border-radius:10px;background:<?= $color ?>22;color:<?= $color ?>;display:flex;align-items:center;justify-content:center;flex-shrink:0">
         <i data-lucide="<?= $icon ?>" style="width:18px;height:18px"></i>
       </div>
       <div>
         <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--text-primary)">
-          Paso <?= (int)$paso['numero_paso'] ?> — <?= $label ?>
+          Paso <span class="paso-num"><?= (int)$paso['numero_paso'] ?></span> — <?= $label ?>
         </div>
         <div style="font-size:12px;color:var(--text-muted)">Edita el JSON de contenido abajo</div>
       </div>
-      <div style="margin-left:auto">
+      <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+        <?php if ($puedeReordenar): ?>
+        <div class="paso-mover" role="group" aria-label="Cambiar el orden de este paso">
+          <button type="button" class="paso-btn-mover" data-mover="-1"
+                  aria-label="Subir el paso <?= sanitize($label) ?>" data-tip="Subir"
+                  <?= $i === 0 ? 'disabled' : '' ?>>
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+          </button>
+          <button type="button" class="paso-btn-mover" data-mover="1"
+                  aria-label="Bajar el paso <?= sanitize($label) ?>" data-tip="Bajar"
+                  <?= $i === count($pasos) - 1 ? 'disabled' : '' ?>>
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+        </div>
+        <?php endif; ?>
         <span style="background:<?= $color ?>18;color:<?= $color ?>;border:1px solid <?= $color ?>33;border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700"><?= $label ?></span>
       </div>
     </div>
@@ -203,5 +244,185 @@ require_once __DIR__ . '/../includes/header.php';
   <?php endforeach; ?>
 </div>
 <?php endif; ?>
+
+<?php
+// ── Reordenar pasos: arrastrar y soltar + flechas (teclado/tablet) ──
+// La configuración viaja en los data-* del contenedor, así que este
+// bloque no necesita interpolar PHP (nowdoc).
+$inlineJs = <<<'JS'
+(function () {
+  const lista = document.getElementById('pasos-lista');
+  if (!lista) return;
+
+  const endpoint = lista.dataset.endpoint;
+  const csrf     = lista.dataset.csrf;
+  const moduloId = parseInt(lista.dataset.moduloId, 10);
+
+  const avisar   = (msg, tipo) => {
+    if (typeof showToast === 'function') showToast(msg, tipo);
+  };
+  const tarjetas = () => Array.from(lista.querySelectorAll('.paso-card'));
+  const idsAhora = () => tarjetas().map(t => parseInt(t.dataset.pasoId, 10));
+
+  // Renumera los títulos (1..N) y activa/desactiva las flechas.
+  function renumerar() {
+    const items = tarjetas();
+    items.forEach((t, i) => {
+      const num = t.querySelector('.paso-num');
+      if (num) num.textContent = String(i + 1);
+      const arriba = t.querySelector('[data-mover="-1"]');
+      const abajo  = t.querySelector('[data-mover="1"]');
+      if (arriba) arriba.disabled = (i === 0);
+      if (abajo)  abajo.disabled  = (i === items.length - 1);
+    });
+  }
+
+  // Vuelve a un orden anterior (por ids) cuando el guardado falla.
+  function restaurar(orden) {
+    if (!orden) return;
+    orden.forEach(id => {
+      const t = lista.querySelector('.paso-card[data-paso-id="' + id + '"]');
+      if (t) lista.appendChild(t);
+    });
+    renumerar();
+  }
+
+  function destacar(tarjeta) {
+    if (!tarjeta) return;
+    tarjeta.classList.remove('paso-movido');
+    void tarjeta.offsetWidth;               // reinicia la animación
+    tarjeta.classList.add('paso-movido');
+    setTimeout(() => tarjeta.classList.remove('paso-movido'), 800);
+  }
+
+  let guardando = false;
+
+  async function guardarOrden(ordenPrevio) {
+    if (guardando) return;
+    guardando = true;
+    lista.classList.add('orden-guardando');
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+        body: JSON.stringify({ modulo_id: moduloId, orden: idsAhora() })
+      });
+      let data = null;
+      try { data = await res.json(); } catch (e) { /* respuesta no JSON */ }
+      if (!res.ok || !data || !data.ok) {
+        throw new Error((data && data.error) || ('Error ' + res.status));
+      }
+      avisar('Orden de los pasos actualizado.', 'success');
+    } catch (err) {
+      restaurar(ordenPrevio);
+      avisar('No se pudo guardar el orden: ' + err.message, 'error');
+    } finally {
+      guardando = false;
+      lista.classList.remove('orden-guardando');
+    }
+  }
+
+  // ── Flechas subir / bajar (accesible con teclado y en pantallas táctiles) ──
+  lista.addEventListener('click', e => {
+    const btn = e.target.closest('[data-mover]');
+    if (!btn || btn.disabled || guardando) return;
+
+    const tarjeta = btn.closest('.paso-card');
+    const dir     = parseInt(btn.dataset.mover, 10);
+    const items   = tarjetas();
+    const desde   = items.indexOf(tarjeta);
+    const hasta   = desde + dir;
+    if (desde < 0 || hasta < 0 || hasta >= items.length) return;
+
+    const previo = idsAhora();
+    if (dir < 0) lista.insertBefore(tarjeta, items[hasta]);
+    else         lista.insertBefore(items[hasta], tarjeta);
+    renumerar();
+    destacar(tarjeta);
+
+    // Mantiene el foco visible tras mover la tarjeta.
+    let foco = tarjeta.querySelector('[data-mover="' + dir + '"]');
+    if (!foco || foco.disabled) foco = tarjeta.querySelector('[data-mover="' + (-dir) + '"]');
+    if (foco) foco.focus();
+
+    guardarOrden(previo);
+  });
+
+  // ── Arrastrar y soltar nativo (HTML5) ──
+  let arrastrada = null;
+  let ordenPrevioArrastre = null;
+
+  lista.addEventListener('dragstart', e => {
+    const origen = e.target.closest('[data-arrastre]');
+    if (!origen || guardando) return;
+    arrastrada = origen.closest('.paso-card');
+    if (!arrastrada) return;
+
+    ordenPrevioArrastre = idsAhora();
+    e.dataTransfer.effectAllowed = 'move';
+    // Algunos navegadores exigen datos para iniciar el arrastre.
+    try { e.dataTransfer.setData('text/plain', arrastrada.dataset.pasoId); } catch (err) {}
+    if (e.dataTransfer.setDragImage) {
+      const r = arrastrada.getBoundingClientRect();
+      e.dataTransfer.setDragImage(arrastrada, e.clientX - r.left, e.clientY - r.top);
+    }
+    // En el mismo tick el navegador aún no capturó la imagen de arrastre.
+    requestAnimationFrame(() => { if (arrastrada) arrastrada.classList.add('arrastrando'); });
+    lista.classList.add('reordenando');
+  });
+
+  lista.addEventListener('dragover', e => {
+    if (!arrastrada) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+
+    // Inserta la tarjeta antes de la primera cuya mitad superior quede
+    // por debajo del cursor; si no hay ninguna, va al final.
+    const referencia = tarjetas()
+      .filter(t => t !== arrastrada)
+      .find(t => {
+        const r = t.getBoundingClientRect();
+        return e.clientY < r.top + r.height / 2;
+      });
+
+    if (referencia) {
+      if (referencia.previousElementSibling !== arrastrada) {
+        lista.insertBefore(arrastrada, referencia);
+        renumerar();
+      }
+    } else if (lista.lastElementChild !== arrastrada) {
+      lista.appendChild(arrastrada);
+      renumerar();
+    }
+  });
+
+  lista.addEventListener('drop', e => {
+    if (!arrastrada) return;
+    e.preventDefault();   // evita que el navegador abra el texto soltado
+  });
+
+  lista.addEventListener('dragend', e => {
+    if (!arrastrada) return;
+    const tarjeta = arrastrada;
+    const previo  = ordenPrevioArrastre;
+    arrastrada = null;
+    ordenPrevioArrastre = null;
+    tarjeta.classList.remove('arrastrando');
+    lista.classList.remove('reordenando');
+
+    // Escape o soltar fuera de la lista: se descarta la previsualización.
+    const cancelado = e.dataTransfer && e.dataTransfer.dropEffect === 'none';
+    if (cancelado) { restaurar(previo); return; }
+
+    renumerar();
+    if (!previo || previo.join(',') === idsAhora().join(',')) return;
+    destacar(tarjeta);
+    guardarOrden(previo);
+  });
+
+  renumerar();
+})();
+JS;
+?>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

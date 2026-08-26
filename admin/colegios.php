@@ -32,7 +32,7 @@ $colegios = $pdo->query("
            SUM(u.rol='estudiante' AND u.activo=1) as total_est,
            SUM(u.rol='docente'    AND u.activo=1) as total_doc,
            SUM(u.rol='practicante' AND u.activo=1) as total_prac,
-           (SELECT COUNT(*) FROM aulas a WHERE a.colegio_id=col.id AND a.activo=1) as total_aulas,
+           (SELECT COUNT(*) FROM aulas a WHERE a.colegio_id=col.id) as total_aulas,
            (SELECT COUNT(*) FROM progreso_estudiante pe
             JOIN usuarios ue ON ue.id=pe.estudiante_id AND ue.colegio_id=col.id
             WHERE pe.completado=1) as total_completaciones

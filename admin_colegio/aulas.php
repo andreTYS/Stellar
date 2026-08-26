@@ -14,11 +14,9 @@ $userId = currentUserId();
 $pdo    = getDB();
 
 // ── Resolve colegio ───────────────────────────────────────────
-$stmtC = $pdo->prepare(
-    'SELECT * FROM colegios WHERE director_id = ? AND activo = 1 LIMIT 1'
-);
-$stmtC->execute([$userId]);
-$colegio = $stmtC->fetch();
+// Ver la nota en admin_colegio/index.php: colegios.director_id no
+// existe; el vínculo real es usuarios.colegio_id.
+$colegio = null;
 
 if (!$colegio) {
     $stmtFb = $pdo->prepare('SELECT colegio_id FROM usuarios WHERE id = ? LIMIT 1');

@@ -289,7 +289,29 @@ require_once __DIR__ . '/../includes/header.php';
         <h2 class="card-title" style="font-size:15px;display:flex;align-items:center;gap:7px"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg> Temas del currículo</h2>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px">
-        <?php foreach (array_slice($eduContent['science_topics'], 0, 6) as $topic):
+        <?php
+        // science_topics es un diccionario indexado por el nombre del
+        // tema ('solar_physics' => ['concepts' => [...]]), no una lista
+        // de objetos con clave 'topic'. Tratarlo como lista hacía que
+        // htmlspecialchars() recibiera un array y reventara la página
+        // entera — y este portal cuelga del menú de los seis roles.
+        foreach (array_slice($eduContent['science_topics'], 0, 6, true) as $clave => $tema):
+          $titulo = is_array($tema)
+              ? ucfirst(str_replace('_', ' ', (string)$clave))
+              : (string)$tema;
+
+          // Los subtemas viven en 'concepts'; se acepta 'subtopics' por
+          // si algún volcado antiguo usa ese nombre.
+          $subtemas = [];
+          if (is_array($tema)) {
+              foreach (['concepts', 'subtopics'] as $campo) {
+                  if (!empty($tema[$campo]) && is_array($tema[$campo])) {
+                      $subtemas = array_filter($tema[$campo], 'is_string');
+                      break;
+                  }
+              }
+          }
+        ?>
           $svgIcons = [
             '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
@@ -303,9 +325,9 @@ require_once __DIR__ . '/../includes/header.php';
         <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-elevated);border-radius:9px">
           <span style="width:28px;height:28px;border-radius:7px;background:var(--bg-muted);display:flex;align-items:center;justify-content:center;flex-shrink:0"><?= $svgIcons[$ti % 6] ?></span>
           <div>
-            <div style="font-size:12px;font-weight:600;color:var(--text-primary)"><?= htmlspecialchars($topic['topic'] ?? $topic) ?></div>
-            <?php if (!empty($topic['subtopics'])): ?>
-            <div style="font-size:11px;color:var(--text-muted);margin-top:1px"><?= htmlspecialchars(implode(' · ', array_slice($topic['subtopics'], 0, 2))) ?></div>
+            <div style="font-size:12px;font-weight:600;color:var(--text-primary)"><?= htmlspecialchars($titulo) ?></div>
+            <?php if ($subtemas): ?>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:1px"><?= htmlspecialchars(implode(' · ', array_slice($subtemas, 0, 2))) ?></div>
             <?php endif; ?>
           </div>
         </div>

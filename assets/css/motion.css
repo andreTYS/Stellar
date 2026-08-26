@@ -245,6 +245,107 @@ td.num,
   -webkit-overflow-scrolling: touch;
 }
 
+/* ── Reordenar pasos (arrastrar y soltar) ─────────────────── */
+/* Se usa en admin/modulo_pasos.php: la cabecera de cada tarjeta es el
+   asa de arrastre y las flechas hacen lo mismo con teclado o táctil.  */
+.pasos-lista .paso-card {
+  transition:
+    box-shadow .2s ease,
+    transform  .2s cubic-bezier(.22, 1, .36, 1),
+    opacity    .2s ease;
+}
+
+/* Mientras se arrastra no interesa el hover de .card */
+.pasos-lista.reordenando .paso-card:hover {
+  transform: none;
+}
+
+.paso-cabecera[data-arrastre] {
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.paso-cabecera[data-arrastre]:active {
+  cursor: grabbing;
+}
+
+.paso-asa {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  opacity: .5;
+  transition: opacity .15s ease, color .15s ease;
+}
+
+.paso-card:hover .paso-asa,
+.paso-cabecera[data-arrastre]:focus-within .paso-asa {
+  opacity: 1;
+  color: var(--accent);
+}
+
+/* Tarjeta que el usuario está arrastrando */
+.paso-card.arrastrando {
+  opacity: .4;
+  transform: scale(.99);
+  box-shadow: 0 12px 32px rgba(16, 24, 64, .18);
+  outline: 2px dashed var(--accent);
+  outline-offset: 3px;
+}
+
+/* Destello al soltar o al mover con las flechas */
+.paso-card.paso-movido {
+  animation: pasoMovido .8s cubic-bezier(.22, 1, .36, 1);
+}
+
+@keyframes pasoMovido {
+  0%   { box-shadow: 0 0 0 0 var(--accent-light); border-color: var(--accent); }
+  35%  { box-shadow: 0 0 0 4px var(--accent-light); border-color: var(--accent); }
+  100% { box-shadow: var(--shadow-sm); }
+}
+
+/* Mientras el nuevo orden viaja al servidor */
+.pasos-lista.orden-guardando {
+  opacity: .65;
+  pointer-events: none;
+  transition: opacity .15s ease;
+}
+
+/* Flechas subir / bajar */
+.paso-mover {
+  display: flex;
+  gap: 2px;
+}
+
+.paso-btn-mover {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--bg-border);
+  border-radius: 8px;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.paso-btn-mover:hover:not(:disabled) {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.paso-btn-mover:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
 /* ── Respetar preferencia de movimiento reducido ──────────── */
 @media (prefers-reduced-motion: reduce) {
   .reveal-ready [data-reveal],
@@ -257,6 +358,12 @@ td.num,
   .skeleton   { animation: none; }
   .ring .ring-value { transition: none; }
   .stat-card::before { transition: none; }
+
+  /* Reordenar pasos: sin animación, pero el estado sigue siendo visible
+     (opacidad y contorno) para no perder el feedback de arrastre.       */
+  .pasos-lista .paso-card { transition: none; }
+  .paso-card.arrastrando  { transform: none; }
+  .paso-card.paso-movido  { animation: none; outline: 2px solid var(--accent); outline-offset: 2px; }
 
   *, *::before, *::after {
     animation-duration: .01ms !important;

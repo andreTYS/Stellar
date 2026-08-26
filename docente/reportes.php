@@ -11,7 +11,7 @@ $aulas = $pdo->prepare("
     SELECT a.*, col.nombre as colegio_nombre,
            (SELECT COUNT(*) FROM estudiante_aula ea WHERE ea.aula_id=a.id) as total_est
     FROM aulas a JOIN colegios col ON col.id=a.colegio_id
-    WHERE a.docente_id=? AND a.activo=1
+    WHERE a.docente_id=?
 ");
 $aulas->execute([$user['id']]);
 $aulas = $aulas->fetchAll();

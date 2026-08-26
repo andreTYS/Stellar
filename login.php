@@ -876,11 +876,16 @@ $queryError = $_GET['error'] ?? '';
         </div>
         <div class="demo-grid">
           <?php
+          // La plataforma tiene seis roles; el panel solo ofrecía cuatro.
+          // Faltaban justamente los dos cuyos paneles estaban rotos, así
+          // que nadie llegaba a abrirlos desde aquí.
           $demos = [
-            ['admin@innovasteam.edu.pe',       'password', 'Admin',        'admin@innovasteam.edu.pe'],
+            ['admin@innovasteam.edu.pe',        'password', 'Admin',        'admin@innovasteam.edu.pe'],
+            ['admin_col@innovasteam.edu.pe',    'password', 'Director',     'admin_col@innovasteam.edu.pe'],
             ['docente@innovasteam.edu.pe',      'password', 'Docente',      'docente@innovasteam.edu.pe'],
             ['practicante@innovasteam.edu.pe',  'password', 'Practicante',  'practicante@innovasteam.edu.pe'],
             ['EST-001',                         'password', 'Estudiante',   'EST-001'],
+            ['apoderado@innovasteam.edu.pe',    'password', 'Apoderado',    'apoderado@innovasteam.edu.pe'],
           ];
           foreach ($demos as [$cred, $pass, $label, $display]):
           ?>
