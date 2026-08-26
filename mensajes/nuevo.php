@@ -110,8 +110,15 @@ require_once __DIR__ . '/../includes/header.php';
       <label class="form-label">Para</label>
       <select name="destinatario_id" class="form-control" required>
         <option value="">Selecciona destinatario…</option>
-        <?php foreach ($destinatarios as $d):
-          $presel = ($reply && $d['id'] == $reply['remitente_id']) ? 'selected' : '';
+        <?php
+        // ?para=N preselecciona un destinatario. Lo usan los atajos
+        // "Escribirle" del panel del docente. Solo surte efecto si el
+        // usuario ya está en la lista permitida, así que no amplía a
+        // quién se le puede escribir.
+        $paraId = (int)($_GET['para'] ?? 0);
+        foreach ($destinatarios as $d):
+          $presel = (($reply && $d['id'] == $reply['remitente_id'])
+                     || ($paraId && (int)$d['id'] === $paraId)) ? 'selected' : '';
         ?>
         <option value="<?= (int)$d['id'] ?>" <?= $presel ?>>
           <?= sanitize($d['nombre'] . ' ' . $d['apellido']) ?> — <?= $rolLabel($d['rol']) ?>

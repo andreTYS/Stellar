@@ -43,6 +43,48 @@ try {
     $stellarData['logros'] = (int)$stLog->fetchColumn();
 } catch (\Throwable $e) {}
 
+// ── Posición global en el aula ───────────────────────────────
+// curso.php ya mostraba un ranking, pero acotado a un solo curso.
+// Aquí interesa la posición general, que es la que el estudiante
+// reconoce como "en qué lugar voy".
+$ranking    = [];
+$miPosicion = null;
+try {
+    $aulaRow = $pdo->prepare('SELECT aula_id FROM estudiante_aula WHERE estudiante_id = ? LIMIT 1');
+    $aulaRow->execute([$estudianteId]);
+    $aulaId = $aulaRow->fetchColumn();
+
+    if ($aulaId) {
+        $stRank = $pdo->prepare("
+            SELECT u.id, u.nombre, u.apellido,
+                   COALESCE(SUM(pe.estrellas_quiz), 0)          AS estrellas,
+                   COUNT(CASE WHEN pe.completado = 1 THEN 1 END) AS completados
+              FROM estudiante_aula ea
+              JOIN usuarios u ON u.id = ea.estudiante_id AND u.activo = 1
+         LEFT JOIN progreso_estudiante pe ON pe.estudiante_id = u.id
+             WHERE ea.aula_id = ?
+          GROUP BY u.id, u.nombre, u.apellido
+          ORDER BY estrellas DESC, completados DESC, u.apellido ASC
+        ");
+        $stRank->execute([$aulaId]);
+        $todos = $stRank->fetchAll();
+
+        foreach ($todos as $i => $fila) {
+            if ((int)$fila['id'] === $estudianteId) {
+                $miPosicion = $i + 1;
+                break;
+            }
+        }
+        // Se muestran los 5 primeros; si el estudiante quedó fuera, se
+        // añade su propia fila para que siempre se vea a sí mismo.
+        $ranking = array_slice($todos, 0, 5);
+        if ($miPosicion !== null && $miPosicion > 5) {
+            $ranking[] = $todos[$miPosicion - 1] + ['_posicion' => $miPosicion];
+        }
+        $totalAula = count($todos);
+    }
+} catch (\Throwable $e) {}
+
 $pageTitle = 'Mis Cursos';
 $activeNav = 'inicio';
 include __DIR__ . '/../includes/header.php';
@@ -96,6 +138,53 @@ include __DIR__ . '/../includes/header.php';
     <div class="stat-label">Cursos disponibles</div>
   </div>
 </div>
+
+<?php if (!empty($ranking) && $miPosicion !== null): ?>
+<!-- Posición en el aula -->
+<div class="card mb-32">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">Tu posición en el aula</h2>
+      <p class="card-subtitle">
+        Vas <?= $miPosicion ?>.º de <?= (int)($totalAula ?? count($ranking)) ?>
+        · las estrellas se ganan en los quizzes
+      </p>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:2px">
+    <?php foreach ($ranking as $i => $r):
+      $pos    = $r['_posicion'] ?? ($i + 1);
+      $soyYo  = (int)$r['id'] === $estudianteId;
+      $medalla = match ((int)$pos) { 1 => '🥇', 2 => '🥈', 3 => '🥉', default => null };
+      // Salto visual cuando la fila propia no es consecutiva con el top 5.
+      $corte = isset($r['_posicion']) && $r['_posicion'] > 6;
+    ?>
+      <?php if ($corte): ?>
+      <div style="text-align:center;color:var(--text-muted);font-size:16px;line-height:1;padding:2px 0">···</div>
+      <?php endif; ?>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;
+                  background:<?= $soyYo ? 'var(--accent-light)' : 'transparent' ?>">
+        <span style="width:26px;text-align:center;font-weight:700;font-size:14px;
+                     color:<?= $soyYo ? 'var(--accent)' : 'var(--text-muted)' ?>" class="num">
+          <?= $medalla ?? $pos . '.º' ?>
+        </span>
+        <span style="flex:1;font-size:13.5px;font-weight:<?= $soyYo ? '700' : '500' ?>;
+                     color:var(--text-primary);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+          <?= sanitize(trim($r['nombre'] . ' ' . $r['apellido'])) ?><?= $soyYo ? ' (tú)' : '' ?>
+        </span>
+        <span style="font-size:12px;color:var(--text-muted)" class="num">
+          <?= (int)$r['completados'] ?> mód.
+        </span>
+        <span style="display:flex;align-items:center;gap:4px;font-size:13px;font-weight:700;color:var(--gold)" class="num">
+          <i data-lucide="star" style="width:14px;height:14px;fill:var(--gold)"></i>
+          <?= (int)$r['estrellas'] ?>
+        </span>
+      </div>
+    <?php endforeach; ?>
+  </div>
+</div>
+<?php endif; ?>
 
 <!-- Courses heading -->
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">

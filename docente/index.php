@@ -53,6 +53,32 @@ $proximosDocente = $pdo->prepare("
 $proximosDocente->execute([$user['id']]);
 $proximosDocente = $proximosDocente->fetchAll();
 
+// ── Estudiantes rezagados ────────────────────────────────────
+// Antes no había forma de detectarlos: ninguna tabla guardaba cuándo
+// entró un estudiante por última vez. usuarios.ultimo_acceso lo
+// resuelve (migración 007). Se considera rezagado quien lleva más de
+// DIAS_REZAGO sin entrar, o quien nunca ha entrado.
+const DIAS_REZAGO = 7;
+
+$rezagados = $pdo->prepare("
+    SELECT u.id, u.nombre, u.apellido, u.ultimo_acceso,
+           a.grado, a.seccion,
+           DATEDIFF(NOW(), u.ultimo_acceso) AS dias_sin_entrar,
+           (SELECT COUNT(*) FROM progreso_estudiante pe
+             WHERE pe.estudiante_id = u.id AND pe.completado = 1) AS completados
+      FROM usuarios u
+      JOIN estudiante_aula ea ON ea.estudiante_id = u.id
+      JOIN aulas a            ON a.id = ea.aula_id
+     WHERE a.docente_id = ?
+       AND u.rol    = 'estudiante'
+       AND u.activo = 1
+       AND (u.ultimo_acceso IS NULL OR u.ultimo_acceso < (NOW() - INTERVAL ? DAY))
+     ORDER BY u.ultimo_acceso IS NULL DESC, u.ultimo_acceso ASC
+     LIMIT 12
+");
+$rezagados->execute([$user['id'], DIAS_REZAGO]);
+$rezagados = $rezagados->fetchAll();
+
 $pageTitle = 'Dashboard Docente';
 $activeNav = 'dashboard';
 require_once __DIR__ . '/../includes/header.php';
@@ -107,6 +133,75 @@ $pctDocente = min(100, $pctDocente);
     <div class="stat-label">Módulos planificados</div>
   </div>
 </div>
+
+<?php if (!empty($rezagados)): ?>
+<!-- Estudiantes rezagados — va primero porque es lo único que pide acción -->
+<div class="card mb-24" style="border-color:var(--warning)">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title" style="display:flex;align-items:center;gap:8px">
+        <span style="width:26px;height:26px;border-radius:7px;background:var(--warning-light);color:var(--warning);display:grid;place-items:center">
+          <i data-lucide="alert-triangle" style="width:15px;height:15px"></i>
+        </span>
+        Estudiantes sin actividad
+      </h2>
+      <p class="card-subtitle">
+        <?= count($rezagados) ?>
+        <?= count($rezagados) === 1 ? 'estudiante lleva' : 'estudiantes llevan' ?>
+        más de <?= DIAS_REZAGO ?> días sin entrar a la plataforma
+      </p>
+    </div>
+  </div>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Estudiante</th>
+          <th>Aula</th>
+          <th>Última conexión</th>
+          <th style="text-align:center">Módulos</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($rezagados as $r):
+          $dias  = $r['ultimo_acceso'] === null ? null : (int)$r['dias_sin_entrar'];
+          // Tres semanas sin entrar deja de ser un despiste.
+          $grave = $dias === null || $dias >= 21;
+        ?>
+        <tr>
+          <td style="font-weight:600;color:var(--text-primary)">
+            <?= sanitize(trim($r['nombre'] . ' ' . $r['apellido'])) ?>
+          </td>
+          <td style="color:var(--text-muted);font-size:13px">
+            <?= sanitize(trim(($r['grado'] ?? '') . ' ' . ($r['seccion'] ?? ''))) ?: '—' ?>
+          </td>
+          <td>
+            <span style="font-size:12.5px;font-weight:600;color:<?= $grave ? 'var(--danger)' : 'var(--warning)' ?>">
+              <?php if ($dias === null): ?>
+                Nunca ha entrado
+              <?php else: ?>
+                Hace <?= $dias ?> <?= $dias === 1 ? 'día' : 'días' ?>
+              <?php endif; ?>
+            </span>
+          </td>
+          <td style="text-align:center;font-weight:700;color:var(--text-secondary)" class="num">
+            <?= (int)$r['completados'] ?>
+          </td>
+          <td style="text-align:right">
+            <a href="<?= BASE_URL ?>/mensajes/nuevo.php?para=<?= (int)$r['id'] ?>"
+               style="font-size:12px;font-weight:600;color:var(--accent);text-decoration:none">
+              Escribirle →
+            </a>
+          </td>
+        </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  </div>
+</div>
+<?php endif; ?>
 
 <!-- Chart row -->
 <div class="card mb-24">
