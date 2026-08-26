@@ -6,7 +6,7 @@
 -- Chapter-level progress (one row per student per chapter)
 CREATE TABLE IF NOT EXISTS capitulos_progreso (
     id             INT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id     INT          NOT NULL,
+    usuario_id     INT UNSIGNED NOT NULL,
     capitulo_slug  VARCHAR(50)  NOT NULL,          -- 'cap1','cap2','cap3','cap4'
     iniciado_en    DATETIME     DEFAULT (NOW()),
     completado_en  DATETIME     NULL,
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS capitulos_progreso (
 -- Simulator usage sessions
 CREATE TABLE IF NOT EXISTS simulador_sesiones (
     id            INT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id    INT         NOT NULL,
+    usuario_id    INT UNSIGNED NOT NULL,
     simulador     VARCHAR(60) NOT NULL,             -- 'sistema-solar','clima-espacial'
     iniciado_en   DATETIME    DEFAULT (NOW()),
     duracion_seg  INT         DEFAULT 0,
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS logros (
 -- Achievements earned by users
 CREATE TABLE IF NOT EXISTS usuario_logros (
     id          INT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id  INT      NOT NULL,
+    usuario_id  INT UNSIGNED NOT NULL,
     logro_id    INT      NOT NULL,
     obtenido_en DATETIME DEFAULT (NOW()),
     UNIQUE KEY uk_ul (usuario_id, logro_id),

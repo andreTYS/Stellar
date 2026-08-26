@@ -111,7 +111,8 @@ function doSearch(q) {
   res.innerHTML = '<div style="padding:16px;color:var(--text-muted);font-size:13px">Buscando…</div>';
   _searchTimer = setTimeout(async () => {
     try {
-      const r = await fetch('/api/search.php?q=' + encodeURIComponent(q));
+      const base = window.BASE_URL || '';
+      const r = await fetch(base + '/api/search.php?q=' + encodeURIComponent(q));
       const data = await r.json();
       if (!data.results || data.results.length === 0) {
         res.innerHTML = '<div style="padding:16px;color:var(--text-muted);font-size:13px">Sin resultados para "' + q + '"</div>';

@@ -54,7 +54,10 @@ include __DIR__ . '/../includes/header.php';
     <div class="welcome-title">¡Hola, <?= sanitize($user['nombre'] ?? 'Estudiante') ?>!</div>
     <div class="welcome-sub">Continúa tu aventura de aprendizaje STEAM · <?= $pctGlobal ?>% de progreso global</div>
   </div>
-  <div class="welcome-action">
+  <div class="welcome-action" style="display:flex;align-items:center;gap:20px">
+    <div class="ring ring-on-accent" data-pct="<?= $pctGlobal ?>" data-color="#fff"
+         data-tip="Progreso global en todos tus cursos"
+         style="--ring-size:74px;--ring-stroke:6px"></div>
     <a href="<?= BASE_URL ?>/estudiante/certificados.php" class="btn btn-primary">
       <i data-lucide="award" style="width:16px;height:16px"></i>
       Mis certificados
@@ -179,7 +182,7 @@ include __DIR__ . '/../includes/header.php';
       <?php endif; ?>
 
       <div class="progress-track" style="margin-bottom:8px">
-        <div class="progress-fill" style="width:<?= $pct ?>%;background:<?= $color ?>"></div>
+        <div class="progress-fill" data-pct="<?= $pct ?>" style="width:<?= $pct ?>%;background:<?= $color ?>"></div>
       </div>
       <div class="progress-label">
         <span><?= $comp ?> / <?= $total ?> módulos</span>

@@ -2,20 +2,8 @@
   </div><!-- /.main-content -->
 </div><!-- /.layout -->
 
-<script>
-function toggleSidebar() {
-  const s = document.getElementById('sidebar');
-  const o = document.getElementById('sidebar-overlay');
-  s.classList.toggle('open');
-  o.classList.toggle('visible');
-}
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebar-overlay').classList.remove('visible');
-}
-</script>
-
-<script src="<?= BASE_URL ?>/assets/js/main.js"></script>
+<?php /* main.js y ui.js se cargan con defer desde header.php.
+        toggleSidebar()/closeSidebar() viven en main.js — no duplicar aquí. */ ?>
 <?php if (!empty($extraJs)): foreach ($extraJs as $js): ?>
 <script src="<?= BASE_URL ?>/assets/js/<?= $js ?>"></script>
 <?php endforeach; endif; ?>

@@ -5,8 +5,8 @@
 -- Linking table: one apoderado can have multiple students
 CREATE TABLE IF NOT EXISTS apoderado_estudiante (
     id             INT AUTO_INCREMENT PRIMARY KEY,
-    apoderado_id   INT NOT NULL,
-    estudiante_id  INT NOT NULL,
+    apoderado_id   INT UNSIGNED NOT NULL,
+    estudiante_id  INT UNSIGNED NOT NULL,
     relacion       VARCHAR(60) DEFAULT 'apoderado',   -- padre, madre, tutor, etc.
     activo         TINYINT(1) DEFAULT 1,
     creado_en      DATETIME DEFAULT (NOW()),

@@ -82,6 +82,7 @@ $rolLabel = match ($rol) {
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/stellar.css"/>
   <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/sidebar.css"/>
+  <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/motion.css"/>
   <?php if (!empty($extraCss)): foreach ($extraCss as $css): ?>
   <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/<?= $css ?>"/>
   <?php endforeach; endif; ?>
@@ -92,8 +93,11 @@ $rolLabel = match ($rol) {
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+  <!-- Base URL disponible para el JS (el deploy vive bajo un subdirectorio) -->
+  <script>window.BASE_URL = <?= json_encode(BASE_URL) ?>;</script>
   <!-- App JS -->
   <script src="<?= BASE_URL ?>/assets/js/main.js" defer></script>
+  <script src="<?= BASE_URL ?>/assets/js/ui.js" defer></script>
   <script>document.addEventListener('DOMContentLoaded',()=>{ if(typeof lucide!=='undefined') lucide.createIcons(); });</script>
 </head>
 <body>
