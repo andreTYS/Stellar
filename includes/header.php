@@ -79,7 +79,10 @@ $rolLabel = match ($rol) {
   <script>if('serviceWorker'in navigator)navigator.serviceWorker.register('<?= BASE_URL ?>/sw.js');</script>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <?php /* Incluye el peso 700 de Inter, que antes solo pedía el @import
+           de stellar.css. Si no se carga la fuente, la pila de reserva
+           mantiene la página legible. */ ?>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/stellar.css"/>
   <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/sidebar.css"/>
   <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/motion.css"/>
@@ -87,12 +90,16 @@ $rolLabel = match ($rol) {
   <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/<?= $css ?>"/>
   <?php endforeach; endif; ?>
   <style>[x-cloak] { display: none !important; }</style>
-  <!-- Alpine.js v3 -->
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  <!-- Lucide icons -->
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+  <?php /* Las tres librerías se sirven desde el propio servidor, no desde
+           CDN. La app se declara PWA, pero con scripts remotos un colegio
+           sin internet perdía los iconos, los desplegables y los gráficos.
+           Las versiones quedan fijadas en assets/vendor/. */ ?>
+  <!-- Alpine.js 3.14.9 -->
+  <script defer src="<?= BASE_URL ?>/assets/vendor/alpine.min.js"></script>
+  <!-- Lucide icons 0.469.0 -->
+  <script defer src="<?= BASE_URL ?>/assets/vendor/lucide.min.js"></script>
+  <!-- Chart.js 4.4.0 -->
+  <script defer src="<?= BASE_URL ?>/assets/vendor/chart.umd.min.js"></script>
   <!-- Base URL disponible para el JS (el deploy vive bajo un subdirectorio) -->
   <script>window.BASE_URL = <?= json_encode(BASE_URL) ?>;</script>
   <!-- App JS -->

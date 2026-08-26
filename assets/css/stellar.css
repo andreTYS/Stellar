@@ -4,7 +4,10 @@
    Light main content area, dark sidebar, clean cards, progress visible
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap');
+/* Las fuentes las carga header.php con <link>. Un @import aquí obligaba
+   al navegador a descargar primero este CSS para descubrir la fuente,
+   encadenando dos peticiones en vez de lanzarlas en paralelo — y
+   duplicaba la que el header ya hacía. */
 
 /* ── Design Tokens ─────────────────────────────────────────── */
 :root {
