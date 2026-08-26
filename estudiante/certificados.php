@@ -80,7 +80,6 @@ require_once __DIR__ . '/../includes/header.php';
     $color    = htmlspecialchars($cert['color_hex'], ENT_QUOTES, 'UTF-8');
     $icono    = htmlspecialchars($cert['icono'], ENT_QUOTES, 'UTF-8');
     $estrellas = (int)$cert['estrellas_quiz'];
-    $hasPdf   = !empty($cert['pdf_url']);
   ?>
   <div style="background:var(--bg-surface);border:1px solid var(--bg-border);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:transform .25s,box-shadow .25s,border-color .25s;"
        onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 16px 40px <?= $color ?>2e';this.style.borderColor='<?= $color ?>55'"
@@ -123,13 +122,19 @@ require_once __DIR__ . '/../includes/header.php';
         Emitido el <?= formatDate($cert['emitido_en']) ?>
       </p>
 
-      <!-- Download button -->
-      <div style="margin-top:auto;padding-top:8px;">
+      <!-- Actions -->
+      <div style="margin-top:auto;padding-top:8px;display:flex;gap:8px;">
         <a href="<?= BASE_URL ?>/estudiante/certificado_ver.php?cert_id=<?= (int)$cert['id'] ?>"
            target="_blank" rel="noopener"
-           class="btn btn-primary btn-block" style="text-decoration:none;">
+           class="btn btn-primary" style="text-decoration:none;flex:1;justify-content:center;">
           <i data-lucide="award" style="width:15px;height:15px"></i>
-          Ver certificado
+          Ver
+        </a>
+        <a href="<?= BASE_URL ?>/estudiante/certificado_pdf.php?cert_id=<?= (int)$cert['id'] ?>"
+           class="btn btn-secondary" style="text-decoration:none;flex:1;justify-content:center;"
+           data-tip="Descarga el PDF con texto seleccionable">
+          <i data-lucide="download" style="width:15px;height:15px"></i>
+          PDF
         </a>
       </div>
     </div>

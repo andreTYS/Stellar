@@ -8,13 +8,23 @@ if (isLoggedIn()) redirect(dashboardUrl());
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifyCsrf();
+
     $emailOrCodigo = trim($_POST['email'] ?? '');
     $password      = trim($_POST['password'] ?? '');
+    $ip            = clientIp();
 
     if (empty($emailOrCodigo) || empty($password)) {
         $error = 'Completa todos los campos.';
+    } elseif (($espera = loginBloqueoRestante($emailOrCodigo, $ip)) > 0) {
+        // Se bloquea antes de comprobar la contraseña, para no filtrar
+        // por tiempo de respuesta si la cuenta existe o no.
+        $error = "Demasiados intentos fallidos. Vuelve a intentarlo en {$espera} minuto"
+               . ($espera === 1 ? '' : 's') . '.';
     } else {
         $user = loginUser($emailOrCodigo, $password);
+        loginRegistrarIntento($emailOrCodigo, $ip, (bool)$user);
+
         if ($user) {
             session_regenerate_id(true);
             $_SESSION['user_id'] = $user['id'];
@@ -22,7 +32,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['usuario'] = $user;
             redirect(dashboardUrl());
         } else {
+            $restantes = max(0, LOGIN_MAX_INTENTOS - loginIntentosFallidos($emailOrCodigo));
             $error = 'Credenciales incorrectas. Verifica tu email/código y contraseña.';
+            if ($restantes > 0 && $restantes <= 2) {
+                $error .= $restantes === 1
+                    ? ' Te queda 1 intento antes del bloqueo temporal.'
+                    : " Te quedan {$restantes} intentos antes del bloqueo temporal.";
+            }
         }
     }
 }
@@ -796,6 +812,7 @@ $queryError = $_GET['error'] ?? '';
       <?php endif; ?>
 
       <form method="POST" action="" novalidate>
+        <?= csrfField() ?>
 
         <div class="field-group">
           <label class="field-label" for="login-email">Email o c&oacute;digo de acceso</label>

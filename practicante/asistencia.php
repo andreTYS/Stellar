@@ -9,6 +9,7 @@ $db  = getDB();
 
 // ── POST handler ──────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifyCsrf();
     $aulaId    = (int)($_POST['aula_id']    ?? 0);
     $moduloId  = (int)($_POST['modulo_id']  ?? 0);
     $fecha     = $_POST['fecha_sesion'] ?? date('Y-m-d');
@@ -99,6 +100,7 @@ include __DIR__ . '/../includes/header.php';
 
   <form method="post" action="<?= BASE_URL ?>/practicante/asistencia.php"
         enctype="multipart/form-data" id="formSesion">
+    <?= csrfField() ?>
 
     <div class="form-row-2">
 

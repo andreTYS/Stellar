@@ -6,8 +6,12 @@ requireLogin('admin');
 $pdo = getDB();
 $msg = '';
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifyCsrf();
+}
+
 // Create user
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'crear') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'crear') {
     $nombre    = sanitize($_POST['nombre']);
     $apellido  = sanitize($_POST['apellido']);
     $email     = sanitize($_POST['email'] ?? '');
@@ -25,10 +29,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'crear') {
     }
 }
 
-// Toggle active
-if (isset($_GET['toggle'])) {
-    $pdo->prepare("UPDATE usuarios SET activo = NOT activo WHERE id=?")->execute([(int)$_GET['toggle']]);
-    redirect('/innovasteam/admin/usuarios.php');
+// Toggle active — vía POST: cambiar estado con un GET permitía
+// desactivar a cualquier usuario con una simple etiqueta <img>.
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'toggle') {
+    $objetivo = (int)($_POST['usuario_id'] ?? 0);
+
+    // Un admin no puede desactivarse a sí mismo y quedar fuera.
+    if ($objetivo > 0 && $objetivo !== currentUserId()) {
+        $pdo->prepare('UPDATE usuarios SET activo = NOT activo WHERE id = ?')->execute([$objetivo]);
+    } elseif ($objetivo === currentUserId()) {
+        setFlash('error', 'No puedes desactivar tu propia cuenta.');
+    }
+
+    redirect(BASE_URL . '/admin/usuarios.php?' . http_build_query([
+        'q'    => $_POST['q']    ?? '',
+        'rol'  => $_POST['rol']  ?? '',
+        'page' => $_POST['page'] ?? 1,
+    ]));
 }
 
 $rolFilter = $_GET['rol'] ?? '';
@@ -142,11 +159,23 @@ require_once __DIR__ . '/../includes/header.php';
             </td>
             <td><span style="color:<?= $u['activo']?'var(--success)':'var(--danger)' ?>;font-size:12px"><?= $u['activo']?'Activo':'Inactivo' ?></span></td>
             <td>
-              <a href="?toggle=<?= $u['id'] ?>&q=<?= urlencode($q) ?>&rol=<?= urlencode($rolFilter) ?>&page=<?= $page ?>"
-                 style="color:var(--text-secondary);font-size:12px;text-decoration:none"
-                 onclick="return confirm('¿Cambiar estado del usuario?')">
-                <?= $u['activo']?'Desactivar':'Activar' ?>
-              </a>
+              <?php if ((int)$u['id'] === currentUserId()): ?>
+                <span style="color:var(--text-muted);font-size:12px">Tu cuenta</span>
+              <?php else: ?>
+              <form method="POST" style="display:inline" data-no-loading
+                    onsubmit="return confirm('¿Cambiar estado del usuario?')">
+                <?= csrfField() ?>
+                <input type="hidden" name="action"     value="toggle"/>
+                <input type="hidden" name="usuario_id" value="<?= (int)$u['id'] ?>"/>
+                <input type="hidden" name="q"          value="<?= sanitize($q) ?>"/>
+                <input type="hidden" name="rol"        value="<?= sanitize($rolFilter) ?>"/>
+                <input type="hidden" name="page"       value="<?= (int)$page ?>"/>
+                <button type="submit"
+                        style="background:none;border:none;padding:0;cursor:pointer;color:var(--text-secondary);font-size:12px;font-family:inherit">
+                  <?= $u['activo'] ? 'Desactivar' : 'Activar' ?>
+                </button>
+              </form>
+              <?php endif; ?>
             </td>
           </tr>
           <?php endforeach; ?>
@@ -180,6 +209,7 @@ require_once __DIR__ . '/../includes/header.php';
       <button onclick="document.getElementById('modal-crear').style.display='none'" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:20px;"><i data-lucide="x" style="width:18px;height:18px"></i></button>
     </div>
     <form method="POST" style="display:flex; flex-direction:column; gap:14px;">
+      <?= csrfField() ?>
       <input type="hidden" name="action" value="crear">
       <?php foreach([['nombre','Nombre'],['apellido','Apellido'],['email','Email'],['codigo_acceso','Código de acceso (estudiantes)'],['password','Contraseña']] as [$fname,$flabel]): ?>
       <div>

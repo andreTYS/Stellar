@@ -35,6 +35,7 @@ $colegioId = $colegio ? (int)$colegio['id'] : 0;
 
 // ── POST handlers ─────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifyCsrf();
     $action = $_POST['action'] ?? '';
 
     // ── Create aula ───────────────────────────────────────────
@@ -276,6 +277,7 @@ include __DIR__ . '/../includes/header.php';
                 <!-- Remove practicante form -->
                 <form method="post" action="" style="display:inline"
                       onsubmit="return confirm('¿Remover a <?= sanitize(addslashes($p['nombre'])) ?> de esta aula?')">
+                  <?= csrfField() ?>
                   <input type="hidden" name="action"         value="remove_practicante">
                   <input type="hidden" name="aula_id"        value="<?= $aulaId ?>">
                   <input type="hidden" name="practicante_id" value="<?= (int)$p['practicante_id'] ?>">
@@ -319,6 +321,7 @@ include __DIR__ . '/../includes/header.php';
     <h2 id="modalNuevaAulaTitle" class="card-title mb-20">Nueva aula</h2>
 
     <form method="post" action="">
+      <?= csrfField() ?>
       <input type="hidden" name="action" value="create_aula">
 
       <div class="form-group">
@@ -389,6 +392,7 @@ include __DIR__ . '/../includes/header.php';
     <p id="modalAsignarSubtitle" class="text-muted text-sm mb-20"></p>
 
     <form method="post" action="">
+      <?= csrfField() ?>
       <input type="hidden" name="action"  value="assign_practicante">
       <input type="hidden" name="aula_id" id="assignAulaId" value="">
 

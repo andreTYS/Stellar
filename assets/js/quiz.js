@@ -87,7 +87,7 @@ const QuizEngine = {
 
     // Send to server
     try {
-      await apiPost('/innovasteam/api/quiz.php', {
+      await apiPost((window.BASE_URL || '') + '/api/quiz.php', {
         pregunta_id:   q.id,
         opcion_elegida: opcionIndex,
         es_correcta:   esCorrecta ? 1 : 0,

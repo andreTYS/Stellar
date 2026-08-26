@@ -9,6 +9,7 @@ $aulaId = (int)($_GET['aula_id'] ?? 0);
 
 // Asignar módulo a aula
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['asignar'])) {
+    verifyCsrf();
     $aId    = (int)$_POST['aula_id'];
     $mId    = (int)$_POST['modulo_id'];
     $fecha  = $_POST['fecha_planificada'] ?? null;
@@ -16,14 +17,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['asignar'])) {
         $pdo->prepare("INSERT IGNORE INTO aula_modulos (aula_id, modulo_id, fecha_planificada, asignado_por) VALUES (?,?,?,?)")
             ->execute([$aId, $mId, $fecha ?: null, $user['id']]);
     } catch (Exception $e) {}
-    redirect('/innovasteam/admin_colegio/modulos.php?aula_id='.$aId.'&ok=1');
+    redirect(BASE_URL . '/admin_colegio/modulos.php?aula_id='.$aId.'&ok=1');
 }
 
 // Desasignar
 if (isset($_GET['quitar_modulo'], $_GET['aula'])) {
     $pdo->prepare("DELETE FROM aula_modulos WHERE aula_id=? AND modulo_id=?")
         ->execute([(int)$_GET['aula'], (int)$_GET['quitar_modulo']]);
-    redirect('/innovasteam/admin_colegio/modulos.php?aula_id='.$_GET['aula']);
+    redirect(BASE_URL . '/admin_colegio/modulos.php?aula_id='.$_GET['aula']);
 }
 
 // Aulas del colegio
@@ -155,6 +156,7 @@ require_once __DIR__ . '/../includes/header.php';
       <button onclick="document.getElementById('modal-asignar').style.display='none'" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:20px;"><i data-lucide="x" style="width:18px;height:18px"></i></button>
     </div>
     <form method="POST" style="display:flex;flex-direction:column;gap:14px;">
+      <?= csrfField() ?>
       <input type="hidden" name="asignar" value="1">
       <input type="hidden" name="aula_id" value="<?= $aulaId ?>">
       <div>

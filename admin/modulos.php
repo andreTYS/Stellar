@@ -23,13 +23,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ->execute([$cid,$titulo,$desc,$orden,$mins,$grado]);
             setFlash('success','Módulo creado correctamente.');
         }
-        redirect('/innovasteam/admin/modulos.php');
+        redirect(BASE_URL . '/admin/modulos.php');
     }
 
     if ($action === 'toggle_modulo') {
         $mid = (int)($_POST['modulo_id'] ?? 0);
         if ($mid) $pdo->prepare('UPDATE modulos SET activo=IF(activo=1,0,1) WHERE id=?')->execute([$mid]);
-        redirect('/innovasteam/admin/modulos.php');
+        redirect(BASE_URL . '/admin/modulos.php');
     }
 }
 

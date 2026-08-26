@@ -7,6 +7,7 @@ $pdo = getDB();
 $msg = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifyCsrf();
     $nombre  = sanitize($_POST['nombre']);
     $distrito = sanitize($_POST['distrito']);
     $ugel    = sanitize($_POST['ugel_codigo'] ?? '');
@@ -113,6 +114,7 @@ require_once __DIR__ . '/../includes/header.php';
     <div class="card">
       <h2 class="card-title" style="margin-bottom:20px;"><?= $editData ? 'Editar colegio' : 'Nuevo colegio' ?></h2>
       <form method="POST" style="display:flex; flex-direction:column; gap:14px;">
+      <?= csrfField() ?>
         <?php if ($editData): ?>
           <input type="hidden" name="id" value="<?= $editData['id'] ?>">
         <?php endif; ?>

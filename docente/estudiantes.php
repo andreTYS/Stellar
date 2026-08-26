@@ -11,7 +11,7 @@ $aulaId = (int)($_GET['aula_id'] ?? 0);
 $aula = $pdo->prepare("SELECT a.*, col.nombre as colegio_nombre FROM aulas a JOIN colegios col ON col.id=a.colegio_id WHERE a.id=? AND a.docente_id=?");
 $aula->execute([$aulaId, $user['id']]);
 $aula = $aula->fetch();
-if (!$aula) { redirect('/innovasteam/docente/index.php'); }
+if (!$aula) { redirect(BASE_URL . '/docente/index.php'); }
 
 // Students with progress
 $estudiantes = $pdo->prepare("

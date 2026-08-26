@@ -9,6 +9,7 @@ $estudianteId = (int)($_GET['estudiante_id'] ?? 0);
 
 // Comment submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comentar'])) {
+    verifyCsrf();
     $entregableId = (int)$_POST['entregable_id'];
     $comentario   = sanitize($_POST['comentario']);
     $calificacion = (int)$_POST['calificacion'];
@@ -35,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comentar'])) {
         }
     } catch (\Throwable $e) {}
 
-    redirect('/innovasteam/docente/portafolios.php?estudiante_id='.$estudianteId.'&ok=1');
+    redirect(BASE_URL . '/docente/portafolios.php?estudiante_id='.$estudianteId.'&ok=1');
 }
 
 $entregables = [];
@@ -141,6 +142,7 @@ require_once __DIR__ . '/../includes/header.php';
 
           <!-- Comment form -->
           <form method="POST">
+            <?= csrfField() ?>
             <input type="hidden" name="comentar" value="1">
             <input type="hidden" name="entregable_id" value="<?= $ent['id'] ?>">
             <textarea name="comentario" rows="2" placeholder="Escribe un comentario..."

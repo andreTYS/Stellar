@@ -80,7 +80,7 @@ const ModuleViewer = {
 
     // Save progress
     try {
-      await apiPost('/innovasteam/api/progreso.php', {
+      await apiPost((window.BASE_URL || '') + '/api/progreso.php', {
         modulo_id:  this.state.moduloId,
         paso:       this.state.pasoActual,
         completado: this.state.pasoActual === 4,

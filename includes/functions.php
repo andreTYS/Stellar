@@ -12,6 +12,114 @@ function getUserById(int $id): ?array
     return $stmt->fetch() ?: null;
 }
 
+// ── Límite de intentos de login ──────────────────────────────
+// Sin esto, las cuentas de demo (contraseña "password", códigos
+// correlativos tipo EST-001) se enumeran en segundos.
+// El límite por cuenta es estricto. El límite por IP es mucho más
+// alto a propósito: en un colegio toda el aula sale por la misma IP
+// pública, así que un umbral bajo dejaría fuera a treinta estudiantes
+// por culpa de uno que se equivoca de contraseña.
+const LOGIN_MAX_INTENTOS     = 5;    // fallos por identificador…
+const LOGIN_MAX_INTENTOS_IP  = 40;   // …y por IP compartida.
+const LOGIN_VENTANA_MIN      = 15;   // dentro de esta ventana, en minutos.
+
+function clientIp(): ?string
+{
+    // Sin proxy de confianza configurado, REMOTE_ADDR es el único
+    // valor que no puede falsear el cliente. Las cabeceras
+    // X-Forwarded-For se ignoran a propósito.
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : null;
+}
+
+/**
+ * Fallos recientes de un identificador concreto.
+ */
+function loginIntentosFallidos(string $identificador): int
+{
+    try {
+        $stmt = getDB()->prepare(
+            'SELECT COUNT(*) FROM login_intentos
+              WHERE exito = 0
+                AND identificador = ?
+                AND intentado_en > (NOW() - INTERVAL ? MINUTE)'
+        );
+        $stmt->execute([$identificador, LOGIN_VENTANA_MIN]);
+        return (int)$stmt->fetchColumn();
+    } catch (\Throwable $e) {
+        // Si la tabla aún no existe (migración 007 sin aplicar), no
+        // bloqueamos el acceso: se degrada al comportamiento previo.
+        return 0;
+    }
+}
+
+/**
+ * Fallos recientes desde una IP, contra cuentas distintas. Detecta el
+ * barrido de contraseñas sin castigar a quien comparte salida a
+ * internet con el atacante.
+ */
+function loginIntentosFallidosIp(?string $ip): int
+{
+    if ($ip === null) return 0;
+    try {
+        $stmt = getDB()->prepare(
+            'SELECT COUNT(*) FROM login_intentos
+              WHERE exito = 0
+                AND ip = INET6_ATON(?)
+                AND intentado_en > (NOW() - INTERVAL ? MINUTE)'
+        );
+        $stmt->execute([$ip, LOGIN_VENTANA_MIN]);
+        return (int)$stmt->fetchColumn();
+    } catch (\Throwable $e) {
+        return 0;
+    }
+}
+
+function loginRegistrarIntento(string $identificador, ?string $ip, bool $exito): void
+{
+    try {
+        getDB()->prepare(
+            'INSERT INTO login_intentos (identificador, ip, exito)
+             VALUES (?, CASE WHEN ? IS NULL THEN NULL ELSE INET6_ATON(?) END, ?)'
+        )->execute([mb_substr($identificador, 0, 120), $ip, $ip, $exito ? 1 : 0]);
+    } catch (\Throwable $e) {}
+}
+
+/**
+ * Minutos que faltan para que expire el bloqueo. 0 si no está bloqueado.
+ */
+function loginBloqueoRestante(string $identificador, ?string $ip): int
+{
+    $porCuenta = loginIntentosFallidos($identificador)    >= LOGIN_MAX_INTENTOS;
+    $porIp     = loginIntentosFallidosIp($ip)             >= LOGIN_MAX_INTENTOS_IP;
+
+    if (!$porCuenta && !$porIp) {
+        return 0;
+    }
+
+    // El reloj corre desde el último fallo que provocó el bloqueo.
+    $sql = $porCuenta
+        ? 'SELECT MAX(intentado_en) FROM login_intentos
+            WHERE exito = 0 AND identificador = ?
+              AND intentado_en > (NOW() - INTERVAL ? MINUTE)'
+        : 'SELECT MAX(intentado_en) FROM login_intentos
+            WHERE exito = 0 AND ip = INET6_ATON(?)
+              AND intentado_en > (NOW() - INTERVAL ? MINUTE)';
+
+    try {
+        $stmt = getDB()->prepare($sql);
+        $stmt->execute([$porCuenta ? $identificador : $ip, LOGIN_VENTANA_MIN]);
+        $ultimo = $stmt->fetchColumn();
+        if (!$ultimo) return 0;
+
+        $expira    = strtotime($ultimo) + LOGIN_VENTANA_MIN * 60;
+        $restantes = (int)ceil(($expira - time()) / 60);
+        return max(0, $restantes);
+    } catch (\Throwable $e) {
+        return 0;
+    }
+}
+
 function loginUser(string $emailOrCodigo, string $password): ?array
 {
     $db = getDB();
@@ -25,7 +133,63 @@ function loginUser(string $emailOrCodigo, string $password): ?array
     if (!$user || !password_verify($password, $user['password_hash'])) {
         return null;
     }
+
+    // Deja rastro de actividad: es lo que permite detectar rezago.
+    try {
+        $db->prepare('UPDATE usuarios SET ultimo_acceso = NOW() WHERE id = ?')
+           ->execute([$user['id']]);
+    } catch (\Throwable $e) {}
+
     return $user;
+}
+
+/**
+ * Devuelve el código público de verificación de un certificado,
+ * generándolo la primera vez que se pide.
+ */
+function certificadoCodigo(PDO $pdo, int $certId): string
+{
+    $stmt = $pdo->prepare('SELECT codigo_verificacion FROM certificados WHERE id = ?');
+    $stmt->execute([$certId]);
+    $codigo = $stmt->fetchColumn();
+    if (!empty($codigo)) {
+        return $codigo;
+    }
+
+    // Alfabeto sin caracteres ambiguos (0/O, 1/I) — el código se dicta
+    // y se teclea a mano.
+    $alfabeto = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+    for ($intento = 0; $intento < 6; $intento++) {
+        $bloque = '';
+        for ($i = 0; $i < 8; $i++) {
+            if ($i === 4) $bloque .= '-';
+            $bloque .= $alfabeto[random_int(0, strlen($alfabeto) - 1)];
+        }
+        $candidato = 'IS-' . $bloque;
+
+        try {
+            $upd = $pdo->prepare(
+                'UPDATE certificados SET codigo_verificacion = ?
+                  WHERE id = ? AND codigo_verificacion IS NULL'
+            );
+            $upd->execute([$candidato, $certId]);
+            if ($upd->rowCount() > 0) {
+                return $candidato;
+            }
+            // rowCount 0 = otra petición lo asignó primero; lo releemos.
+            $stmt->execute([$certId]);
+            $yaPuesto = $stmt->fetchColumn();
+            if (!empty($yaPuesto)) {
+                return $yaPuesto;
+            }
+        } catch (PDOException $e) {
+            // Colisión con el índice único: se reintenta con otro código.
+            continue;
+        }
+    }
+
+    // Último recurso: no bloquear la descarga del certificado.
+    return 'IS-' . str_pad((string)$certId, 8, '0', STR_PAD_LEFT);
 }
 
 // ── Cursos ───────────────────────────────────────────────────
