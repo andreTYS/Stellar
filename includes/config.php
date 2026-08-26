@@ -64,6 +64,31 @@ function requireLogin(string ...$roles): void
     if (!empty($roles) && !in_array($_SESSION['rol'], $roles, true)) {
         redirect(BASE_URL . '/login.php?error=acceso');
     }
+    tocarUltimoAcceso();
+}
+
+/**
+ * Refresca usuarios.ultimo_acceso mientras el usuario navega.
+ *
+ * Sin esto la columna solo se escribiría al iniciar sesión, y quien
+ * deja la sesión abierta toda la semana aparecería como rezagado. Se
+ * limita a una escritura cada 10 minutos por sesión: en un aula de
+ * treinta estudiantes, una por página sería una escritura por clic.
+ */
+function tocarUltimoAcceso(): void
+{
+    $ahora = time();
+    if (isset($_SESSION['ultimo_toque']) && ($ahora - $_SESSION['ultimo_toque']) < 600) {
+        return;
+    }
+    $_SESSION['ultimo_toque'] = $ahora;
+
+    try {
+        getDB()->prepare('UPDATE usuarios SET ultimo_acceso = NOW() WHERE id = ?')
+               ->execute([currentUserId()]);
+    } catch (\Throwable $e) {
+        // La columna llega con la migración 007; si no está, no pasa nada.
+    }
 }
 
 function currentUser(): array
