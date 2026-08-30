@@ -62,11 +62,10 @@ if ($q) {
     $params[] = "%$q%"; $params[] = "%$q%"; $params[] = "%$q%"; $params[] = "%$q%";
 }
 
-$totalFiltered = (int)$pdo->prepare("SELECT COUNT(*) FROM usuarios u WHERE $where")->execute($params)
-    ? (int)$pdo->query("SELECT COUNT(*) FROM (SELECT u.id FROM usuarios u WHERE $where " . (!empty($params) ? '' : '') . " LIMIT 999999) sub")->fetchColumn()
-    : 0;
-
-// Re-count properly via prepared statement
+// Aquí había un primer conteo cuyo resultado se sobrescribía dos líneas
+// más abajo: dos consultas de más por carga, y la segunda interpolaba
+// $where sin los parámetros, así que con un filtro activo ni siquiera
+// devolvía el número correcto.
 $cntStmt = $pdo->prepare("SELECT COUNT(*) FROM usuarios u WHERE $where");
 $cntStmt->execute($params);
 $totalFiltered = (int)$cntStmt->fetchColumn();
@@ -103,12 +102,14 @@ require_once __DIR__ . '/../includes/header.php';
   <div style="display:flex; gap:16px; margin-bottom:24px; flex-wrap:wrap;">
     <!-- Search -->
     <form method="GET" style="display:flex; gap:8px; flex:1; min-width:200px;">
-      <input type="search" name="q" value="<?= sanitize($q) ?>" placeholder="Buscar por nombre o email..."
+      <label for="buscar-usuarios" class="sr-only">Buscar usuarios</label>
+      <input type="search" name="q" id="buscar-usuarios" value="<?= sanitize($q) ?>" placeholder="Buscar por nombre o email..."
         style="flex:1; background:var(--bg-elevated); border:1px solid var(--bg-border); color:var(--text-primary); border-radius:8px; padding:8px 12px; font-size:13px;">
-      <select name="rol" style="background:var(--bg-elevated); border:1px solid var(--bg-border); color:var(--text-primary); border-radius:8px; padding:8px; font-size:13px;">
+      <label for="filtro-rol" class="sr-only">Filtrar por rol</label>
+      <select id="filtro-rol" name="rol" style="background:var(--bg-elevated); border:1px solid var(--bg-border); color:var(--text-primary); border-radius:8px; padding:8px; font-size:13px;">
         <option value="">Todos los roles</option>
-        <?php foreach(['admin','admin_colegio','docente','practicante','estudiante'] as $r): ?>
-          <option value="<?=$r?>" <?=$r===$rolFilter?'selected':''?>><?= ucfirst($r) ?></option>
+        <?php foreach(['admin','admin_colegio','docente','practicante','estudiante','apoderado'] as $r): ?>
+          <option value="<?=$r?>" <?=$r===$rolFilter?'selected':''?>><?= ucfirst(str_replace('_',' ',$r)) ?></option>
         <?php endforeach; ?>
       </select>
       <button type="submit" class="btn-primary" style="padding:8px 14px; font-size:13px;">Buscar</button>
@@ -140,7 +141,9 @@ require_once __DIR__ . '/../includes/header.php';
         </thead>
         <tbody>
           <?php
-          $rColors = ['admin'=>'var(--coral)','admin_colegio'=>'var(--gold)','docente'=>'var(--blue)','practicante'=>'var(--green)','estudiante'=>'var(--purple)'];
+          // Sin la clave 'apoderado' cada fila de ese rol lanzaba un aviso de
+          // clave indefinida en PHP 8 y salía sin color.
+          $rColors = ['admin'=>'var(--coral)','admin_colegio'=>'var(--gold)','docente'=>'var(--blue)','practicante'=>'var(--green)','estudiante'=>'var(--purple)','apoderado'=>'var(--teal)'];
           foreach ($usuarios as $u):
           ?>
           <tr style="opacity:<?= $u['activo']?1:0.5 ?>">
@@ -206,29 +209,50 @@ require_once __DIR__ . '/../includes/header.php';
   <div style="background:var(--bg-surface); border:1px solid var(--bg-border); border-radius:16px; padding:32px; width:100%; max-width:480px; max-height:90vh; overflow-y:auto;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
       <h2 style="font-family:'Syne',sans-serif; font-size:18px; font-weight:700; color:var(--text-primary);">Nuevo usuario</h2>
-      <button onclick="document.getElementById('modal-crear').style.display='none'" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:20px;"><i data-lucide="x" style="width:18px;height:18px"></i></button>
+      <button onclick="document.getElementById('modal-crear').style.display='none'" aria-label="Cerrar" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:20px;"><i data-lucide="x" style="width:18px;height:18px"></i></button>
     </div>
     <form method="POST" style="display:flex; flex-direction:column; gap:14px;">
       <?= csrfField() ?>
       <input type="hidden" name="action" value="crear">
+      <?php
+      // Cada etiqueta se asocia con su campo mediante for/id. Antes eran
+      // <label> sueltos: se veían, pero un lector de pantalla anunciaba
+      // el campo sin nombre alguno.
+      $estiloEtiqueta = 'display:block; font-size:12px; color:var(--text-secondary); margin-bottom:4px; text-transform:uppercase; letter-spacing:.05em;';
+      $estiloCampo    = 'width:100%; background:var(--bg-elevated); border:1px solid var(--bg-border); color:var(--text-primary); border-radius:8px; padding:10px 12px; font-size:13px;';
+      ?>
       <?php foreach([['nombre','Nombre'],['apellido','Apellido'],['email','Email'],['codigo_acceso','Código de acceso (estudiantes)'],['password','Contraseña']] as [$fname,$flabel]): ?>
       <div>
-        <label style="display:block; font-size:12px; color:var(--text-secondary); margin-bottom:4px; text-transform:uppercase; letter-spacing:.05em;"><?= $flabel ?></label>
-        <input type="<?= $fname==='password'?'password':'text' ?>" name="<?= $fname ?>" <?= in_array($fname,['nombre','apellido','password'])?'required':'' ?>
-          style="width:100%; background:var(--bg-elevated); border:1px solid var(--bg-border); color:var(--text-primary); border-radius:8px; padding:10px 12px; font-size:13px;">
+        <label for="campo-<?= $fname ?>" style="<?= $estiloEtiqueta ?>"><?= $flabel ?></label>
+        <input id="campo-<?= $fname ?>" type="<?= $fname==='password'?'password':'text' ?>"
+               name="<?= $fname ?>" <?= in_array($fname,['nombre','apellido','password'])?'required':'' ?>
+               <?= $fname==='password' ? 'autocomplete="new-password"' : '' ?>
+               style="<?= $estiloCampo ?>">
       </div>
       <?php endforeach; ?>
       <div>
-        <label style="display:block; font-size:12px; color:var(--text-secondary); margin-bottom:4px; text-transform:uppercase; letter-spacing:.05em;">Rol</label>
-        <select name="rol" required style="width:100%; background:var(--bg-elevated); border:1px solid var(--bg-border); color:var(--text-primary); border-radius:8px; padding:10px;">
-          <?php foreach(['admin','admin_colegio','docente','practicante','estudiante'] as $r): ?>
-            <option value="<?=$r?>"><?= ucfirst($r) ?></option>
+        <label for="campo-rol" style="<?= $estiloEtiqueta ?>">Rol</label>
+        <?php
+        // La lista omitía 'apoderado', así que ni siquiera después de
+        // arreglar el ENUM se podía crear uno desde la interfaz.
+        $roles = [
+            'admin'         => 'Administrador',
+            'admin_colegio' => 'Director de colegio',
+            'docente'       => 'Docente',
+            'practicante'   => 'Practicante',
+            'estudiante'    => 'Estudiante',
+            'apoderado'     => 'Apoderado',
+        ];
+        ?>
+        <select id="campo-rol" name="rol" required style="<?= $estiloCampo ?>">
+          <?php foreach($roles as $valor => $etiqueta): ?>
+            <option value="<?= $valor ?>"><?= $etiqueta ?></option>
           <?php endforeach; ?>
         </select>
       </div>
       <div>
-        <label style="display:block; font-size:12px; color:var(--text-secondary); margin-bottom:4px; text-transform:uppercase; letter-spacing:.05em;">Colegio</label>
-        <select name="colegio_id" style="width:100%; background:var(--bg-elevated); border:1px solid var(--bg-border); color:var(--text-primary); border-radius:8px; padding:10px;">
+        <label for="campo-colegio" style="<?= $estiloEtiqueta ?>">Colegio</label>
+        <select id="campo-colegio" name="colegio_id" style="<?= $estiloCampo ?>">
           <option value="">Sin colegio</option>
           <?php foreach($colegios as $c): ?>
             <option value="<?= $c['id'] ?>"><?= sanitize($c['nombre']) ?></option>

@@ -176,6 +176,34 @@ function verifyCsrf(): void
     }
 }
 
+/**
+ * Igual que verifyCsrf(), pero para endpoints que reciben el cuerpo en
+ * JSON, donde $_POST llega vacío. Responde en JSON en vez de con HTML.
+ *
+ * Acepta el token por cabecera o dentro del propio cuerpo. Lo segundo
+ * hace falta para navigator.sendBeacon(), que no permite añadir
+ * cabeceras: es la única vía de enviarlo desde ahí.
+ *
+ * @param array|null $data cuerpo JSON ya decodificado
+ */
+function verifyCsrfJson(?array $data = null): void
+{
+    $token = $_SERVER['HTTP_X_CSRF_TOKEN']
+          ?? $data['csrf_token']
+          ?? $_POST['csrf_token']
+          ?? '';
+
+    if (!is_string($token) || !hash_equals(csrfToken(), $token)) {
+        http_response_code(403);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'ok'    => false,
+            'error' => 'Token CSRF inválido. Recarga la página e intenta de nuevo.',
+        ]);
+        exit;
+    }
+}
+
 // ── Upload de archivos ───────────────────────────────────────
 function handleUpload(array $file, string $subfolder = 'entregables'): string|false
 {

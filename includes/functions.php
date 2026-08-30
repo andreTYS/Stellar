@@ -268,6 +268,33 @@ function getProgreso(int $estudianteId, int $moduloId): ?array
     return $stmt->fetch() ?: null;
 }
 
+/**
+ * Progreso de un estudiante en TODOS los módulos de un curso, en una
+ * sola consulta, indexado por modulo_id.
+ *
+ * getProgreso() pide un módulo por llamada. Usarlo dentro de un bucle
+ * genera una consulta por módulo: un curso de veinte módulos son veinte
+ * viajes a la base de datos para pintar una sola pantalla.
+ *
+ * @return array<int,array> modulo_id => fila de progreso
+ */
+function getProgresoPorCurso(int $estudianteId, int $cursoId): array
+{
+    $stmt = getDB()->prepare(
+        'SELECT pe.*
+           FROM progreso_estudiante pe
+           JOIN modulos m ON m.id = pe.modulo_id
+          WHERE pe.estudiante_id = ? AND m.curso_id = ?'
+    );
+    $stmt->execute([$estudianteId, $cursoId]);
+
+    $porModulo = [];
+    foreach ($stmt->fetchAll() as $fila) {
+        $porModulo[(int)$fila['modulo_id']] = $fila;
+    }
+    return $porModulo;
+}
+
 function upsertProgreso(int $estudianteId, int $moduloId, int $paso, bool $completado = false, int $estrellas = 0): void
 {
     $db = getDB();

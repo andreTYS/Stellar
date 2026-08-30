@@ -10,6 +10,8 @@ if (!isLoggedIn()) { echo '{"ok":false}'; exit; }
 
 $raw  = file_get_contents('php://input');
 $data = json_decode($raw, true);
+
+verifyCsrfJson(is_array($data) ? $data : null);
 $id   = (int)($data['id']       ?? 0);
 $dur  = (int)($data['duracion'] ?? 0);
 $uid  = currentUserId();

@@ -24,6 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $raw  = file_get_contents('php://input');
 $data = json_decode($raw, true);
 
+verifyCsrfJson(is_array($data) ? $data : null);
+
 if (!is_array($data)) {
     echo json_encode(['ok' => false, 'error' => 'payload inválido']);
     exit;

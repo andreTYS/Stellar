@@ -72,7 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
 async function apiPost(url, data) {
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      // Sin esta cabecera el servidor rechaza la petición con 403.
+      'X-CSRF-Token': window.CSRF_TOKEN || '',
+    },
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);

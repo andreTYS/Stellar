@@ -101,13 +101,23 @@ $rolLabel = match ($rol) {
   <!-- Chart.js 4.4.0 -->
   <script defer src="<?= BASE_URL ?>/assets/vendor/chart.umd.min.js"></script>
   <!-- Base URL disponible para el JS (el deploy vive bajo un subdirectorio) -->
-  <script>window.BASE_URL = <?= json_encode(BASE_URL) ?>;</script>
+  <script>
+    window.BASE_URL   = <?= json_encode(BASE_URL) ?>;
+    // Lo consumen apiPost() y las llamadas fetch a los endpoints JSON.
+    window.CSRF_TOKEN = <?= json_encode(csrfToken()) ?>;
+  </script>
   <!-- App JS -->
   <script src="<?= BASE_URL ?>/assets/js/main.js" defer></script>
   <script src="<?= BASE_URL ?>/assets/js/ui.js" defer></script>
   <script>document.addEventListener('DOMContentLoaded',()=>{ if(typeof lucide!=='undefined') lucide.createIcons(); });</script>
 </head>
 <body>
+
+<?php /* Primer elemento enfocable de la página: sin él, quien navega con
+         teclado tiene que recorrer todo el menú lateral en cada carga —
+         hasta 111 tabulaciones en el listado de usuarios. Solo se ve al
+         recibir el foco. */ ?>
+<a href="#contenido" class="saltar-al-contenido">Saltar al contenido</a>
 
 <div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
 
@@ -177,7 +187,7 @@ $rolLabel = match ($rol) {
       <!-- Notifications bell -->
       <div style="position:relative" x-data>
         <button @click="notifOpen = !notifOpen" @click.away="notifOpen = false"
-                class="topbar-icon-btn" title="Notificaciones" style="position:relative">
+                class="topbar-icon-btn" title="Notificaciones" aria-label="Notificaciones" style="position:relative">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <span x-show="notifCount > 0"
                 style="position:absolute;top:-3px;right:-3px;background:var(--danger);color:#fff;border-radius:99px;font-size:9px;font-weight:700;padding:1px 4px;min-width:16px;text-align:center;line-height:14px"
@@ -281,6 +291,7 @@ $rolLabel = match ($rol) {
       <div style="width:100%;max-width:560px;background:var(--bg-card);border:1px solid var(--bg-border);border-radius:16px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.35)">
         <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--bg-border)">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <label for="search-input" class="sr-only">Buscar en la plataforma</label>
           <input id="search-input" type="text" placeholder="Buscar colegios, usuarios, módulos…"
                  style="flex:1;border:none;background:transparent;font-size:15px;color:var(--text-primary);outline:none"
                  oninput="doSearch(this.value)">
@@ -300,4 +311,4 @@ $rolLabel = match ($rol) {
     <?php endif; ?>
 
     <!-- Page content -->
-    <main class="page-content">
+    <main class="page-content" id="contenido" tabindex="-1">

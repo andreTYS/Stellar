@@ -12,6 +12,8 @@ if (!isLoggedIn()) { echo '{"ok":false,"error":"not_logged_in"}'; exit; }
 $raw  = file_get_contents('php://input');
 $data = json_decode($raw, true);
 
+verifyCsrfJson(is_array($data) ? $data : null);
+
 $capitulo  = (int)($data['capitulo']  ?? 0);
 $tiempoSeg = (int)($data['tiempo_seg'] ?? 0);
 $quizScore = isset($data['quiz_score']) ? (float)$data['quiz_score'] : null;

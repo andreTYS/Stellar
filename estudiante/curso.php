@@ -23,19 +23,23 @@ if (!$curso) {
 // ── Fetch modules + progress ──────────────────────────────────
 $modulos = getModulosByCurso($cursoId);
 
+// Todo el progreso del curso en una sola consulta. Antes se pedía un
+// módulo por vuelta de bucle, más otra consulta para releer el módulo
+// anterior que ya se había consultado en la iteración previa.
+$progresoCurso = getProgresoPorCurso($estudianteId, $cursoId);
+
 $modulosData = [];
+$prevCompletado = true;   // el primer módulo siempre está desbloqueado
+
 foreach ($modulos as $index => $modulo) {
-    $progreso    = getProgreso($estudianteId, $modulo['id']);
+    $progreso    = $progresoCurso[(int)$modulo['id']] ?? null;
     $completado  = !empty($progreso['completado']);
     $enProgreso  = !empty($progreso) && !$completado;
 
-    // Unlock logic: first module is always unlocked; subsequent ones need the previous completed
-    if ($index === 0) {
-        $desbloqueado = true;
-    } else {
-        $prevProgreso = getProgreso($estudianteId, $modulos[$index - 1]['id']);
-        $desbloqueado = !empty($prevProgreso['completado']);
-    }
+    // Se desbloquea si el anterior quedó completado; ese dato ya lo
+    // calculamos en la vuelta previa, no hace falta volver a pedirlo.
+    $desbloqueado   = $index === 0 ? true : $prevCompletado;
+    $prevCompletado = $completado;
 
     $modulosData[] = [
         'modulo'       => $modulo,

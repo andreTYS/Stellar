@@ -380,7 +380,7 @@ window.addEventListener('beforeunload', () => {
     const sec = Math.floor((Date.now() - startTime) / 1000);
     if (sec < 5 || !SESION_ID) return;
     navigator.sendBeacon(BASE + '/api/simulador_sesion.php',
-        JSON.stringify({ id: SESION_ID, duracion: sec }));
+        JSON.stringify({ id: SESION_ID, duracion: sec, csrf_token: window.CSRF_TOKEN || '' }));
 });
 </script>
 

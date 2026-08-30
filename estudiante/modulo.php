@@ -557,7 +557,7 @@ document.getElementById('btn-ver-resultado')?.addEventListener('click', function
   // Guardar en servidor en segundo plano (no bloquea el flujo)
   fetch('<?= BASE_URL ?>/api/quiz.php', {
     method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.CSRF_TOKEN || '' },
     body:    JSON.stringify({ modulo_id: <?= $moduloId ?>, respuestas: quizRespuestas })
   }).catch(() => {});
 });
@@ -663,7 +663,7 @@ async function avanzarPaso(moduloId, paso, reload = true) {
   try {
     const r = await fetch('<?= BASE_URL ?>/api/progreso.php', {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.CSRF_TOKEN || '' },
       body:    JSON.stringify({ modulo_id: moduloId, paso: paso })
     });
     const data = await r.json();

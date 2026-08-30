@@ -6,12 +6,21 @@ requireLogin('admin');
 $pdo = getDB();
 
 // ── Current period stats ──────────────────────────────────────
+// Un solo recorrido de usuarios agrupado por rol, en vez de cuatro
+// COUNT(*) separados sobre la misma tabla con el mismo filtro.
+$porRol = [];
+$totalUsuarios = 0;
+foreach ($pdo->query("SELECT rol, COUNT(*) AS n FROM usuarios WHERE activo=1 GROUP BY rol") as $fila) {
+    $porRol[$fila['rol']] = (int)$fila['n'];
+    $totalUsuarios += (int)$fila['n'];
+}
+
 $stats = [
     'colegios'     => (int)$pdo->query("SELECT COUNT(*) FROM colegios WHERE activo=1")->fetchColumn(),
-    'usuarios'     => (int)$pdo->query("SELECT COUNT(*) FROM usuarios WHERE activo=1")->fetchColumn(),
-    'estudiantes'  => (int)$pdo->query("SELECT COUNT(*) FROM usuarios WHERE rol='estudiante' AND activo=1")->fetchColumn(),
-    'docentes'     => (int)$pdo->query("SELECT COUNT(*) FROM usuarios WHERE rol='docente' AND activo=1")->fetchColumn(),
-    'practicantes' => (int)$pdo->query("SELECT COUNT(*) FROM usuarios WHERE rol='practicante' AND activo=1")->fetchColumn(),
+    'usuarios'     => $totalUsuarios,
+    'estudiantes'  => $porRol['estudiante']  ?? 0,
+    'docentes'     => $porRol['docente']     ?? 0,
+    'practicantes' => $porRol['practicante'] ?? 0,
     'completados'  => (int)$pdo->query("SELECT COUNT(*) FROM progreso_estudiante WHERE completado=1")->fetchColumn(),
 ];
 
