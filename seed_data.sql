@@ -11,12 +11,16 @@ SET NAMES utf8mb4;
 SET foreign_key_checks = 0;
 
 -- ── Colegios ─────────────────────────────────────────────────
-INSERT IGNORE INTO colegios (id, nombre, distrito, provincia, region, telefono, director_nombre, activo) VALUES
-(1, 'GUE Mariscal Nieto',     'Moquegua',  'Mariscal Nieto', 'Moquegua', '053-462001', 'Prof. Roberto Cárdenas',  1),
-(2, 'IE San Antonio de Abad', 'Ilo',       'Ilo',            'Moquegua', '053-781234', 'Prof. Carmen Villanueva', 1),
-(3, 'IE Jorge Basadre',       'Torata',    'Mariscal Nieto', 'Moquegua', '053-451122', 'Prof. Miguel Ramos',      1),
-(4, 'IE Nuestra Señora de Fátima', 'Moquegua', 'Mariscal Nieto', 'Moquegua', '053-463300', 'Prof. Ana Huanca', 1),
-(5, 'IE Simón Bolívar',       'Samegua',   'Mariscal Nieto', 'Moquegua', '053-460888', 'Prof. Luis Quispe',       1);
+-- Las columnas son las de schema.sql: distrito, ugel_codigo y director.
+-- Antes se insertaban 'provincia', 'region' y 'director_nombre', que no
+-- existen; el archivo entero moría aquí y nada de lo que sigue llegaba
+-- a cargarse nunca.
+INSERT IGNORE INTO colegios (id, nombre, distrito, ugel_codigo, director, telefono, activo) VALUES
+(1, 'GUE Mariscal Nieto',            'Moquegua', 'Mariscal Nieto', 'Prof. Roberto Cárdenas',  '053-462001', 1),
+(2, 'IE San Antonio de Abad',        'Ilo',      'Ilo',            'Prof. Carmen Villanueva', '053-781234', 1),
+(3, 'IE Jorge Basadre',              'Torata',   'Mariscal Nieto', 'Prof. Miguel Ramos',      '053-451122', 1),
+(4, 'IE Nuestra Señora de Fátima',   'Moquegua', 'Mariscal Nieto', 'Prof. Ana Huanca',        '053-463300', 1),
+(5, 'IE Simón Bolívar',              'Samegua',  'Mariscal Nieto', 'Prof. Luis Quispe',       '053-460888', 1);
 
 -- ── Usuarios ─────────────────────────────────────────────────
 -- Contraseña: password  →  hash bcrypt costo 10
@@ -46,7 +50,11 @@ INSERT IGNORE INTO usuarios (id, nombre, apellido, email, password_hash, rol, co
     'docente', 2, NULL, 1),
 
 -- Practicantes
-(7, 'Diego',    'Flores',        'practicante@innovasteam.edu.pe',
+-- schema.sql ya crea un practicante con practicante@innovasteam.edu.pe.
+-- Repetir ese email hacía que INSERT IGNORE descartara esta fila en
+-- silencio, y las dos filas de practicante_aula que la referencian
+-- quedaban huérfanas.
+(7, 'Diego',    'Flores',        'practicante2@innovasteam.edu.pe',
     '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
     'practicante', 1, NULL, 1),
 (8, 'Valeria',  'Quispe',        'valeria.quispe@innovasteam.edu.pe',
@@ -54,9 +62,13 @@ INSERT IGNORE INTO usuarios (id, nombre, apellido, email, password_hash, rol, co
     'practicante', 2, NULL, 1),
 
 -- Estudiantes (código de acceso para login)
+-- El código EST-001 ya lo usa el estudiante que crea schema.sql. Con el
+-- código repetido esta fila se descartaba y dejaba huérfanas su matrícula
+-- y sus cuatro filas de progreso. EST-016 queda fuera del rango 002-015
+-- que ocupan el resto de estudiantes de este archivo.
 (10, 'Lucía',   'Quispe Pari',   NULL,
     '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
-    'estudiante', 1, 'EST-001', 1),
+    'estudiante', 1, 'EST-016', 1),
 (11, 'Marco',   'Flores Huanca', NULL,
     '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
     'estudiante', 1, 'EST-002', 1),
@@ -122,12 +134,15 @@ INSERT IGNORE INTO modulos (id, curso_id, titulo, descripcion, orden, activo) VA
 (10, 5, 'Estadística con datos reales',      'Recopila, grafica e interpreta datos de tu entorno.',  1, 1);
 
 -- ── Aulas ────────────────────────────────────────────────────
-INSERT IGNORE INTO aulas (id, colegio_id, docente_id, grado, seccion, activo) VALUES
-(1, 1, 4, '1ro Secundaria', 'A', 1),
-(2, 1, 5, '2do Secundaria', 'B', 1),
-(3, 2, 6, '1ro Secundaria', 'A', 1),
-(4, 2, 6, '2do Secundaria', 'A', 1),
-(5, 3, 4, '1ro Secundaria', 'A', 1);
+-- 'activo' no existe en aulas; 'anio_escolar' sí y es obligatoria.
+-- Es el mismo desajuste que hacía fallar con error 500 a
+-- admin/colegios.php y docente/reportes.php, que filtraban por a.activo.
+INSERT IGNORE INTO aulas (id, colegio_id, docente_id, grado, seccion, anio_escolar) VALUES
+(1, 1, 4, '1ro Secundaria', 'A', 2026),
+(2, 1, 5, '2do Secundaria', 'B', 2026),
+(3, 2, 6, '1ro Secundaria', 'A', 2026),
+(4, 2, 6, '2do Secundaria', 'A', 2026),
+(5, 3, 4, '1ro Secundaria', 'A', 2026);
 
 -- ── Practicante-Aula ─────────────────────────────────────────
 INSERT IGNORE INTO practicante_aula (practicante_id, aula_id) VALUES
@@ -271,15 +286,34 @@ INSERT IGNORE INTO entregables (id, estudiante_id, modulo_id, formato, archivo_u
  'El cuento ilustrado es muy original. Integra bien los conceptos de programación.',
  3, '2026-08-03 10:15:00');
 
+-- ── Apoderado de demostración ────────────────────────────────
+-- Requiere la migración 005, que añade 'apoderado' al ENUM de rol y
+-- crea apoderado_estudiante. Por eso local.sh aplica las migraciones
+-- antes que este archivo. Si la tabla aún no existe, este bloque no
+-- llega a ejecutarse y el resto del seed queda igual de válido.
+INSERT IGNORE INTO usuarios (id, nombre, apellido, email, password_hash, rol, colegio_id, activo) VALUES
+(30, 'Juan', 'Mamani', 'apoderado@innovasteam.edu.pe',
+     '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+     'apoderado', 1, 1);
+
+-- Se le vinculan los dos primeros estudiantes del aula 1 para que la
+-- vista comparativa tenga algo que comparar.
+INSERT IGNORE INTO apoderado_estudiante (apoderado_id, estudiante_id, relacion)
+SELECT 30, ea.estudiante_id, 'padre'
+  FROM estudiante_aula ea
+ WHERE ea.aula_id = 1
+ ORDER BY ea.estudiante_id
+ LIMIT 2;
+
 SET foreign_key_checks = 1;
 
 -- ============================================================
--- CUENTAS DE ACCESO RÁPIDO
+-- CUENTAS DE ACCESO RÁPIDO — contraseña: password
 -- ============================================================
--- Rol            | Email / Código       | Contraseña
--- Admin          | admin@innovasteam.edu.pe | password
--- Director       | director1@innovasteam.edu.pe | password
--- Docente        | docente@innovasteam.edu.pe | password
--- Practicante    | practicante@innovasteam.edu.pe | password
--- Estudiante     | EST-001              | password
+-- Admin          admin@innovasteam.edu.pe
+-- Director       admin_col@innovasteam.edu.pe
+-- Docente        docente@innovasteam.edu.pe
+-- Practicante    practicante@innovasteam.edu.pe
+-- Estudiante     EST-001                        (entra con código)
+-- Apoderado      apoderado@innovasteam.edu.pe
 -- ============================================================

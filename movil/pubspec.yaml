@@ -1,0 +1,29 @@
+name: innovasteam
+description: App móvil de INNOVA-STEAM para estudiantes y apoderados.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  # Dart 3.6 (Flutter 3.27) es el mínimo: el código usa Color.withValues,
+  # que sustituye al obsoleto withOpacity y no existe antes.
+  sdk: '>=3.6.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Cliente HTTP. Suficiente para esta API: no hace falta dio ni
+  # generación de código para nueve endpoints.
+  http: ^1.2.2
+
+  # Guarda el token entre arranques. Para producción conviene mover el
+  # token a flutter_secure_storage, que usa el llavero del sistema.
+  shared_preferences: ^2.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

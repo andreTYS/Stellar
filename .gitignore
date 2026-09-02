@@ -31,3 +31,10 @@ error_log
 
 # Claude Code tooling
 .claude/
+
+# Flutter (movil/)
+/movil/.dart_tool/
+/movil/build/
+/movil/.flutter-plugins
+/movil/.flutter-plugins-dependencies
+/movil/pubspec.lock

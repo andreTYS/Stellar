@@ -23,6 +23,20 @@ SET NAMES utf8mb4;
 -- ---------------------------------------------------------------------------
 -- 2. DROP TABLES (reverse FK order)
 -- ---------------------------------------------------------------------------
+-- Tablas que añaden las migraciones 001/004/005/008. Van primero porque
+-- todas apuntan a usuarios: sin borrarlas, reejecutar este archivo sobre
+-- una base ya migrada falla con error 1451 al llegar a DROP usuarios, y
+-- se queda a medias.
+DROP TABLE IF EXISTS api_tokens;
+DROP TABLE IF EXISTS login_intentos;
+DROP TABLE IF EXISTS apoderado_estudiante;
+DROP TABLE IF EXISTS usuario_logros;
+DROP TABLE IF EXISTS logros;
+DROP TABLE IF EXISTS simulador_sesiones;
+DROP TABLE IF EXISTS capitulos_progreso;
+DROP TABLE IF EXISTS notificaciones;
+DROP TABLE IF EXISTS mensajes;
+
 DROP TABLE IF EXISTS asistencia;
 DROP TABLE IF EXISTS sesiones;
 DROP TABLE IF EXISTS certificados;
