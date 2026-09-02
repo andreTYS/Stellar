@@ -7,14 +7,27 @@ El backend es el mismo PHP de siempre: la app no lo sustituye, lo consume.
 
 ## Antes de empezar
 
-Levanta la plataforma en local desde la raíz del repositorio:
+Levanta la plataforma en local desde la raíz del repositorio.
+
+**Linux o macOS:**
 
 ```bash
 ./local.sh --reset
 ```
 
-Eso deja la web en `http://localhost:8000/innovasteam` y la API en
-`.../innovasteam/api`, con los seis roles de demostración cargados.
+Deja la web en `http://localhost:8000/innovasteam`.
+
+**Windows (con XAMPP):**
+
+```bat
+local.bat --reset
+```
+
+Deja la web en `http://localhost/innovasteam` — sin puerto, porque la
+sirve Apache. Ten arrancados Apache y MySQL desde el panel de XAMPP antes
+de ejecutarlo.
+
+En ambos casos quedan cargados los seis roles de demostración.
 
 ## Arrancar la app
 
@@ -29,11 +42,13 @@ flutter run --dart-define=API_URL=http://10.0.2.2:8000/innovasteam
 
 ### La URL depende de dónde corra la app
 
-| Dónde | API_URL |
-|---|---|
-| Emulador de Android | `http://10.0.2.2:8000/innovasteam` |
-| Simulador de iOS | `http://localhost:8000/innovasteam` |
-| Móvil real por wifi | `http://IP-DE-TU-PC:8000/innovasteam` |
+| Dónde | Linux/macOS (`local.sh`) | Windows (XAMPP) |
+|---|---|---|
+| Emulador de Android | `http://10.0.2.2:8000/innovasteam` | `http://10.0.2.2/innovasteam` |
+| Simulador de iOS | `http://localhost:8000/innovasteam` | — |
+| Móvil real por wifi | `http://IP-DE-TU-PC:8000/innovasteam` | `http://IP-DE-TU-PC/innovasteam` |
+
+En Windows no lleva puerto porque Apache escucha en el 80.
 
 `10.0.2.2` es la dirección con la que el emulador de Android ve al ordenador
 anfitrión. Usar `localhost` ahí apunta al propio emulador y la app no conecta:
