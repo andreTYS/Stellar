@@ -1,5 +1,14 @@
-const { app, BrowserWindow, Menu, shell, ipcMain, dialog, nativeTheme } = require('electron');
+const { app, BrowserWindow, Menu, shell, dialog, nativeTheme } = require('electron');
 const path = require('path');
+const fs   = require('fs');
+
+// El repositorio no incluye assets/: si el icono no existe, se deja que
+// Electron use el suyo en vez de pasar una ruta inválida.
+function iconoSiExiste() {
+    const archivo = process.platform === 'win32' ? 'icon.ico' : 'icon.png';
+    const ruta = path.join(__dirname, 'assets', archivo);
+    return fs.existsSync(ruta) ? ruta : undefined;
+}
 
 // ── Config ──────────────────────────────────────────────────────
 // Change this to your deployed URL or keep localhost for XAMPP
@@ -28,7 +37,7 @@ function createWindow() {
         minHeight: 600,
         show: false,
         title: 'INNOVA-STEAM',
-        icon: path.join(__dirname, 'assets', process.platform === 'win32' ? 'icon.ico' : 'icon.png'),
+        icon: iconoSiExiste(),
         webPreferences: {
             nodeIntegration:     false,
             contextIsolation:    true,

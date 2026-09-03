@@ -18,6 +18,19 @@ $accion = $_GET['accion'] ?? '';
 
 switch ($accion) {
 
+    // ── Comprobar que la API responde ────────────────────────
+    // No pide token: sirve para saber si el problema es de red o de
+    // credenciales. Se puede abrir directamente en el navegador del
+    // móvil o del emulador para descartar la app como causa.
+    case 'ping':
+        apiJson([
+            'ok'        => true,
+            'servicio'  => 'INNOVA-STEAM API',
+            'version'   => APP_VERSION,
+            'base_url'  => BASE_URL,
+            'hora'      => date(DATE_ATOM),
+        ]);
+
     // ── Iniciar sesión ───────────────────────────────────────
     case 'login':
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

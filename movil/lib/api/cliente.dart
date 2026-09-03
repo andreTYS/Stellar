@@ -1,3 +1,4 @@
+import 'dart:async' show TimeoutException;
 import 'dart:convert';
 import 'dart:io';
 
@@ -94,14 +95,44 @@ class ClienteApi {
     return datos;
   }
 
+  /// Mensaje de red que nombra la URL y las causas reales, en vez de un
+  /// "sin conexión" que no dice dónde mirar.
+  ErrorApi _errorDeRed(Object causa) {
+    final esEmulador = baseUrl.contains('10.0.2.2');
+    final esLocal = baseUrl.contains('localhost') || baseUrl.contains('127.0.0.1');
+
+    final pistas = <String>[
+      'Comprueba que $baseUrl abra en el navegador del ordenador.',
+      if (esLocal)
+        'Estás usando "localhost": desde un emulador o un móvil eso apunta '
+            'al propio dispositivo, no a tu PC. Usa 10.0.2.2 en el emulador '
+            'de Android, o la IP de tu PC en un móvil real.',
+      if (esEmulador)
+        'Con 10.0.2.2 el emulador busca tu PC: Apache tiene que estar '
+            'arrancado en XAMPP.',
+      if (!esLocal && !esEmulador)
+        'Si es un móvil real, tiene que estar en la misma wifi que el PC, '
+            'y el cortafuegos de Windows debe permitir el puerto.',
+    ];
+
+    return ErrorApi(
+      'No se pudo conectar.\n\n${pistas.join('\n\n')}',
+      0,
+    );
+  }
+
   Future<Map<String, dynamic>> _get(String ruta) async {
     try {
       final r = await _http
           .get(Uri.parse('$baseUrl/api/$ruta'), headers: _cabeceras)
           .timeout(const Duration(seconds: 20));
       return _procesar(r);
-    } on SocketException {
-      throw const ErrorApi('Sin conexión con el servidor.', 0);
+    } on SocketException catch (e) {
+      throw _errorDeRed(e);
+    } on TimeoutException {
+      throw ErrorApi('El servidor no respondió a tiempo ($baseUrl).', 0);
+    } on HandshakeException catch (e) {
+      throw _errorDeRed(e);
     }
   }
 
@@ -112,9 +143,20 @@ class ClienteApi {
               headers: _cabeceras, body: jsonEncode(cuerpo))
           .timeout(const Duration(seconds: 20));
       return _procesar(r);
-    } on SocketException {
-      throw const ErrorApi('Sin conexión con el servidor.', 0);
+    } on SocketException catch (e) {
+      throw _errorDeRed(e);
+    } on TimeoutException {
+      throw ErrorApi('El servidor no respondió a tiempo ($baseUrl).', 0);
+    } on HandshakeException catch (e) {
+      throw _errorDeRed(e);
     }
+  }
+
+  /// Comprueba que la API responde, sin necesitar credenciales.
+  /// Separa un problema de red de uno de usuario o contraseña.
+  Future<String> probarConexion() async {
+    final datos = await _get('auth.php?accion=ping');
+    return 'Servidor accesible · ${datos['servicio']} v${datos['version']}';
   }
 
   // ── Sesión ───────────────────────────────────────────────

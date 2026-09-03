@@ -18,8 +18,29 @@ class _PantallaLoginState extends State<PantallaLogin> {
   final _password = TextEditingController();
 
   bool _cargando = false;
+  bool _probando = false;
   bool _verPassword = false;
   String? _error;
+  String? _aviso;
+
+  /// Comprueba que el servidor responde, sin usar credenciales. Separa
+  /// "no llego al servidor" de "usuario o contraseña mal", que es la
+  /// duda habitual cuando la app no entra.
+  Future<void> _probarConexion() async {
+    setState(() {
+      _probando = true;
+      _error = null;
+      _aviso = null;
+    });
+    try {
+      final resultado = await widget.api.probarConexion();
+      if (mounted) setState(() => _aviso = resultado);
+    } on ErrorApi catch (e) {
+      if (mounted) setState(() => _error = e.mensaje);
+    } finally {
+      if (mounted) setState(() => _probando = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -161,6 +182,33 @@ class _PantallaLoginState extends State<PantallaLogin> {
                                 _error!,
                                 style: TextStyle(
                                     color: colores.onErrorContainer,
+                                    fontSize: 13.5,
+                                    height: 1.45),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+
+                    if (_aviso != null) ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: colores.secondaryContainer,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.check_circle_outline,
+                                size: 19, color: colores.onSecondaryContainer),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                _aviso!,
+                                style: TextStyle(
+                                    color: colores.onSecondaryContainer,
                                     fontSize: 13.5),
                               ),
                             ),
@@ -183,6 +231,35 @@ class _PantallaLoginState extends State<PantallaLogin> {
                                   strokeWidth: 2, color: Colors.white),
                             )
                           : const Text('Entrar'),
+                    ),
+
+                    // Diagnóstico: la causa habitual de que la app no
+                    // entre es que apunte a una URL que no responde, y
+                    // sin verla escrita no hay forma de darse cuenta.
+                    const SizedBox(height: 20),
+                    Text(
+                      'Servidor configurado',
+                      style: TextStyle(
+                          fontSize: 11,
+                          letterSpacing: .5,
+                          color: colores.onSurfaceVariant),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 2),
+                    SelectableText(
+                      widget.api.baseUrl,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontFamily: 'monospace',
+                        color: colores.onSurfaceVariant,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: _probando ? null : _probarConexion,
+                      child: Text(_probando
+                          ? 'Probando…'
+                          : 'Probar conexión con el servidor'),
                     ),
                   ],
                 ),

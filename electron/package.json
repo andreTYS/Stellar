@@ -23,26 +23,21 @@
     "files": ["main.js", "splash.html", "assets/**/*"],
     "win": {
       "target": [{ "target": "nsis", "arch": ["x64", "ia32"] }],
-      "icon": "assets/icon.ico",
       "publisherName": "INNOVA-STEAM"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "installerIcon": "assets/icon.ico",
-      "installerHeaderIcon": "assets/icon.ico",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "INNOVA-STEAM"
     },
     "mac": {
       "category": "public.app-category.education",
-      "icon": "assets/icon.icns",
       "target": ["dmg", "zip"]
     },
     "linux": {
       "target": ["AppImage", "deb"],
-      "icon": "assets/icon.png",
       "category": "Education"
     }
   }
