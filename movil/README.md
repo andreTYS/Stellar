@@ -34,11 +34,31 @@ En ambos casos quedan cargados los seis roles de demostración.
 Requiere **Flutter 3.27 o superior** (Dart 3.6): el código usa
 `Color.withValues`, que no existe en versiones anteriores.
 
+El repositorio solo versiona el código Dart (`lib/` y `pubspec.yaml`). Las
+carpetas `android/` e `ios/` las genera Flutter en cada máquina y no se
+suben al repositorio, así que hay que crearlas la primera vez.
+
+**Windows:**
+
+```bat
+cd movil
+preparar.bat
+flutter run --dart-define=API_URL=http://10.0.2.2/innovasteam
+```
+
+**Linux o macOS:**
+
 ```bash
 cd movil
+flutter create --platforms=android --project-name innovasteam .
+git checkout -- lib          # flutter create puede pisar lib/main.dart
 flutter pub get
 flutter run --dart-define=API_URL=http://10.0.2.2:8000/innovasteam
 ```
+
+`preparar.bat` hace esos mismos pasos y además permite el tráfico HTTP en
+el manifiesto de Android, que si no bloquea la conexión con el servidor
+local sin dar una explicación clara.
 
 ### La URL depende de dónde corra la app
 
