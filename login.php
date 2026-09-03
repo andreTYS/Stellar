@@ -5,6 +5,25 @@ require_once __DIR__ . '/includes/functions.php';
 // Already logged in? Redirect
 if (isLoggedIn()) redirect(dashboardUrl());
 
+// Cifras de la portada. Estaban escritas a mano en el HTML y ya no
+// cuadraban: decía 5 roles cuando son 6 desde que existe el apoderado.
+// Al leerlas de la base no vuelven a quedarse desfasadas cuando alguien
+// añade un curso o un módulo.
+$portada = ['cursos' => 0, 'modulos' => 0, 'roles' => 0];
+try {
+    $bd = getDB();
+    $portada['cursos']  = (int)$bd->query('SELECT COUNT(*) FROM cursos')->fetchColumn();
+    $portada['modulos'] = (int)$bd->query('SELECT COUNT(*) FROM modulos')->fetchColumn();
+    // Los roles posibles, no los que hay dados de alta: es lo que se
+    // está anunciando.
+    $fila = $bd->query("SHOW COLUMNS FROM usuarios LIKE 'rol'")->fetch();
+    if ($fila && preg_match_all("/'([^']+)'/", $fila['Type'] ?? '', $m)) {
+        $portada['roles'] = count($m[1]);
+    }
+} catch (\Throwable $e) {
+    // Sin base de datos la portada sigue mostrándose, solo sin cifras.
+}
+
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -733,17 +752,17 @@ $queryError = $_GET['error'] ?? '';
       <!-- Stats row -->
       <div class="stats-row">
         <div class="stat-pill">
-          <span class="stat-pill-value">5</span>
+          <span class="stat-pill-value"><?= $portada['cursos'] ?></span>
           <span class="stat-pill-label">cursos</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-pill">
-          <span class="stat-pill-value">15</span>
+          <span class="stat-pill-value"><?= $portada['modulos'] ?></span>
           <span class="stat-pill-label">módulos</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-pill">
-          <span class="stat-pill-value">5</span>
+          <span class="stat-pill-value"><?= $portada['roles'] ?></span>
           <span class="stat-pill-label">roles</span>
         </div>
       </div>

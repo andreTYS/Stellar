@@ -17,6 +17,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+verifyCsrf();
+
 // ── Input ─────────────────────────────────────────────────────
 $moduloId = (int)($_POST['modulo_id'] ?? 0);
 $formato  = trim($_POST['formato'] ?? '');

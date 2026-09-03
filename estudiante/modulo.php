@@ -652,7 +652,7 @@ async function subirEntregable(moduloId) {
   // 4. Subir archivo en segundo plano (no bloquea el flujo)
   try {
     const fd = new FormData(document.getElementById('form-entregable'));
-    fetch('<?= BASE_URL ?>/api/entregable.php', { method: 'POST', body: fd }).catch(() => {});
+    fetch('<?= BASE_URL ?>/api/entregable.php', { method: 'POST', headers: { 'X-CSRF-Token': window.CSRF_TOKEN || '' }, body: fd }).catch(() => {});
   } catch (e) {}
 }
 

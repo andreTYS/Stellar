@@ -166,6 +166,14 @@ INSERT IGNORE INTO aula_modulos (aula_id, modulo_id, fecha_planificada) VALUES
 
 -- ── Progreso estudiantes ─────────────────────────────────────
 INSERT IGNORE INTO progreso_estudiante (estudiante_id, modulo_id, paso_actual, completado, completado_en, estrellas_quiz) VALUES
+-- Sofía (EST-001) — es la cuenta con la que se entra a demostrar la
+-- plataforma, y no tenía ni una fila: su panel salía entero a cero, sin
+-- progreso, sin estrellas y sin posición en el aula. Se le da un avance
+-- intermedio para que el ranking y las barras muestren algo real.
+(5, 1, 5, 1, '2026-08-04 09:20:00', 3),
+(5, 2, 5, 1, '2026-08-09 10:05:00', 2),
+(5, 4, 5, 1, '2026-08-14 11:40:00', 2),
+(5, 3, 3, 0, NULL, NULL),
 -- Lucía — muy avanzada
 (10, 1, 5, 1, '2026-08-01 09:12:00', 3),
 (10, 2, 5, 1, '2026-08-05 10:30:00', 3),

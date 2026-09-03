@@ -199,7 +199,7 @@ $rolLabel = match ($rol) {
           <div style="padding:12px 16px;border-bottom:1px solid var(--bg-border);display:flex;align-items:center;justify-content:space-between">
             <span style="font-weight:700;font-size:14px;color:var(--text-primary)">Notificaciones</span>
             <button @click="
-              fetch('<?= BASE_URL ?>/api/notificaciones.php?action=mark_read',{method:'POST',body:new URLSearchParams({action:'mark_read'})})
+              fetch('<?= BASE_URL ?>/api/notificaciones.php?action=mark_read',{method:'POST',headers:{'X-CSRF-Token':window.CSRF_TOKEN||''},body:new URLSearchParams({action:'mark_read'})})
                 .then(()=>{notifCount=0;notifs=notifs.map(n=>({...n,leida:1}))})
             " style="font-size:11px;color:var(--accent);background:none;border:none;cursor:pointer;font-weight:600">Marcar todo leído</button>
           </div>
@@ -209,7 +209,7 @@ $rolLabel = match ($rol) {
             </template>
             <template x-for="n in notifs" :key="n.id">
               <a :href="n.url || '#'"
-                 @click="fetch('<?= BASE_URL ?>/api/notificaciones.php?action=mark_read',{method:'POST',body:new URLSearchParams({action:'mark_read',id:n.id})}).then(()=>{if(!n.leida)notifCount=Math.max(0,notifCount-1);n.leida=1})"
+                 @click="fetch('<?= BASE_URL ?>/api/notificaciones.php?action=mark_read',{method:'POST',headers:{'X-CSRF-Token':window.CSRF_TOKEN||''},body:new URLSearchParams({action:'mark_read',id:n.id})}).then(()=>{if(!n.leida)notifCount=Math.max(0,notifCount-1);n.leida=1})"
                  style="display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-bottom:1px solid var(--bg-border);text-decoration:none;transition:background .1s"
                  :style="!n.leida ? 'background:var(--accent-light)' : ''"
                  onmouseover="this.style.background='var(--bg-hover)'"

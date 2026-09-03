@@ -28,6 +28,7 @@ if ($action === 'list') {
 }
 
 if ($action === 'mark_read' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifyCsrf();
     $id = (int)($_POST['id'] ?? 0);
     if ($id > 0) {
         $pdo->prepare('UPDATE notificaciones SET leida=1 WHERE id=? AND usuario_id=?')->execute([$id, $uid]);
