@@ -27,7 +27,9 @@ error_log
 /vendor/
 
 # Node (leftover / tooling)
-/node_modules/
+# Con la barra inicial solo se ignoraba la raíz, y electron/node_modules
+# —454 MB de binarios de Electron— se colaba como sin seguimiento.
+node_modules/
 
 # Claude Code tooling
 .claude/
