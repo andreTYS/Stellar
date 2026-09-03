@@ -79,6 +79,7 @@ if ($aulaIds) {
     ")->fetchAll();
 }
 
+
 $pageTitle = 'Reportes del Aula';
 $activeNav = 'reportes';
 require_once __DIR__ . '/../includes/header.php';

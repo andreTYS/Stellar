@@ -180,7 +180,7 @@ require_once __DIR__ . '/../includes/header.php';
         <span style="font-size:10px;color:<?= $color ?>aa;font-weight:600;text-transform:uppercase;letter-spacing:.06em"><?= sanitize($formato ?: 'Archivo') ?></span>
       </a>
       <?php else: ?>
-      <div style="height:100px;background:linear-gradient(135deg,<?= $color ?>22,<?= $color ?>11);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;flex-shrink:0;">
+      <div style="height:120px;background:linear-gradient(135deg,<?= $color ?>22,<?= $color ?>11);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;flex-shrink:0;">
         <i data-lucide="file-text" style="width:28px;height:28px;color:<?= $color ?>99"></i>
         <span style="font-size:10px;color:<?= $color ?>aa;font-weight:600;text-transform:uppercase;letter-spacing:.06em"><?= sanitize($formato ?: 'Archivo') ?></span>
       </div>
