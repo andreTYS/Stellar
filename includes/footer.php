@@ -28,8 +28,9 @@ if (in_array(currentRole(), ['estudiante', 'practicante'], true)):
     <div class="asistente-hilo" x-ref="hilo">
       <template x-if="turnos.length === 0">
         <p class="asistente-vacio">
-          Pregúntame sobre matemática, comunicación, arte, ingeniería, inglés
-          o astronomía. Te oriento paso a paso, no te doy la respuesta hecha.
+          Pregúntame sobre matemática, comunicación, arte, ingeniería, inglés,
+          ciencia o astronomía. Te oriento paso a paso, no te doy la respuesta
+          hecha.
         </p>
       </template>
       <template x-for="(t, i) in turnos" :key="i">

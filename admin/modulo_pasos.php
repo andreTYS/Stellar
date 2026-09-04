@@ -37,11 +37,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tipo   = $_POST['tipo'] ?? 'historia';
         $tipos_validos = ['historia', 'actividad', 'quiz', 'entregable'];
         if (!in_array($tipo, $tipos_validos, true)) $tipo = 'historia';
+        // Las claves tienen que ser las que lee estudiante/modulo.php.
+        // Antes no lo eran —'texto' en vez de 'narrativa', 'instruccion'
+        // en vez de 'instrucciones'—, así que un paso creado desde aquí
+        // llegaba al estudiante vacío o a medias, y sin ningún error que
+        // lo delatara.
+        //
+        // Los valores de ejemplo enseñan la forma esperada; se sustituyen
+        // al redactar el paso.
         $defaults = [
-            'historia'   => ['titulo' => '', 'texto' => '', 'imagen_url' => ''],
-            'actividad'  => ['instruccion' => '', 'materiales' => []],
-            'quiz'       => ['descripcion' => '', 'preguntas' => []],
-            'entregable' => ['instruccion' => '', 'tipo_archivo' => 'imagen'],
+            'historia'   => [
+                'narrativa'            => '',
+                'pregunta_disparadora' => '',
+                'conceptos_clave'      => [],
+                'dato_curioso'         => '',
+            ],
+            'actividad'  => [
+                'materiales'    => [],
+                'instrucciones' => [],
+                'minutos'       => 20,
+            ],
+            // Las preguntas del quiz viven en la tabla quiz_preguntas,
+            // no en este JSON.
+            'quiz'       => [
+                'info' => 'Ver tabla quiz_preguntas para las preguntas de este paso',
+            ],
+            'entregable' => [
+                'consigna'      => '',
+                'formatos'      => ['ficha'],
+                'instrucciones' => 'Sube una foto de tu trabajo terminado. Máx 5 MB.',
+            ],
         ];
         $contenido = json_encode($defaults[$tipo], JSON_UNESCAPED_UNICODE);
         try {

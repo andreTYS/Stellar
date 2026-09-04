@@ -295,6 +295,9 @@ require_once __DIR__ . '/../includes/header.php';
         // de objetos con clave 'topic'. Tratarlo como lista hacía que
         // htmlspecialchars() recibiera un array y reventara la página
         // entera — y este portal cuelga del menú de los seis roles.
+        // Contador para rotar el icono de cada tema.
+        $ti = 0;
+
         foreach (array_slice($eduContent['science_topics'], 0, 6, true) as $clave => $tema):
           $titulo = is_array($tema)
               ? ucfirst(str_replace('_', ' ', (string)$clave))
@@ -311,7 +314,9 @@ require_once __DIR__ . '/../includes/header.php';
                   }
               }
           }
-        ?>
+          // Un cierre de etiqueta PHP sobraba justo aquí y dejaba este
+          // bloque como texto plano: $svgIcons y $ti nunca llegaban a
+          // existir y el SVG se escupía literal en la página.
           $svgIcons = [
             '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
@@ -320,7 +325,6 @@ require_once __DIR__ . '/../includes/header.php';
             '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3ecf8e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor"/></svg>',
           ];
-          static $ti = 0;
         ?>
         <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-elevated);border-radius:9px">
           <span style="width:28px;height:28px;border-radius:7px;background:var(--bg-muted);display:flex;align-items:center;justify-content:center;flex-shrink:0"><?= $svgIcons[$ti % 6] ?></span>
