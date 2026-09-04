@@ -3,14 +3,45 @@
 // INNOVA-STEAM — Configuración central
 // ============================================================
 
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'innovasteam');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('APP_NAME', 'INNOVA-STEAM');
-define('APP_VERSION', '2.0');
-// Base URL — fixed for symlinked deployment under /srv/www/innovasteam
-define('BASE_URL', '/innovasteam');
+// Ajustes propios de cada instalación: credenciales de la base, BASE_URL
+// y el secreto del asistente. No se versiona (.gitignore lo excluye), y
+// se carga ANTES que nada para que sus valores ganen: los define() de
+// abajo solo se aplican si el archivo local no los fijó ya.
+//
+// Es lo que evita tener que editar este archivo en cada servidor.
+$configLocal = __DIR__ . '/config.local.php';
+if (is_file($configLocal)) {
+    require_once $configLocal;
+}
+
+if (!defined('DB_HOST'))     define('DB_HOST', 'localhost');
+if (!defined('DB_NAME'))     define('DB_NAME', 'innovasteam');
+if (!defined('DB_USER'))     define('DB_USER', 'root');
+if (!defined('DB_PASS'))     define('DB_PASS', '');
+if (!defined('APP_NAME'))    define('APP_NAME', 'INNOVA-STEAM');
+if (!defined('APP_VERSION')) define('APP_VERSION', '2.0');
+// Base URL — fixed for symlinked deployment under /srv/www/innovasteam.
+// En el VPS, si sirves en la raíz del dominio, ponlo a '' desde
+// config.local.php sin tocar este archivo.
+if (!defined('BASE_URL'))    define('BASE_URL', '/innovasteam');
+
+// Secreto con el que se cifran las claves de API del asistente antes de
+// guardarlas. Debe vivir FUERA de la base de datos: si alguien obtiene un
+// volcado, sin este valor las claves cifradas no le sirven de nada.
+//
+// En producción, defínelo como variable de entorno o en config.local.php
+// (que .gitignore ya excluye) y NO lo subas al repositorio:
+//
+//     define('CHATBOT_CLAVE_MAESTRA', '<32+ caracteres aleatorios>');
+//
+// Genera uno con:  php -r "echo bin2hex(random_bytes(32));"
+if (!defined('CHATBOT_CLAVE_MAESTRA')) {
+    $claveEntorno = getenv('CHATBOT_CLAVE_MAESTRA');
+    if (is_string($claveEntorno) && $claveEntorno !== '') {
+        define('CHATBOT_CLAVE_MAESTRA', $claveEntorno);
+    }
+}
+
 define('UPLOAD_DIR', dirname(__DIR__) . '/uploads/');
 define('UPLOAD_URL', BASE_URL . '/uploads/');
 define('MAX_UPLOAD_MB', 5);

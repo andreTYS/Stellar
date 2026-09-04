@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/chatbot.php';
 requireLogin('admin');
 
 $pdo = getDB();
@@ -8,6 +9,48 @@ $msg = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verifyCsrf();
+}
+
+// ── Asistente: clave de API por colegio ──────────────────────────
+// Cada colegio paga su propio consumo, así que cada uno trae su clave.
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'chatbot') {
+    $colegioId = (int)($_POST['colegio_id'] ?? 0);
+    $clave     = trim((string)($_POST['api_key'] ?? ''));
+    $modelo    = trim((string)($_POST['modelo'] ?? '')) ?: CHATBOT_MODELO_DEFECTO;
+    $tope      = max(1, min(500, (int)($_POST['tope_dia'] ?? 30)));
+    $activo    = isset($_POST['activo']) ? 1 : 0;
+
+    if ($colegioId <= 0) {
+        $msg = 'error:Colegio no válido.';
+    } elseif (($_POST['quitar'] ?? '') === '1') {
+        $pdo->prepare('UPDATE colegios SET chatbot_clave=NULL, chatbot_pista=NULL, chatbot_activo=0 WHERE id=?')
+            ->execute([$colegioId]);
+        $msg = 'success:Clave eliminada. El asistente queda desactivado para ese colegio.';
+    } elseif ($clave !== '') {
+        // Sin secreto maestro no se guarda nada: es preferible negarse a
+        // dejar una clave de API en claro dentro de la base.
+        if (chatbotClaveMaestra() === null) {
+            $msg = 'error:Falta CHATBOT_CLAVE_MAESTRA en includes/config.local.php. '
+                 . 'Sin ese secreto la clave se guardaría sin cifrar, así que no se guarda.';
+        } else {
+            $cifrada = chatbotCifrar($clave);
+            $pista   = substr($clave, -4);
+            $pdo->prepare(
+                'UPDATE colegios SET chatbot_clave=?, chatbot_pista=?, chatbot_modelo=?,
+                        chatbot_tope_dia=?, chatbot_activo=? WHERE id=?'
+            )->execute([$cifrada, $pista, $modelo, $tope, $activo, $colegioId]);
+            $msg = 'success:Clave guardada y cifrada.';
+        }
+    } else {
+        // Sin clave nueva: solo se actualizan los ajustes.
+        $pdo->prepare(
+            'UPDATE colegios SET chatbot_modelo=?, chatbot_tope_dia=?, chatbot_activo=? WHERE id=?'
+        )->execute([$modelo, $tope, $activo, $colegioId]);
+        $msg = 'success:Ajustes del asistente actualizados.';
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') !== 'chatbot') {
     $nombre  = sanitize($_POST['nombre']);
     $distrito = sanitize($_POST['distrito']);
     $ugel    = sanitize($_POST['ugel_codigo'] ?? '');
@@ -103,6 +146,78 @@ require_once __DIR__ . '/../includes/header.php';
               <td style="text-align:center;color:var(--blue);font-weight:700"><?= $col['total_doc'] ?></td>
               <td style="text-align:center;color:var(--green);font-weight:700"><?= $col['total_completaciones'] ?></td>
               <td><a href="?edit=<?= $col['id'] ?>" style="color:var(--accent);font-size:12px;text-decoration:none">Editar</a></td>
+            </tr>
+            <tr>
+              <td colspan="7" style="background:var(--bg-elevated);padding:14px 16px">
+                <?php
+                  $tieneClave = !empty($col['chatbot_pista']);
+                  $encendido  = !empty($col['chatbot_activo']);
+                ?>
+                <form method="POST" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end">
+                  <?= csrfField() ?>
+                  <input type="hidden" name="accion" value="chatbot">
+                  <input type="hidden" name="colegio_id" value="<?= (int)$col['id'] ?>">
+
+                  <div style="flex:2;min-width:210px">
+                    <label for="key-<?= (int)$col['id'] ?>"
+                           style="display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:4px">
+                      Clave de API del asistente
+                      <?php if ($tieneClave): ?>
+                        <span style="color:var(--success);text-transform:none;letter-spacing:0">
+                          · guardada, termina en <?= sanitize($col['chatbot_pista']) ?>
+                        </span>
+                      <?php endif; ?>
+                    </label>
+                    <input id="key-<?= (int)$col['id'] ?>" type="password" name="api_key"
+                           autocomplete="off" spellcheck="false"
+                           placeholder="<?= $tieneClave ? 'Dejar vacío para conservar la actual' : 'sk-ant-…' ?>"
+                           style="width:100%;background:var(--bg-surface);border:1px solid var(--bg-border);color:var(--text-primary);border-radius:8px;padding:7px 10px;font-size:12px;font-family:monospace">
+                  </div>
+
+                  <div style="min-width:150px">
+                    <label for="mod-<?= (int)$col['id'] ?>"
+                           style="display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:4px">Modelo</label>
+                    <select id="mod-<?= (int)$col['id'] ?>" name="modelo"
+                            style="width:100%;background:var(--bg-surface);border:1px solid var(--bg-border);color:var(--text-primary);border-radius:8px;padding:7px;font-size:12px">
+                      <?php
+                      // Opus 5 por defecto; los otros dos, más baratos, por
+                      // si un colegio prefiere gastar menos por consulta.
+                      $modelos = [
+                        'claude-opus-5'   => 'Opus 5 (recomendado)',
+                        'claude-sonnet-5' => 'Sonnet 5',
+                        'claude-haiku-4-5'=> 'Haiku 4.5 (más barato)',
+                      ];
+                      $actual = $col['chatbot_modelo'] ?? CHATBOT_MODELO_DEFECTO;
+                      foreach ($modelos as $v => $etiqueta): ?>
+                        <option value="<?= $v ?>" <?= $v === $actual ? 'selected' : '' ?>><?= $etiqueta ?></option>
+                      <?php endforeach; ?>
+                    </select>
+                  </div>
+
+                  <div style="width:110px">
+                    <label for="tope-<?= (int)$col['id'] ?>"
+                           style="display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:4px">Tope/día</label>
+                    <input id="tope-<?= (int)$col['id'] ?>" type="number" name="tope_dia" min="1" max="500"
+                           value="<?= (int)($col['chatbot_tope_dia'] ?? 30) ?>"
+                           style="width:100%;background:var(--bg-surface);border:1px solid var(--bg-border);color:var(--text-primary);border-radius:8px;padding:7px 10px;font-size:12px">
+                  </div>
+
+                  <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);padding-bottom:8px">
+                    <input type="checkbox" name="activo" value="1" <?= $encendido ? 'checked' : '' ?>>
+                    Activo
+                  </label>
+
+                  <button type="submit" class="btn-primary" style="padding:7px 14px;font-size:12px">Guardar</button>
+
+                  <?php if ($tieneClave): ?>
+                  <button type="submit" name="quitar" value="1"
+                          onclick="return confirm('¿Eliminar la clave de este colegio? El asistente dejará de funcionar para sus estudiantes.')"
+                          style="background:none;border:1px solid var(--danger);color:var(--danger);border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer">
+                    Quitar clave
+                  </button>
+                  <?php endif; ?>
+                </form>
+              </td>
             </tr>
             <?php endforeach; ?>
           </tbody>
