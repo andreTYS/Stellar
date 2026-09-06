@@ -6,6 +6,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/idempotencia.php';
 
 requireLogin('estudiante');
 header('Content-Type: application/json; charset=utf-8');
@@ -27,6 +28,17 @@ $userId    = currentUserId();
 
 if (!$moduloId || !is_array($respuestas) || empty($respuestas)) {
     echo json_encode(['ok' => false, 'error' => 'datos inválidos']);
+    exit;
+}
+
+// ── Reintento desde la cola sin conexión ──────────────────────
+// Las respuestas ya son idempotentes por la clave única, pero
+// intentos_quiz se incrementa en cada ejecución: sin esto, un reenvío
+// le contaría al estudiante un intento que no hizo.
+$idem = idemUuid($data['cliente_uuid'] ?? null);
+$previa = idemRespuestaPrevia($idem, $userId, 'quiz');
+if ($previa !== null) {
+    echo json_encode($previa + ['reintento' => true]);
     exit;
 }
 
@@ -136,10 +148,14 @@ if ($estrellas === 3) {
 }
 
 // ── Response ──────────────────────────────────────────────────
-echo json_encode([
+$respuesta = [
     'ok'        => true,
     'correctas' => $correctas,
     'total'     => $total,
     'estrellas' => $estrellas,
     'detalle'   => $detalle,
-]);
+];
+
+idemGuardar($idem, $userId, 'quiz', $respuesta);
+
+echo json_encode($respuesta);

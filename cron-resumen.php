@@ -152,3 +152,13 @@ foreach ($apoderados as $ap) {
 
 echo "── Resúmenes procesados: {$enviados}"
    . ($fallos ? " · fallos: {$fallos}" : '') . " ──\n";
+
+// ── Limpieza de la cola sin conexión ─────────────────────────
+// Los registros de idempotencia solo sirven mientras un navegador
+// pueda reintentar. Pasada una semana, ese envío ya no vuelve: el
+// navegador se limpió o el dispositivo cambió de manos.
+require_once __DIR__ . '/includes/idempotencia.php';
+$purgados = idemLimpiar(7);
+if ($purgados > 0) {
+    echo "── Registros de envío caducados borrados: {$purgados} ──\n";
+}

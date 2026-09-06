@@ -6,6 +6,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/idempotencia.php';
 
 requireLogin('estudiante');
 header('Content-Type: application/json; charset=utf-8');
@@ -26,6 +27,16 @@ $userId   = currentUserId();
 
 if (!$moduloId) {
     echo json_encode(['ok' => false, 'error' => 'modulo_id requerido']);
+    exit;
+}
+
+// ── Reintento desde la cola sin conexión ──────────────────────
+// Se comprueba ANTES de mover el archivo: si no, un reenvío dejaría una
+// copia huérfana en disco aunque no se insertara la fila.
+$idem   = idemUuid($_POST['cliente_uuid'] ?? null);
+$previa = idemRespuestaPrevia($idem, $userId, 'entregable');
+if ($previa !== null) {
+    echo json_encode($previa + ['reintento' => true]);
     exit;
 }
 
@@ -133,9 +144,9 @@ if (!in_array($formato, $formatosValidos, true)) {
 try {
     $pdo->prepare(
         'INSERT INTO entregables
-            (estudiante_id, modulo_id, formato, archivo_url, subido_en)
-         VALUES (?, ?, ?, ?, NOW())'
-    )->execute([$userId, $moduloId, $formato, $fileUrl]);
+            (cliente_uuid, estudiante_id, modulo_id, formato, archivo_url, subido_en)
+         VALUES (?, ?, ?, ?, ?, NOW())'
+    )->execute([$idem, $userId, $moduloId, $formato, $fileUrl]);
 
     $entregableId = (int)$pdo->lastInsertId();
 } catch (PDOException $e) {
@@ -145,9 +156,13 @@ try {
 }
 
 // ── Success ───────────────────────────────────────────────────
-echo json_encode([
+$respuesta = [
     'ok'           => true,
     'url'          => $fileUrl,
     'entregable_id' => $entregableId,
     'formato'      => $formato,
-]);
+];
+
+idemGuardar($idem, $userId, 'entregable', $respuesta);
+
+echo json_encode($respuesta);

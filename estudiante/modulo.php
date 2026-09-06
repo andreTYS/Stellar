@@ -554,12 +554,14 @@ document.getElementById('btn-ver-resultado')?.addEventListener('click', function
   document.getElementById('resultado-texto').textContent =
     `Respondiste ${quizCorrectas} de ${totalPreguntas} preguntas correctamente.`;
 
-  // Guardar en servidor en segundo plano (no bloquea el flujo)
-  fetch('<?= BASE_URL ?>/api/quiz.php', {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.CSRF_TOKEN || '' },
-    body:    JSON.stringify({ modulo_id: <?= $moduloId ?>, respuestas: quizRespuestas })
-  }).catch(() => {});
+  // Guardar en servidor en segundo plano (no bloquea el flujo).
+  //
+  // Antes esto era un fetch con .catch(() => {}): sin conexión, las
+  // respuestas del quiz se perdían y el estudiante veía igualmente su
+  // resultado en pantalla. Ahora se encolan y se reintentan solas.
+  Cola.enviar('<?= BASE_URL ?>/api/quiz.php', {
+    json: { modulo_id: <?= $moduloId ?>, respuestas: quizRespuestas }
+  });
 });
 
 // ══════════════════════════════════════════════
@@ -649,10 +651,14 @@ async function subirEntregable(moduloId) {
   document.getElementById('modal-celebracion').classList.add('open');
   if (typeof lucide !== 'undefined') lucide.createIcons();
 
-  // 4. Subir archivo en segundo plano (no bloquea el flujo)
+  // 4. Subir archivo en segundo plano (no bloquea el flujo).
+  //
+  // Es lo que más dolía perder: el estudiante fotografía su trabajo,
+  // ve la celebración y el archivo nunca llegó. La cola lo guarda con
+  // todo y foto, y lo sube en cuanto vuelve la señal.
   try {
     const fd = new FormData(document.getElementById('form-entregable'));
-    fetch('<?= BASE_URL ?>/api/entregable.php', { method: 'POST', headers: { 'X-CSRF-Token': window.CSRF_TOKEN || '' }, body: fd }).catch(() => {});
+    Cola.enviar('<?= BASE_URL ?>/api/entregable.php', { form: fd });
   } catch (e) {}
 }
 

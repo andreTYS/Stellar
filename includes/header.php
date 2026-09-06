@@ -110,6 +110,10 @@ $rolLabel = match ($rol) {
   <!-- App JS -->
   <script src="<?= BASE_URL ?>/assets/js/main.js" defer></script>
   <script src="<?= BASE_URL ?>/assets/js/ui.js" defer></script>
+  <?php /* Reintenta lo que quedó sin enviar en la última clase sin
+           señal, así que se carga en todas las páginas y no solo en la
+           del módulo. */ ?>
+  <script src="<?= BASE_URL ?>/assets/js/cola.js" defer></script>
   <script>document.addEventListener('DOMContentLoaded',()=>{ if(typeof lucide!=='undefined') lucide.createIcons(); });</script>
 </head>
 <body>
