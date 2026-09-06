@@ -93,10 +93,14 @@ if (!$stmtMod->fetch()) {
 try {
     $pdo->beginTransaction();
 
+    // La columna de fecha se llama created_at y ya tiene DEFAULT
+    // CURRENT_TIMESTAMP. Aquí se escribía 'creado_en', que no existe:
+    // el INSERT fallaba siempre y este endpoint nunca llegó a guardar
+    // una sola sesión.
     $pdo->prepare(
         'INSERT INTO sesiones
-            (practicante_id, aula_id, modulo_id, fecha_sesion, asistentes, notas, creado_en)
-         VALUES (?, ?, ?, ?, ?, ?, NOW())'
+            (practicante_id, aula_id, modulo_id, fecha_sesion, asistentes, notas)
+         VALUES (?, ?, ?, ?, ?, ?)'
     )->execute([
         $userId,
         $aulaId,
@@ -111,7 +115,8 @@ try {
     // ── Bulk insert asistencia ────────────────────────────────
     if (!empty($asistentesIds)) {
         // Build a single multi-row INSERT for efficiency
-        $placeholders = implode(', ', array_fill(0, count($asistentesIds), '(?, ?, 1, NOW())'));
+        // asistencia no tiene columna de fecha: la sesión ya la lleva.
+        $placeholders = implode(', ', array_fill(0, count($asistentesIds), '(?, ?, 1)'));
         $params = [];
         foreach ($asistentesIds as $estId) {
             $params[] = $sesionId;
@@ -119,16 +124,20 @@ try {
         }
 
         $pdo->prepare(
-            "INSERT INTO asistencia (sesion_id, estudiante_id, presente, registrado_en)
+            "INSERT INTO asistencia (sesion_id, estudiante_id, presente)
              VALUES {$placeholders}
-             ON DUPLICATE KEY UPDATE presente = 1, registrado_en = NOW()"
+             ON DUPLICATE KEY UPDATE presente = 1"
         )->execute($params);
     }
 
     $pdo->commit();
 } catch (PDOException $e) {
     $pdo->rollBack();
-    echo json_encode(['ok' => false, 'error' => 'error al guardar: ' . $e->getMessage()]);
+    // El detalle de SQL va al log, no al cliente: decía nombres de
+    // tabla y de columna a quien llamara al endpoint.
+    error_log('api/asistencia: ' . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['ok' => false, 'error' => 'No se pudo guardar la sesión. Inténtalo de nuevo.']);
     exit;
 }
 
