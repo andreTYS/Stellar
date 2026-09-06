@@ -21,7 +21,9 @@ if (!$curso) {
 }
 
 // ── Fetch modules + progress ──────────────────────────────────
-$modulos = getModulosByCurso($cursoId);
+// Solo los de su ciclo: desde que hay contenido de secundaria, sin
+// filtrar se le mezclarían módulos de otro nivel entre los suyos.
+$modulos = getModulosByCurso($cursoId, cicloDeEstudiante($estudianteId));
 
 // Todo el progreso del curso en una sola consulta. Antes se pedía un
 // módulo por vuelta de bucle, más otra consulta para releer el módulo

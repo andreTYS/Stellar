@@ -206,12 +206,62 @@ function getCursoBySlug(string $slug): ?array
 }
 
 // ── Módulos ──────────────────────────────────────────────────
-function getModulosByCurso(int $cursoId): array
+/**
+ * Ciclo del CNEB que le corresponde a un aula.
+ *
+ * Primaria 5.º y 6.º son ciclo V; 1.º y 2.º de secundaria, ciclo VI; de
+ * 3.º a 5.º de secundaria, ciclo VII. Los grados de primaria por debajo
+ * de 5.º no tienen contenido propio en la plataforma, así que ven el de
+ * ciclo V, que es lo más cercano.
+ */
+function cicloDeAula(?array $aula): string
+{
+    if (!$aula) return 'ciclo_v';
+
+    if (($aula['nivel'] ?? 'primaria') !== 'secundaria') return 'ciclo_v';
+
+    return in_array($aula['grado'] ?? '', ['1ro', '2do'], true) ? 'ciclo_vi' : 'ciclo_vii';
+}
+
+/**
+ * Ciclo del estudiante, a partir del aula en la que está matriculado.
+ * Sin aula, se asume ciclo V.
+ */
+function cicloDeEstudiante(int $estudianteId): string
 {
     $stmt = getDB()->prepare(
-        'SELECT * FROM modulos WHERE curso_id = ? AND activo = 1 ORDER BY orden'
+        'SELECT a.nivel, a.grado
+           FROM estudiante_aula ea JOIN aulas a ON a.id = ea.aula_id
+          WHERE ea.estudiante_id = ? LIMIT 1'
     );
-    $stmt->execute([$cursoId]);
+    $stmt->execute([$estudianteId]);
+    return cicloDeAula($stmt->fetch() ?: null);
+}
+
+/**
+ * Módulos de un curso. Con $ciclo se limita a los de ese ciclo más los
+ * marcados 'ambos'; sin él salen todos, que es lo que necesitan el
+ * docente y el administrador.
+ *
+ * Sin este filtro, al entrar el contenido de secundaria un estudiante de
+ * 5.º de primaria vería los módulos de 4.º de secundaria mezclados con
+ * los suyos.
+ */
+function getModulosByCurso(int $cursoId, ?string $ciclo = null): array
+{
+    if ($ciclo === null) {
+        $stmt = getDB()->prepare(
+            'SELECT * FROM modulos WHERE curso_id = ? AND activo = 1 ORDER BY orden'
+        );
+        $stmt->execute([$cursoId]);
+    } else {
+        $stmt = getDB()->prepare(
+            "SELECT * FROM modulos
+              WHERE curso_id = ? AND activo = 1 AND grado_ciclo IN (?, 'ambos')
+              ORDER BY orden"
+        );
+        $stmt->execute([$cursoId, $ciclo]);
+    }
     return $stmt->fetchAll();
 }
 

@@ -1,7 +1,21 @@
 # El catálogo de contenido
 
-23 módulos repartidos en 6 cursos. Cada módulo son cuatro pasos —historia,
-actividad, quiz, entregable— y tres preguntas de opción múltiple.
+35 módulos repartidos en 6 cursos y 3 ciclos. Cada módulo son cuatro pasos
+—historia, actividad, quiz, entregable— y tres preguntas de opción múltiple.
+
+| Ciclo | Grados | Módulos |
+|---|---|---|
+| V | 5.º y 6.º de primaria | 23 |
+| VI | 1.º y 2.º de secundaria | 6 |
+| VII | 3.º a 5.º de secundaria | 6 |
+
+**Secundaria está empezada, no terminada**: un módulo por curso y ciclo es un
+punto de partida, no un año lectivo. Primaria tiene cuatro por curso.
+
+Cada estudiante ve solo los módulos de su ciclo, deducido del nivel y grado de
+su aula (`cicloDeAula()`). El docente y el administrador los ven todos.
+
+### Ciclo V — primaria
 
 | Curso | Módulos |
 |---|---|
@@ -12,10 +26,22 @@ actividad, quiz, entregable— y tres preguntas de opción múltiple.
 | Inglés | My Moquegua · The market · Nature around us · Where is the plaza? |
 | Ciencia | El cielo de Moquegua · El viaje del agua · La tierra que se mueve |
 
-Los quince primeros vienen en `schema.sql`. Los ocho añadidos después, en
-`migrations/010_mas_temas.sql`, que se puede volver a ejecutar sin duplicar
-nada: las claves únicas `uk_modulo_curso_titulo` y `uk_quiz_paso_orden` lo
-impiden.
+### Ciclos VI y VII — secundaria
+
+| Curso | Ciclo VI | Ciclo VII |
+|---|---|---|
+| Matemática | El recibo de la luz | Cuánto cuesta el agua |
+| Comunicación | Lo que dice el titular | El argumento y la falacia |
+| Arte | El color de la protesta | Documentar el valle |
+| Ingeniería | El brazo hidráulico | El puente de la quebrada |
+| Inglés | My town, my rules | Pitching Moquegua |
+| Ciencia | La huella del agua | Por qué tiembla y cuánto |
+
+Los quince primeros vienen en `schema.sql`; los ocho siguientes en
+`migrations/010_mas_temas.sql`; los doce de secundaria en
+`migrations/014_secundaria.sql`. Todas se pueden volver a ejecutar sin
+duplicar nada: las claves únicas `uk_modulo_curso_titulo` y
+`uk_quiz_paso_orden` lo impiden.
 
 Ciencia hacía falta de verdad. El asistente de estudio ya declaraba que
 respondía de ciencia y astronomía, y StellarScribe forma parte del proyecto,
@@ -79,9 +105,15 @@ SELECT q.id, LEFT(q.texto, 50) FROM quiz_preguntas q
 
 ## Quién ve qué
 
-Los módulos entran al catálogo general y el estudiante los ve todos, en
-orden, desbloqueándose uno tras otro. `aula_modulos` no controla el acceso:
-sirve para que el docente planifique fechas en su aula.
+El estudiante ve los módulos **de su ciclo**, en orden, desbloqueándose uno
+tras otro. El ciclo sale del aula: primaria es ciclo V; 1.º y 2.º de
+secundaria, ciclo VI; de 3.º a 5.º, ciclo VII. Un módulo marcado `ambos` lo ve
+todo el mundo.
 
-Por eso la migración 010 no asigna nada a ninguna aula. Qué se trabaja y
-cuándo lo decide el docente.
+Sin ese filtro, al entrar secundaria un estudiante de 5.º de primaria vería
+módulos de 4.º de secundaria mezclados con los suyos, y su porcentaje de
+avance se calcularía contra contenido que nunca va a abrir.
+
+`aula_modulos` no controla el acceso: sirve para que el docente planifique
+fechas en su aula. Por eso las migraciones de contenido no asignan nada a
+ninguna aula — qué se trabaja y cuándo lo decide el docente.

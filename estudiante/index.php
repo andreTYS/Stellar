@@ -8,17 +8,23 @@ $user           = currentUser();
 $pdo            = getDB();
 
 // ── All courses + progress in ONE consolidated query ──────────
+// Se cuentan solo los módulos del ciclo del estudiante. Si no, el
+// porcentaje de avance se calcularía contra módulos de secundaria que
+// él nunca va a ver, y nadie llegaría al 100%.
+$ciclo = cicloDeEstudiante($estudianteId);
+
 $cursosData = $pdo->prepare("
     SELECT c.id, c.nombre, c.descripcion, c.color_hex,
            COUNT(DISTINCT m.id)                          AS total_modulos,
            COUNT(DISTINCT CASE WHEN pe.completado=1 THEN pe.modulo_id END) AS completados
     FROM cursos c
-    LEFT JOIN modulos m ON m.curso_id = c.id
+    LEFT JOIN modulos m
+           ON m.curso_id = c.id AND m.activo = 1 AND m.grado_ciclo IN (?, 'ambos')
     LEFT JOIN progreso_estudiante pe ON pe.modulo_id = m.id AND pe.estudiante_id = ?
     GROUP BY c.id, c.nombre, c.descripcion, c.color_hex
     ORDER BY c.id
 ");
-$cursosData->execute([$estudianteId]);
+$cursosData->execute([$ciclo, $estudianteId]);
 $cursosData = $cursosData->fetchAll();
 
 $modulosTotalGlobal      = array_sum(array_column($cursosData, 'total_modulos'));
