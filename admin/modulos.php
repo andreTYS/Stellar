@@ -118,7 +118,7 @@ require_once __DIR__ . '/../includes/header.php';
     <?php foreach ($cursos as $c): ?>
     <a href="modulos.php?curso=<?= $c['id'] ?>" style="text-decoration:none;">
       <span style="display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:600; background:<?= $cursoId==$c['id']?$c['color_hex'].'33':'var(--bg-elevated)' ?>; color:<?= $cursoId==$c['id']?$c['color_hex']:'var(--text-secondary)' ?>; border:1px solid <?= $cursoId==$c['id']?$c['color_hex'].'55':'var(--bg-border)' ?>;">
-        <?= $c['icono'] ?> <?= sanitize($c['nombre']) ?>
+        <?= iconoCurso($c['icono']) ?> <?= sanitize($c['nombre']) ?>
       </span>
     </a>
     <?php endforeach; ?>
@@ -140,7 +140,7 @@ require_once __DIR__ . '/../includes/header.php';
             </td>
             <td>
               <span style="background:<?= $m['color_hex'] ?>22; color:<?= $m['color_hex'] ?>; border:1px solid <?= $m['color_hex'] ?>44; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;">
-                <?= $m['icono'] ?> <?= sanitize($m['curso_nombre']) ?>
+                <?= iconoCurso($m['icono']) ?> <?= sanitize($m['curso_nombre']) ?>
               </span>
             </td>
             <td style="color:var(--blue); font-weight:700; text-align:center;"><?= $m['pasos_count'] ?>/4</td>

@@ -279,7 +279,7 @@ require_once __DIR__ . '/../includes/header.php';
         <tr>
           <td>
             <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-size:18px"><?= $c['icono'] ?></span>
+              <span><?= iconoCurso($c['icono'], 18) ?></span>
               <span style="font-weight:600;font-size:13px"><?= sanitize($c['nombre']) ?></span>
             </div>
           </td>

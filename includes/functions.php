@@ -537,6 +537,69 @@ function aulaLabel(array $aula): string
     return $texto;
 }
 
+// ── Iconos ───────────────────────────────────────────────────
+/**
+ * Icono de un curso, listo para imprimir.
+ *
+ * cursos.icono guarda el NOMBRE del icono de Lucide ('calculator',
+ * 'telescope'…), no un emoji. Media plataforma lo imprimía tal cual y
+ * en pantalla salía «calculator Matemática».
+ *
+ * Se resuelve con Lucide, que ya está cargado en todas las páginas, en
+ * vez de con la tabla de rutas SVG de iconoLucideCurso(): esa solo
+ * conoce seis iconos y los demás caían en el de libro.
+ */
+function iconoCurso(?string $slug, int $px = 16): string
+{
+    $slug = preg_replace('/[^a-z0-9-]/', '', strtolower((string)$slug));
+    if ($slug === '') $slug = 'book-open';
+    return '<i data-lucide="' . $slug . '" style="width:' . $px . 'px;height:' . $px
+         . 'px;vertical-align:-2px"></i>';
+}
+
+// ── Rúbricas ─────────────────────────────────────────────────
+/**
+ * Criterios de un módulo, en orden. Vacío si no tiene rúbrica.
+ */
+function getCriteriosByModulo(int $moduloId): array
+{
+    $stmt = getDB()->prepare(
+        'SELECT id, orden, nombre, descripcion, puntos_max
+           FROM rubrica_criterios WHERE modulo_id = ? ORDER BY orden'
+    );
+    $stmt->execute([$moduloId]);
+    return $stmt->fetchAll();
+}
+
+/**
+ * Puntos ya asignados a un entregable, indexados por criterio.
+ */
+function getNotasCriterio(int $entregableId): array
+{
+    $stmt = getDB()->prepare(
+        'SELECT criterio_id, puntos, comentario FROM entregable_criterios WHERE entregable_id = ?'
+    );
+    $stmt->execute([$entregableId]);
+    $out = [];
+    foreach ($stmt->fetchAll() as $r) $out[(int)$r['criterio_id']] = $r;
+    return $out;
+}
+
+/**
+ * Convierte la suma de la rúbrica a las estrellas de 0 a 5 que ya
+ * usaban el portafolio, las notificaciones y el certificado.
+ *
+ * Se redondea hacia arriba a propósito: con techo, cualquier punto
+ * conseguido vale al menos una estrella, y solo el cero absoluto deja
+ * el entregable sin calificar. Con round(), un trabajo con 1 de 12
+ * puntos daría 0 y se vería igual que uno sin revisar.
+ */
+function rubricaEstrellas(int $suma, int $maximo): int
+{
+    if ($maximo <= 0 || $suma <= 0) return 0;
+    return min(5, (int)ceil($suma / $maximo * 5));
+}
+
 // ── Formato ──────────────────────────────────────────────────
 function formatDate(string $date): string
 {

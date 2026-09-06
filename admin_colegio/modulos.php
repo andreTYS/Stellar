@@ -119,7 +119,7 @@ require_once __DIR__ . '/../includes/header.php';
                   <td style="font-weight:600;"><?= sanitize($am['titulo']) ?></td>
                   <td>
                     <span style="background:<?= $am['color_hex'] ?>22;color:<?= $am['color_hex'] ?>;border:1px solid <?= $am['color_hex'] ?>44;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;">
-                      <?= $am['icono'] ?> <?= sanitize($am['curso_nombre']) ?>
+                      <?= iconoCurso($am['icono']) ?> <?= sanitize($am['curso_nombre']) ?>
                     </span>
                   </td>
                   <td>

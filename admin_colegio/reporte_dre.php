@@ -172,7 +172,7 @@ require_once __DIR__ . '/../includes/header.php';
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;">
       <?php foreach ($porCurso as $c): ?>
       <div style="background:var(--bg-elevated);border-radius:12px;padding:16px;border:1px solid var(--bg-border);text-align:center;">
-        <div style="font-size:28px;margin-bottom:8px;"><?= $c['icono'] ?></div>
+        <div style="margin-bottom:8px;"><?= iconoCurso($c['icono'], 28) ?></div>
         <p style="font-size:13px;font-weight:600;color:<?= $c['color_hex'] ?>;margin-bottom:10px;"><?= sanitize($c['nombre']) ?></p>
         <p style="font-size:24px;font-weight:800;color:var(--text-primary);font-family:'Syne',sans-serif;"><?= $c['completaciones'] ?></p>
         <p style="font-size:11px;color:var(--text-secondary);">completaciones</p>

@@ -96,7 +96,7 @@ require_once __DIR__ . '/../includes/header.php';
   <?php foreach ($porCurso as $cid => $curso): ?>
   <button onclick="filterPortfolio(<?= (int)$cid ?>)" class="chip-filter" data-filter="<?= (int)$cid ?>"
           style="--chip-color:<?= htmlspecialchars($curso['color']) ?>">
-    <?= $curso['icono'] ?> <?= sanitize($curso['nombre']) ?> (<?= count($curso['items']) ?>)
+    <?= iconoCurso($curso['icono']) ?> <?= sanitize($curso['nombre']) ?> (<?= count($curso['items']) ?>)
   </button>
   <?php endforeach; ?>
 </div>
@@ -123,13 +123,13 @@ require_once __DIR__ . '/../includes/header.php';
 <!-- Courses with entregables -->
 <?php foreach ($porCurso as $cursoId => $curso):
   $color = htmlspecialchars($curso['color'], ENT_QUOTES, 'UTF-8');
-  $icono = htmlspecialchars($curso['icono'], ENT_QUOTES, 'UTF-8');
+  $icono = iconoCurso($curso['icono'], 28);
 ?>
 <section class="mb-32 portfolio-section" data-course="<?= (int)$cursoId ?>">
 
   <!-- Course section header -->
   <div class="flex items-center gap-12 mb-16" style="padding-bottom:14px;border-bottom:2px solid <?= $color ?>33;">
-    <span style="font-size:28px;flex-shrink:0;"><?= $icono ?></span>
+    <span style="flex-shrink:0;color:<?= $color ?>"><?= $icono ?></span>
     <div class="flex-1">
       <h2 style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:<?= $color ?>;">
         <?= sanitize($curso['nombre']) ?>
@@ -211,7 +211,32 @@ require_once __DIR__ . '/../includes/header.php';
           <p style="font-size:13px;color:var(--text-primary);line-height:1.5;"><?= sanitize($ent['comentario_docente']) ?></p>
           <?php if ($calific > 0): ?>
           <div class="stars-row mt-8" style="font-size:16px;">
-            <?= estrellasHtml($calific) ?>
+            <?php // La calificación del entregable va de 0 a 5; la del quiz,
+                  // de 0 a 3, que es el máximo por defecto del helper. Sin
+                  // pasarlo, un 5 se dibujaba como 3 estrellas de 3. ?>
+            <?= estrellasHtml($calific, 5) ?>
+          </div>
+          <?php endif; ?>
+
+          <?php
+            // El desglose de la rúbrica: sin él, el estudiante ve una
+            // nota y no sabe en qué falló, que es justo lo que sirve
+            // para mejorar el siguiente trabajo.
+            $criterios = getCriteriosByModulo((int)$ent['modulo_id']);
+            $notas     = $criterios ? getNotasCriterio((int)$ent['id']) : [];
+          ?>
+          <?php if ($criterios && $notas): ?>
+          <div style="margin-top:10px;border-top:1px solid var(--bg-border);padding-top:8px;">
+            <?php foreach ($criterios as $c):
+              $p   = (int)($notas[$c['id']]['puntos'] ?? 0);
+              $max = (int)$c['puntos_max'];
+              $col = $max > 0 && $p >= $max ? 'var(--green)' : ($p > 0 ? 'var(--gold)' : 'var(--danger)');
+            ?>
+            <div style="display:flex;justify-content:space-between;gap:8px;font-size:11px;margin-bottom:3px;">
+              <span style="color:var(--text-secondary);"><?= sanitize($c['nombre']) ?></span>
+              <span style="color:<?= $col ?>;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;"><?= $p ?>/<?= $max ?></span>
+            </div>
+            <?php endforeach; ?>
           </div>
           <?php endif; ?>
         </div>

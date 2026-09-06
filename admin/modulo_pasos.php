@@ -78,7 +78,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         redirect(BASE_URL . '/admin/modulo_pasos.php?modulo_id=' . $moduloId);
     }
+
+    // ── Rúbrica del módulo ────────────────────────────────────
+    // Se guardan los cuatro (o los que haya) de una vez: editar de uno
+    // en uno obliga a recargar por criterio para un cambio de redacción.
+    if ($action === 'save_rubrica') {
+        $nombres  = $_POST['crit_nombre']  ?? [];
+        $descs    = $_POST['crit_desc']    ?? [];
+        $maximos  = $_POST['crit_max']     ?? [];
+
+        $upd = $pdo->prepare(
+            'UPDATE rubrica_criterios SET nombre=?, descripcion=?, puntos_max=?
+              WHERE id=? AND modulo_id=?'
+        );
+        foreach ($nombres as $cid => $nombre) {
+            $nombre = trim((string)$nombre);
+            if ($nombre === '') continue;   // vacío = no se toca
+            $upd->execute([
+                mb_substr($nombre, 0, 120),
+                mb_substr(trim((string)($descs[$cid] ?? '')), 0, 255) ?: null,
+                max(1, min(10, (int)($maximos[$cid] ?? 3))),
+                (int)$cid,
+                $moduloId,   // ata el criterio a ESTE módulo: sin esto se
+                             // podría editar la rúbrica de otro por id.
+            ]);
+        }
+        setFlash('success', 'Rúbrica guardada.');
+        redirect(BASE_URL . '/admin/modulo_pasos.php?modulo_id=' . $moduloId);
+    }
+
+    if ($action === 'add_criterio') {
+        $siguiente = (int)$pdo->query('SELECT COALESCE(MAX(orden),0)+1 FROM rubrica_criterios WHERE modulo_id=' . (int)$moduloId)->fetchColumn();
+        $pdo->prepare('INSERT INTO rubrica_criterios (modulo_id, orden, nombre, puntos_max) VALUES (?,?,?,3)')
+            ->execute([$moduloId, $siguiente, 'Criterio nuevo']);
+        setFlash('success', 'Criterio añadido.');
+        redirect(BASE_URL . '/admin/modulo_pasos.php?modulo_id=' . $moduloId);
+    }
+
+    if ($action === 'del_criterio') {
+        $pdo->prepare('DELETE FROM rubrica_criterios WHERE id=? AND modulo_id=?')
+            ->execute([(int)($_POST['criterio_id'] ?? 0), $moduloId]);
+        setFlash('success', 'Criterio eliminado.');
+        redirect(BASE_URL . '/admin/modulo_pasos.php?modulo_id=' . $moduloId);
+    }
 }
+
+$criterios = getCriteriosByModulo($moduloId);
 
 $pasos = $pdo->prepare('SELECT * FROM modulo_pasos WHERE modulo_id=? ORDER BY numero_paso');
 $pasos->execute([$moduloId]);
@@ -247,14 +292,16 @@ require_once __DIR__ . '/../includes/header.php';
                   style="font-family:'Courier New',monospace;font-size:13px;resize:vertical;tab-size:2"
                   spellcheck="false"><?= htmlspecialchars($contenidoPretty, ENT_QUOTES) ?></textarea>
         <div style="font-size:11px;color:var(--text-muted);margin-top:6px">
+          <?php /* Estas ayudas listaban campos que la vista del estudiante
+                   no lee: quien las siguiera escribía un paso invisible. */ ?>
           <?php if ($paso['tipo'] === 'historia'): ?>
-          Campos: <code>titulo</code>, <code>texto</code> (HTML), <code>imagen_url</code>
+          Campos: <code>narrativa</code>, <code>pregunta_disparadora</code>, <code>conceptos_clave</code> (lista), <code>dato_curioso</code>
           <?php elseif ($paso['tipo'] === 'actividad'): ?>
-          Campos: <code>instruccion</code>, <code>materiales</code> (array de strings)
+          Campos: <code>materiales</code> (lista), <code>instrucciones</code> (lista), <code>minutos</code>
           <?php elseif ($paso['tipo'] === 'quiz'): ?>
-          Campos: <code>descripcion</code>, <code>preguntas</code> (array con <code>pregunta</code>, <code>opciones</code>, <code>correcta</code>)
+          Las preguntas viven en la tabla <code>quiz_preguntas</code>, no en este JSON.
           <?php elseif ($paso['tipo'] === 'entregable'): ?>
-          Campos: <code>instruccion</code>, <code>tipo_archivo</code> (imagen/pdf/link)
+          Campos: <code>consigna</code>, <code>formatos</code> (lista), <code>instrucciones</code>
           <?php endif; ?>
         </div>
       </div>
@@ -269,6 +316,84 @@ require_once __DIR__ . '/../includes/header.php';
   <?php endforeach; ?>
 </div>
 <?php endif; ?>
+
+<!-- ── Rúbrica del módulo ──────────────────────────────────── -->
+<div class="card" style="margin-top:24px">
+  <div class="card-header">
+    <h2 class="card-title">Rúbrica</h2>
+    <p style="font-size:12px;color:var(--text-muted);margin-top:2px">
+      Con lo que el docente califica el entregable. La suma se convierte
+      en las estrellas que ve el estudiante.
+    </p>
+  </div>
+
+  <?php if ($criterios): ?>
+  <form method="POST">
+    <?= csrfField() ?>
+    <input type="hidden" name="action" value="save_rubrica">
+
+    <?php $totalMax = 0; foreach ($criterios as $c): $totalMax += (int)$c['puntos_max']; ?>
+    <div style="display:grid;grid-template-columns:1fr 2fr 70px 40px;gap:10px;align-items:start;margin-bottom:10px">
+      <div>
+        <label class="sr-only" for="cn<?= (int)$c['id'] ?>">Nombre del criterio</label>
+        <input id="cn<?= (int)$c['id'] ?>" class="form-control" type="text"
+               name="crit_nombre[<?= (int)$c['id'] ?>]" maxlength="120"
+               value="<?= htmlspecialchars($c['nombre'], ENT_QUOTES) ?>">
+      </div>
+      <div>
+        <label class="sr-only" for="cd<?= (int)$c['id'] ?>">Qué se espera</label>
+        <input id="cd<?= (int)$c['id'] ?>" class="form-control" type="text"
+               name="crit_desc[<?= (int)$c['id'] ?>]" maxlength="255"
+               placeholder="Qué se espera para dar el puntaje completo"
+               value="<?= htmlspecialchars($c['descripcion'] ?? '', ENT_QUOTES) ?>">
+      </div>
+      <div>
+        <label class="sr-only" for="cm<?= (int)$c['id'] ?>">Puntos máximos</label>
+        <input id="cm<?= (int)$c['id'] ?>" class="form-control" type="number" min="1" max="10"
+               name="crit_max[<?= (int)$c['id'] ?>]" value="<?= (int)$c['puntos_max'] ?>">
+      </div>
+      <div>
+        <button type="submit" form="del<?= (int)$c['id'] ?>" class="btn btn-ghost btn-sm"
+                title="Eliminar criterio" aria-label="Eliminar el criterio <?= htmlspecialchars($c['nombre'], ENT_QUOTES) ?>">
+          <i data-lucide="trash-2" style="width:14px;height:14px"></i>
+        </button>
+      </div>
+    </div>
+    <?php endforeach; ?>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">
+      <span style="font-size:12px;color:var(--text-muted)">Total: <?= $totalMax ?> puntos</span>
+      <button type="submit" class="btn btn-primary">
+        <i data-lucide="save" style="width:15px;height:15px"></i> Guardar rúbrica
+      </button>
+    </div>
+  </form>
+
+  <?php // Los formularios de borrado van fuera del de edición: HTML no
+        // permite anidarlos, y con form="…" el botón de arriba los usa. ?>
+  <?php foreach ($criterios as $c): ?>
+  <form method="POST" id="del<?= (int)$c['id'] ?>" style="display:none">
+    <?= csrfField() ?>
+    <input type="hidden" name="action" value="del_criterio">
+    <input type="hidden" name="criterio_id" value="<?= (int)$c['id'] ?>">
+  </form>
+  <?php endforeach; ?>
+
+  <?php else: ?>
+  <p style="color:var(--text-secondary);font-size:13px">
+    Este módulo no tiene rúbrica. Sin ella, el docente califica con un
+    número suelto de estrellas.
+  </p>
+  <?php endif; ?>
+
+  <form method="POST" style="margin-top:12px">
+    <?= csrfField() ?>
+    <input type="hidden" name="action" value="add_criterio">
+    <button type="submit" class="btn btn-secondary btn-sm">
+      <i data-lucide="plus" style="width:14px;height:14px"></i> Añadir criterio
+    </button>
+  </form>
+</div>
 
 <?php
 // ── Reordenar pasos: arrastrar y soltar + flechas (teclado/tablet) ──

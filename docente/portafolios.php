@@ -12,7 +12,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comentar'])) {
     verifyCsrf();
     $entregableId = (int)$_POST['entregable_id'];
     $comentario   = sanitize($_POST['comentario']);
-    $calificacion = (int)$_POST['calificacion'];
+
+    // ── Rúbrica ───────────────────────────────────────────────
+    // Antes se guardaba un número suelto de 1 a 5 y no quedaba dicho
+    // por qué: dos docentes calificaban el mismo trabajo con criterios
+    // distintos y el estudiante no sabía en qué había fallado.
+    //
+    // Los criterios se leen de la base y NO del formulario: si vinieran
+    // del cliente, cualquiera podría inventarse un criterio o subir el
+    // puntaje máximo.
+    $stmtMod = $pdo->prepare('SELECT modulo_id FROM entregables WHERE id = ?');
+    $stmtMod->execute([$entregableId]);
+    $moduloId  = (int)$stmtMod->fetchColumn();
+    $criterios = $moduloId ? getCriteriosByModulo($moduloId) : [];
+
+    $suma = 0;
+    $maximo = 0;
+
+    if ($criterios) {
+        $puntosEnviados = $_POST['criterio'] ?? [];
+        $ins = $pdo->prepare(
+            'INSERT INTO entregable_criterios (entregable_id, criterio_id, puntos)
+             VALUES (?, ?, ?)
+             ON DUPLICATE KEY UPDATE puntos = VALUES(puntos)'
+        );
+        foreach ($criterios as $c) {
+            $max = (int)$c['puntos_max'];
+            $maximo += $max;
+            // Se recorta al máximo del criterio: el select del formulario
+            // ya lo limita, pero un POST a mano no.
+            $p = max(0, min($max, (int)($puntosEnviados[$c['id']] ?? 0)));
+            $suma += $p;
+            $ins->execute([$entregableId, (int)$c['id'], $p]);
+        }
+        $calificacion = rubricaEstrellas($suma, $maximo);
+    } else {
+        // Módulo sin rúbrica: se conserva el desplegable de estrellas.
+        $calificacion = max(0, min(5, (int)($_POST['calificacion'] ?? 0)));
+    }
+
     $pdo->prepare("UPDATE entregables SET comentario_docente=?, calificacion=?, comentado_por=? WHERE id=?")
         ->execute([$comentario, $calificacion, $user['id'], $entregableId]);
 
@@ -97,7 +135,7 @@ require_once __DIR__ . '/../includes/header.php';
         <div class="card" style="padding:20px;">
           <!-- Course badge -->
           <span style="background:<?= $ent['color_hex'] ?>22; color:<?= $ent['color_hex'] ?>; border:1px solid <?= $ent['color_hex'] ?>44; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;">
-            <?= $ent['icono'] ?> <?= sanitize($ent['curso_nombre']) ?>
+            <?= iconoCurso($ent['icono']) ?> <?= sanitize($ent['curso_nombre']) ?>
           </span>
           <h3 style="font-size:15px; font-weight:600; color:var(--text-primary); margin:10px 0 4px;"><?= sanitize($ent['modulo_titulo']) ?></h3>
           <p style="font-size:11px; color:var(--text-secondary); margin-bottom:12px;">
@@ -147,6 +185,35 @@ require_once __DIR__ . '/../includes/header.php';
             <input type="hidden" name="entregable_id" value="<?= $ent['id'] ?>">
             <textarea name="comentario" rows="2" placeholder="Escribe un comentario..."
               style="width:100%; background:var(--bg-elevated); border:1px solid var(--bg-border); border-radius:8px; padding:8px; color:var(--text-primary); font-size:13px; resize:vertical; margin-bottom:8px;"><?= sanitize($ent['comentario_docente'] ?? '') ?></textarea>
+            <?php
+              $criterios = getCriteriosByModulo((int)$ent['modulo_id']);
+              $notas     = $criterios ? getNotasCriterio((int)$ent['id']) : [];
+            ?>
+
+            <?php if ($criterios): ?>
+            <div style="border:1px solid var(--bg-border); border-radius:8px; padding:10px; margin-bottom:10px;">
+              <div style="font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); margin-bottom:8px;">Rúbrica</div>
+              <?php foreach ($criterios as $c): $max = (int)$c['puntos_max']; ?>
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                <label for="c<?= (int)$ent['id'] ?>_<?= (int)$c['id'] ?>"
+                       style="flex:1; font-size:12px; color:var(--text-primary);"
+                       title="<?= sanitize($c['descripcion'] ?? '') ?>">
+                  <?= sanitize($c['nombre']) ?>
+                </label>
+                <select id="c<?= (int)$ent['id'] ?>_<?= (int)$c['id'] ?>"
+                        name="criterio[<?= (int)$c['id'] ?>]"
+                        style="background:var(--bg-elevated); border:1px solid var(--bg-border); color:var(--text-primary); border-radius:6px; padding:4px 6px; font-size:12px;">
+                  <?php for ($p = 0; $p <= $max; $p++): ?>
+                  <option value="<?= $p ?>" <?= (int)($notas[$c['id']]['puntos'] ?? 0) === $p ? 'selected' : '' ?>><?= $p ?></option>
+                  <?php endfor; ?>
+                </select>
+                <span style="font-size:11px; color:var(--text-muted); width:24px;">/<?= $max ?></span>
+              </div>
+              <?php endforeach; ?>
+            </div>
+            <button type="submit" class="btn-primary" style="width:100%; padding:8px; font-size:13px;">Guardar calificación</button>
+
+            <?php else: ?>
             <div style="display:flex; align-items:center; gap:10px;">
               <select name="calificacion" style="background:var(--bg-elevated); border:1px solid var(--bg-border); color:var(--text-primary); border-radius:6px; padding:6px;">
                 <option value="0">Sin calificar</option>
@@ -158,6 +225,7 @@ require_once __DIR__ . '/../includes/header.php';
               </select>
               <button type="submit" class="btn-primary" style="flex:1; padding:8px; font-size:13px;">Guardar</button>
             </div>
+            <?php endif; ?>
           </form>
         </div>
         <?php endforeach; ?>

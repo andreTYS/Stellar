@@ -27,7 +27,7 @@ require_once __DIR__ . '/../includes/header.php';
       <div style="height:6px; background:<?= $c['color_hex'] ?>;"></div>
       <div style="padding:24px;">
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
-          <span style="font-size:32px;"><?= $c['icono'] ?></span>
+          <span><?= iconoCurso($c['icono'], 32) ?></span>
           <div>
             <h3 style="font-family:'Syne',sans-serif; font-size:18px; font-weight:800; color:var(--text-primary);"><?= sanitize($c['nombre']) ?></h3>
             <p style="font-size:12px; color:<?= $c['color_hex'] ?>; font-weight:700;">/<?= $c['slug'] ?></p>
