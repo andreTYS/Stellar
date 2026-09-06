@@ -78,13 +78,14 @@ function chatbotDescifrar(?string $blob): ?string
  * Devuelve la configuración del asistente para un colegio, con la clave
  * ya descifrada. null si el colegio no lo tiene activo o configurado.
  */
-function chatbotConfigColegio(?int $colegioId): ?array
+function chatbotConfigColegio(?int $colegioId, string $rol = 'estudiante'): ?array
 {
     if (!$colegioId) return null;
 
     try {
         $stmt = getDB()->prepare(
-            'SELECT chatbot_clave, chatbot_modelo, chatbot_activo, chatbot_tope_dia
+            'SELECT chatbot_clave, chatbot_modelo, chatbot_activo,
+                    chatbot_tope_dia, chatbot_tope_dia_docente
                FROM colegios WHERE id = ? AND activo = 1'
         );
         $stmt->execute([$colegioId]);
@@ -100,10 +101,18 @@ function chatbotConfigColegio(?int $colegioId): ?array
     $clave = chatbotDescifrar($fila['chatbot_clave']);
     if ($clave === null) return null;
 
+    // El docente tiene su propio tope: son menos personas, pero cada
+    // consulta de planificación es más larga y cara que una duda de
+    // estudiante. Compartir el mismo número descuadraría cualquiera de
+    // los dos.
+    $tope = $rol === 'docente'
+        ? (int)($fila['chatbot_tope_dia_docente'] ?? 15)
+        : (int)$fila['chatbot_tope_dia'];
+
     return [
         'api_key'  => $clave,
         'modelo'   => $fila['chatbot_modelo'] ?: CHATBOT_MODELO_DEFECTO,
-        'tope_dia' => (int)$fila['chatbot_tope_dia'],
+        'tope_dia' => $tope,
     ];
 }
 
@@ -132,6 +141,52 @@ function chatbotSystem(array $usuario, ?string $contextoModulo = null): string
 {
     $nombre = $usuario['nombre'] ?? 'estudiante';
     $rol    = $usuario['rol'] ?? 'estudiante';
+
+    // El docente no viene a estudiar: viene a preparar la clase. Darle
+    // el prompt del estudiante haría que le explicaran las fracciones en
+    // vez de ayudarle a enseñarlas, y que le negaran ejercicios resueltos
+    // que sí necesita para su solucionario.
+    if ($rol === 'docente') {
+        $texto = <<<TXT
+Eres el asistente de aula de INNOVA-STEAM, una plataforma educativa STEAM
+para colegios de Moquegua, Perú. Hablas con {$nombre}, docente.
+
+EN QUÉ AYUDAS
+Preparar y dar clase de matemática, comunicación, arte, ingeniería,
+inglés, ciencia y astronomía —incluido el material de StellarScribe sobre
+el Sol y el clima espacial— y usar la plataforma. En concreto: adaptar
+una actividad a los materiales que hay en el aula, dividir un módulo en
+sesiones, proponer criterios de rúbrica, anticipar en qué se atascan los
+estudiantes, ideas de refuerzo para quien va atrasado y de ampliación
+para quien va adelantado, y preguntas para abrir un tema.
+
+EN QUÉ NO
+Cualquier cosa ajena a la enseñanza de esas áreas o al uso de la
+plataforma. Tampoco redactas informes de conducta ni valoraciones sobre
+un estudiante concreto: eso lo decide el docente, no un modelo. Si te lo
+piden, dilo en una frase y ofrece ayuda con la parte pedagógica.
+
+CÓMO RESPONDES
+- En español, tratando de usted, con el vocabulario del CNEB peruano
+  cuando encaje (competencias, capacidades, desempeños).
+- Concreto y accionable: pasos, tiempos y materiales que existan en un
+  aula de Moquegua. Nada de "fomente el pensamiento crítico" a secas.
+- Ancla lo que propongas en la realidad local —el mercado, el valle, los
+  sismos, el cielo despejado— igual que el contenido de la plataforma.
+- A diferencia del asistente de los estudiantes, aquí SÍ puedes dar
+  procedimientos y respuestas completas: el docente necesita el
+  solucionario para corregir.
+- Si no sabes algo con seguridad, dilo. No inventes normativa, cifras ni
+  fuentes: una cita falsa de una norma del Minedu le crea un problema
+  real.
+TXT;
+
+        if ($contextoModulo !== null && trim($contextoModulo) !== '') {
+            $modulo = mb_substr(trim($contextoModulo), 0, 300);
+            $texto .= "\n\nEstá trabajando sobre el módulo \"{$modulo}\".";
+        }
+        return $texto;
+    }
 
     $texto = <<<TXT
 Eres el asistente de estudio de INNOVA-STEAM, una plataforma educativa

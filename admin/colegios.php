@@ -18,6 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'chatb
     $clave     = trim((string)($_POST['api_key'] ?? ''));
     $modelo    = trim((string)($_POST['modelo'] ?? '')) ?: CHATBOT_MODELO_DEFECTO;
     $tope      = max(1, min(500, (int)($_POST['tope_dia'] ?? 30)));
+    // Tope aparte para docentes: son menos personas, pero cada consulta
+    // de planificación es más larga y cara que una duda de estudiante.
+    $topeDoc   = max(1, min(500, (int)($_POST['tope_dia_docente'] ?? 15)));
     $activo    = isset($_POST['activo']) ? 1 : 0;
 
     if ($colegioId <= 0) {
@@ -37,15 +40,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'chatb
             $pista   = substr($clave, -4);
             $pdo->prepare(
                 'UPDATE colegios SET chatbot_clave=?, chatbot_pista=?, chatbot_modelo=?,
-                        chatbot_tope_dia=?, chatbot_activo=? WHERE id=?'
-            )->execute([$cifrada, $pista, $modelo, $tope, $activo, $colegioId]);
+                        chatbot_tope_dia=?, chatbot_tope_dia_docente=?, chatbot_activo=? WHERE id=?'
+            )->execute([$cifrada, $pista, $modelo, $tope, $topeDoc, $activo, $colegioId]);
             $msg = 'success:Clave guardada y cifrada.';
         }
     } else {
         // Sin clave nueva: solo se actualizan los ajustes.
         $pdo->prepare(
-            'UPDATE colegios SET chatbot_modelo=?, chatbot_tope_dia=?, chatbot_activo=? WHERE id=?'
-        )->execute([$modelo, $tope, $activo, $colegioId]);
+            'UPDATE colegios SET chatbot_modelo=?, chatbot_tope_dia=?,
+                    chatbot_tope_dia_docente=?, chatbot_activo=? WHERE id=?'
+        )->execute([$modelo, $tope, $topeDoc, $activo, $colegioId]);
         $msg = 'success:Ajustes del asistente actualizados.';
     }
 }
@@ -196,9 +200,17 @@ require_once __DIR__ . '/../includes/header.php';
 
                   <div style="width:110px">
                     <label for="tope-<?= (int)$col['id'] ?>"
-                           style="display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:4px">Tope/día</label>
+                           style="display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:4px">Tope/día est.</label>
                     <input id="tope-<?= (int)$col['id'] ?>" type="number" name="tope_dia" min="1" max="500"
                            value="<?= (int)($col['chatbot_tope_dia'] ?? 30) ?>"
+                           style="width:100%;background:var(--bg-surface);border:1px solid var(--bg-border);color:var(--text-primary);border-radius:8px;padding:7px 10px;font-size:12px">
+                  </div>
+
+                  <div style="width:110px">
+                    <label for="topedoc-<?= (int)$col['id'] ?>"
+                           style="display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:4px">Tope/día doc.</label>
+                    <input id="topedoc-<?= (int)$col['id'] ?>" type="number" name="tope_dia_docente" min="1" max="500"
+                           value="<?= (int)($col['chatbot_tope_dia_docente'] ?? 15) ?>"
                            style="width:100%;background:var(--bg-surface);border:1px solid var(--bg-border);color:var(--text-primary);border-radius:8px;padding:7px 10px;font-size:12px">
                   </div>
 

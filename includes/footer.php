@@ -3,10 +3,16 @@
 </div><!-- /.layout -->
 
 <?php
-// ── Asistente de estudio ─────────────────────────────────────────
-// Solo para quien estudia. El resto de roles no lo necesita, y cada
-// consulta gasta saldo del colegio.
-if (in_array(currentRole(), ['estudiante', 'practicante'], true)):
+// ── Asistente ────────────────────────────────────────────────────
+// Estudiantes y practicantes para estudiar; el docente para preparar
+// clase, con otro prompt y otro tope. Los demás roles no lo necesitan y
+// cada consulta gasta saldo del colegio.
+//
+// Esto solo decide si se pinta el widget: quién puede consultar de
+// verdad lo comprueba api/chat.php.
+$rolAsistente = currentRole();
+if (in_array($rolAsistente, ['estudiante', 'practicante', 'docente'], true)):
+    $esDocente = $rolAsistente === 'docente';
 ?>
 <div x-data="asistente()" x-cloak>
   <button type="button" class="asistente-boton" @click="abrir = !abrir"
@@ -19,7 +25,7 @@ if (in_array(currentRole(), ['estudiante', 'practicante'], true)):
        role="dialog" aria-label="Asistente de estudio">
     <header>
       <div>
-        <strong>Asistente de estudio</strong>
+        <strong><?= $esDocente ? 'Asistente de aula' : 'Asistente de estudio' ?></strong>
         <span x-show="restantes !== null" x-text="restantes + ' preguntas hoy'"></span>
       </div>
       <button type="button" @click="abrir = false" aria-label="Cerrar">&times;</button>
@@ -28,9 +34,15 @@ if (in_array(currentRole(), ['estudiante', 'practicante'], true)):
     <div class="asistente-hilo" x-ref="hilo">
       <template x-if="turnos.length === 0">
         <p class="asistente-vacio">
+          <?php if ($esDocente): ?>
+          Pídame adaptar una actividad a los materiales que tenga, dividir un
+          módulo en sesiones, criterios de rúbrica o ideas de refuerzo y
+          ampliación.
+          <?php else: ?>
           Pregúntame sobre matemática, comunicación, arte, ingeniería, inglés,
           ciencia o astronomía. Te oriento paso a paso, no te doy la respuesta
           hecha.
+          <?php endif; ?>
         </p>
       </template>
       <template x-for="(t, i) in turnos" :key="i">

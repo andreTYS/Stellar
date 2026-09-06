@@ -4,8 +4,25 @@ Un chat acotado al temario, dentro de la plataforma. Cada colegio usa **su
 propia clave de API**, que asigna el administrador general: el consumo se
 factura a quien corresponde y ningún colegio puede gastar el saldo de otro.
 
-Lo ven estudiantes y practicantes. Los demás roles no, porque cada consulta
-gasta saldo y no lo necesitan para su trabajo.
+Lo ven estudiantes, practicantes y docentes. Cada uno con lo suyo:
+
+| Quién | Para qué | Tope por defecto |
+|---|---|---|
+| Estudiante y practicante | Dudas del temario. Guía paso a paso, no da la respuesta hecha | 30/día |
+| Docente | Preparar clase: adaptar actividades, dividir un módulo en sesiones, criterios de rúbrica, refuerzo y ampliación | 15/día |
+
+El docente sí obtiene procedimientos y respuestas completas —necesita el
+solucionario para corregir—; el estudiante, no. Y el asistente del docente
+se niega a redactar valoraciones sobre un estudiante concreto: eso lo decide
+una persona.
+
+Los topes van por separado porque son cosas distintas: hay muchos más
+estudiantes, pero una consulta de planificación es bastante más larga y cara
+que una duda suelta.
+
+Los demás roles no lo ven, y el endpoint los rechaza aunque llamen a mano:
+antes el único control era que el widget no se pintaba, lo cual no es un
+control.
 
 ## Puesta en marcha
 
@@ -55,7 +72,8 @@ En **Admin → Colegios**, bajo cada institución:
 |---|---|
 | Clave de API | La del colegio, de console.anthropic.com. Se cifra al guardar; después solo se ven los cuatro últimos caracteres |
 | Modelo | Opus 5 por defecto. Sonnet 5 y Haiku 4.5 cuestan menos por consulta |
-| Tope/día | Preguntas por estudiante y día. Por defecto 30 |
+| Tope/día est. | Preguntas por estudiante y día. Por defecto 30 |
+| Tope/día doc. | Preguntas por docente y día. Por defecto 15 |
 | Activo | Enciende o apaga el asistente para ese colegio |
 
 Para cambiar solo los ajustes, deja el campo de la clave vacío: se conserva la

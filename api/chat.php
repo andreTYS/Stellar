@@ -41,8 +41,19 @@ if (mb_strlen($pregunta) > 2000) {
     apiError('La pregunta es demasiado larga. Resúmela un poco.', 422);
 }
 
+// ── Quién puede consultar ────────────────────────────────────────
+// Hasta ahora el control era que el widget no se pintaba para los demás
+// roles, lo cual no es un control: el endpoint aceptaba a cualquiera con
+// sesión. Cada consulta gasta saldo del colegio, así que va explícito.
+$rol = (string)($usuario['rol'] ?? '');
+if (!in_array($rol, ['estudiante', 'practicante', 'docente'], true)) {
+    apiError('El asistente es para estudiantes y docentes.', 403);
+}
+
 // ── Configuración del colegio ────────────────────────────────────
-$config = chatbotConfigColegio($colegioId);
+// El rol decide el tope diario: el docente tiene el suyo, aparte del de
+// los estudiantes.
+$config = chatbotConfigColegio($colegioId, $rol);
 if ($config === null) {
     apiError('Tu colegio todavía no tiene el asistente activado.', 503,
              ['motivo' => 'sin_configurar']);
