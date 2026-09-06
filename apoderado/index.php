@@ -14,7 +14,12 @@ $stmtEst = $pdo->prepare("
            ae.relacion,
            COALESCE(pe_comp.total, 0) AS modulos_completados,
            COALESCE(pe_est.total, 0)  AS estrellas_total,
-           ul.logros_ganados
+           ul.logros_ganados,
+           -- Asistencia: hasta ahora el practicante la registraba y el
+           -- apoderado no la veía por ningún lado, que es justo el dato
+           -- que una familia pregunta primero.
+           asis.registradas AS asis_registradas,
+           asis.presentes   AS asis_presentes
     FROM apoderado_estudiante ae
     JOIN usuarios u ON u.id = ae.estudiante_id
     LEFT JOIN (
@@ -26,6 +31,12 @@ $stmtEst = $pdo->prepare("
     LEFT JOIN (
         SELECT usuario_id, COUNT(*) as logros_ganados FROM usuario_logros GROUP BY usuario_id
     ) ul ON ul.usuario_id = u.id
+    LEFT JOIN (
+        SELECT estudiante_id,
+               COUNT(*)             AS registradas,
+               SUM(presente)        AS presentes
+          FROM asistencia GROUP BY estudiante_id
+    ) asis ON asis.estudiante_id = u.id
     WHERE ae.apoderado_id = ? AND ae.activo = 1
     ORDER BY u.apellido, u.nombre
 ");
@@ -175,10 +186,27 @@ require_once __DIR__ . '/../includes/header.php';
   </div>
 
   <!-- Mini stats -->
-  <div class="stats-grid-6" style="--cols:3;margin-bottom:20px">
+  <?php
+    $asisReg = (int)($est['asis_registradas'] ?? 0);
+    $asisPre = (int)($est['asis_presentes']   ?? 0);
+    $asisPct = $asisReg > 0 ? (int)round($asisPre / $asisReg * 100) : null;
+    // Por debajo del 70% hay riesgo de perder el año; se marca en rojo
+    // para que el apoderado no tenga que interpretar el número.
+    $asisColor = $asisPct === null ? 'var(--text-muted)'
+               : ($asisPct >= 85 ? 'var(--green)' : ($asisPct >= 70 ? 'var(--gold)' : 'var(--danger)'));
+  ?>
+  <div class="stats-grid-6" style="--cols:4;margin-bottom:20px">
     <div style="background:var(--bg-elevated);border-radius:12px;padding:14px;text-align:center">
       <div style="font-size:22px;font-weight:800;color:var(--green);font-family:'Syne',sans-serif"><?= (int)$est['modulos_completados'] ?></div>
       <div style="font-size:11px;color:var(--text-muted);margin-top:2px">Módulos completados</div>
+    </div>
+    <div style="background:var(--bg-elevated);border-radius:12px;padding:14px;text-align:center">
+      <div style="font-size:22px;font-weight:800;color:<?= $asisColor ?>;font-family:'Syne',sans-serif">
+        <?= $asisPct === null ? '—' : $asisPct . '%' ?>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:2px">
+        Asistencia<?= $asisReg > 0 ? ' · ' . $asisPre . '/' . $asisReg : '' ?>
+      </div>
     </div>
     <div style="background:var(--bg-elevated);border-radius:12px;padding:14px;text-align:center">
       <div style="font-size:22px;font-weight:800;color:var(--gold);font-family:'Syne',sans-serif"><?= (int)$est['estrellas_total'] ?></div>

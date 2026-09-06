@@ -80,6 +80,36 @@ if ($aulaIds) {
 }
 
 
+// ── Exportación CSV ───────────────────────────────────────────
+// El admin y el admin_colegio ya exportaban; el docente, que es quien
+// pasa las notas a la libreta y al SIAGIE, no tenía por dónde sacarlas.
+// Va antes de imprimir nada: después las cabeceras ya salieron.
+if (($_GET['export'] ?? '') === 'csv') {
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="progreso_' . date('Y-m-d') . '.csv"');
+
+    $out = fopen('php://output', 'w');
+    // BOM para que Excel en Windows no parta las tildes.
+    fwrite($out, "\xEF\xBB\xBF");
+    fputcsv($out, ['Aula', 'Estudiante', 'Modulos completados', 'Total modulos', 'Porcentaje', 'Ultimo avance']);
+
+    foreach ($aulas as $aula) {
+        foreach ($progresoEst[$aula['id']] ?? [] as $e) {
+            $comp = (int)$e['completados'];
+            fputcsv($out, [
+                aulaLabel($aula),
+                $e['apellido'] . ', ' . $e['nombre'],
+                $comp,
+                $maxMod,
+                round($comp / $maxMod * 100) . '%',
+                $e['ultimo'] ? date('Y-m-d', strtotime($e['ultimo'])) : '',
+            ]);
+        }
+    }
+    fclose($out);
+    exit;
+}
+
 $pageTitle = 'Reportes del Aula';
 $activeNav = 'reportes';
 require_once __DIR__ . '/../includes/header.php';
@@ -90,6 +120,10 @@ require_once __DIR__ . '/../includes/header.php';
     <h1 class="page-title">Reportes del aula</h1>
     <p class="page-subtitle">Progreso de mis estudiantes por curso y módulo</p>
   </div>
+  <a href="?export=csv" class="btn btn-secondary" style="margin-right:8px">
+    <i data-lucide="download" style="width:15px;height:15px"></i>
+    CSV
+  </a>
   <button onclick="window.print()" class="btn btn-ghost">
     <i data-lucide="printer" style="width:15px;height:15px"></i>
     Imprimir

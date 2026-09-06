@@ -64,7 +64,14 @@ $aulas = $pdo->prepare("
            u_doc.nombre as docente_nombre, u_doc.apellido as docente_apellido,
            GROUP_CONCAT(DISTINCT CONCAT(u_prac.nombre,' ',u_prac.apellido) SEPARATOR ', ') as practicantes,
            COUNT(DISTINCT ea.estudiante_id) as estudiantes,
-           SUM(pe.completado) as modulos_completados
+           SUM(pe.completado) as modulos_completados,
+           -- La asistencia se calcula en subconsulta y no con otro JOIN:
+           -- esta consulta ya multiplica filas por practicante y por
+           -- progreso, y sumar aquí contaría cada marca varias veces.
+           (SELECT ROUND(AVG(asi.presente) * 100)
+              FROM sesiones s2
+              JOIN asistencia asi ON asi.sesion_id = s2.id
+             WHERE s2.aula_id = a.id) AS asistencia_pct
     FROM aulas a
     LEFT JOIN usuarios u_doc ON u_doc.id=a.docente_id
     LEFT JOIN practicante_aula pa ON pa.aula_id=a.id
@@ -95,9 +102,10 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     fputcsv($out, ['Entregables subidos', $entregables]);
     fputcsv($out, ['Sesiones realizadas', $sesiones]);
     fputcsv($out, []);
-    fputcsv($out, ['Aula','Docente','Practicante(s)','Estudiantes','Módulos completados']);
+    fputcsv($out, ['Aula','Docente','Practicante(s)','Estudiantes','Módulos completados','Asistencia %']);
     foreach ($aulas as $a) {
-        fputcsv($out, [aulaLabel($a), $a['docente_apellido'].', '.$a['docente_nombre'], $a['practicantes'] ?? '', $a['estudiantes'], $a['modulos_completados']]);
+        fputcsv($out, [aulaLabel($a), $a['docente_apellido'].', '.$a['docente_nombre'], $a['practicantes'] ?? '', $a['estudiantes'], $a['modulos_completados'],
+                       $a['asistencia_pct'] !== null ? (int)$a['asistencia_pct'] : '']);
     }
     fclose($out);
     exit;
@@ -178,7 +186,7 @@ require_once __DIR__ . '/../includes/header.php';
     <div class="card-header"><h2 class="card-title">Detalle por aula</h2></div>
     <div class="table-wrapper">
       <table>
-        <thead><tr><th>Aula</th><th>Docente titular</th><th>Practicante(s)</th><th>Estudiantes</th><th>Módulos completados</th></tr></thead>
+        <thead><tr><th>Aula</th><th>Docente titular</th><th>Practicante(s)</th><th>Estudiantes</th><th>Módulos completados</th><th>Asistencia</th></tr></thead>
         <tbody>
           <?php foreach ($aulas as $a): ?>
           <tr>
@@ -187,6 +195,14 @@ require_once __DIR__ . '/../includes/header.php';
             <td style="color:var(--text-secondary);font-size:13px;"><?= sanitize($a['practicantes'] ?? '—') ?></td>
             <td style="color:var(--blue);font-weight:700;"><?= $a['estudiantes'] ?></td>
             <td style="color:var(--green);font-weight:700;"><?= $a['modulos_completados'] ?></td>
+            <?php
+              $ap = $a['asistencia_pct'];
+              $apColor = $ap === null ? 'var(--text-muted)'
+                       : ($ap >= 85 ? 'var(--green)' : ($ap >= 70 ? 'var(--gold)' : 'var(--danger)'));
+            ?>
+            <td style="font-weight:700;font-variant-numeric:tabular-nums;color:<?= $apColor ?>;">
+              <?= $ap === null ? '—' : (int)$ap . '%' ?>
+            </td>
           </tr>
           <?php endforeach; ?>
         </tbody>

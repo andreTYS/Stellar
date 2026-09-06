@@ -26,6 +26,7 @@ $navItems = match ($rol) {
         ['href' => BASE_URL . '/docente/index.php',           'icon' => 'layout-dashboard',  'label' => 'Dashboard',     'key' => 'dashboard'],
         ['href' => BASE_URL . '/docente/estudiantes.php',     'icon' => 'users',             'label' => 'Estudiantes',   'key' => 'estudiantes'],
         ['href' => BASE_URL . '/docente/portafolios.php',     'icon' => 'folder-open',       'label' => 'Portafolios',   'key' => 'portafolios'],
+        ['href' => BASE_URL . '/docente/asistencia.php',      'icon' => 'clipboard-check',   'label' => 'Asistencia',    'key' => 'asistencia'],
         ['href' => BASE_URL . '/docente/reportes.php',        'icon' => 'bar-chart-2',       'label' => 'Reportes',      'key' => 'reportes'],
         ['href' => BASE_URL . '/stellarscribe/portal.php',    'icon' => 'rocket',            'label' => 'StellarScribe', 'key' => 'stellarscribe'],
         ['href' => BASE_URL . '/mensajes/',                   'icon' => 'mail',              'label' => 'Mensajes',      'key' => 'mensajes'],
