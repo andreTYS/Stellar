@@ -137,12 +137,15 @@ INSERT IGNORE INTO modulos (id, curso_id, titulo, descripcion, orden, activo) VA
 -- 'activo' no existe en aulas; 'anio_escolar' sí y es obligatoria.
 -- Es el mismo desajuste que hacía fallar con error 500 a
 -- admin/colegios.php y docente/reportes.php, que filtraban por a.activo.
-INSERT IGNORE INTO aulas (id, colegio_id, docente_id, grado, seccion, anio_escolar) VALUES
-(1, 1, 4, '1ro Secundaria', 'A', 2026),
-(2, 1, 5, '2do Secundaria', 'B', 2026),
-(3, 2, 6, '1ro Secundaria', 'A', 2026),
-(4, 2, 6, '2do Secundaria', 'A', 2026),
-(5, 3, 4, '1ro Secundaria', 'A', 2026);
+-- El grado es un ENUM de '1ro' a '6to' y el nivel va aparte. Antes se
+-- insertaba '1ro Secundaria', que no está en el ENUM: MySQL truncaba a
+-- cadena vacía y las cinco aulas quedaban sin grado.
+INSERT IGNORE INTO aulas (id, colegio_id, docente_id, nivel, grado, seccion, anio_escolar) VALUES
+(1, 1, 4, 'secundaria', '1ro', 'A', 2026),
+(2, 1, 5, 'secundaria', '2do', 'B', 2026),
+(3, 2, 6, 'secundaria', '1ro', 'A', 2026),
+(4, 2, 6, 'secundaria', '2do', 'A', 2026),
+(5, 3, 4, 'secundaria', '1ro', 'A', 2026);
 
 -- ── Practicante-Aula ─────────────────────────────────────────
 INSERT IGNORE INTO practicante_aula (practicante_id, aula_id) VALUES

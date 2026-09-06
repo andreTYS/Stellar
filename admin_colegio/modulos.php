@@ -84,7 +84,7 @@ require_once __DIR__ . '/../includes/header.php';
                   color:<?= $aulaId==$aula['id']?'var(--text-primary)':'var(--text-secondary)' ?>;
                   border:1px solid <?= $aulaId==$aula['id']?'var(--blue)':'transparent' ?>;
                   transition:all .15s;">
-          <?= $aula['grado'] ?> &ldquo;<?= sanitize($aula['seccion']) ?>&rdquo;
+          <?= sanitize(aulaLabel($aula)) ?>
         </a>
         <?php endforeach; ?>
       </div>

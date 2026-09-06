@@ -7,17 +7,23 @@ $uid = currentUserId();
 $pdo = getDB();
 
 // All logros with earned status
+// La columna es obtenido_en. Se pedía 'ganado_en', que no existe, y el
+// catch de abajo se tragaba la excepción: la página respondía 200 con
+// cero logros SIEMPRE, para todo el mundo, sin ninguna señal de error.
 $logros = [];
 try {
     $stmt = $pdo->prepare("
-        SELECT l.*, ul.ganado_en
+        SELECT l.*, ul.obtenido_en AS ganado_en
         FROM logros l
         LEFT JOIN usuario_logros ul ON ul.logro_id=l.id AND ul.usuario_id=?
-        ORDER BY ul.ganado_en DESC, l.id ASC
+        ORDER BY ul.obtenido_en DESC, l.id ASC
     ");
     $stmt->execute([$uid]);
     $logros = $stmt->fetchAll();
-} catch (\Throwable $e) {}
+} catch (\Throwable $e) {
+    // Si vuelve a fallar, que al menos quede rastro en el log.
+    error_log('estudiante/logros: ' . $e->getMessage());
+}
 
 $ganados = count(array_filter($logros, fn($l) => !empty($l['ganado_en'])));
 $total   = count($logros);

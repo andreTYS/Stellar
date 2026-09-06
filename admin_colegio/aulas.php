@@ -38,13 +38,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // ── Create aula ───────────────────────────────────────────
     if ($action === 'create_aula') {
-        $grado      = (int)($_POST['grado']        ?? 0);
+        // grado es un ENUM de texto ('1ro'…'6to'). Aquí se convertía a
+        // entero y se insertaba el número, que MySQL truncaba: crear un
+        // aula fallaba con cualquier valor.
+        $grado      = trim($_POST['grado'] ?? '');
+        $nivel      = ($_POST['nivel'] ?? 'primaria') === 'secundaria' ? 'secundaria' : 'primaria';
         $seccion    = strtoupper(trim($_POST['seccion']    ?? ''));
         $anio       = (int)($_POST['anio_escolar'] ?? date('Y'));
         $docenteId  = (int)($_POST['docente_id']  ?? 0) ?: null;
 
         $errors = [];
-        if ($grado < 1 || $grado > 6)   $errors[] = 'El grado debe estar entre 1 y 6.';
+        if (!in_array($grado, GRADOS_VALIDOS, true)) $errors[] = 'El grado no es válido.';
         if (empty($seccion))             $errors[] = 'La sección es requerida.';
         if (strlen($seccion) > 5)        $errors[] = 'La sección es demasiado larga.';
         if ($anio < 2020 || $anio > 2035) $errors[] = 'El año escolar no es válido.';
@@ -52,10 +56,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($errors)) {
             try {
                 $pdo->prepare(
-                    'INSERT INTO aulas (colegio_id, grado, seccion, anio_escolar, docente_id, creado_en)
-                     VALUES (?, ?, ?, ?, ?, NOW())'
-                )->execute([$colegioId, $grado, $seccion, $anio, $docenteId]);
-                setFlash('success', "Aula {$grado}° {$seccion} creada correctamente.");
+                    // aulas no tiene columna de fecha. Se escribía
+                    // 'creado_en' y crear un aula fallaba siempre.
+                    'INSERT INTO aulas (colegio_id, nivel, grado, seccion, anio_escolar, docente_id)
+                     VALUES (?, ?, ?, ?, ?, ?)'
+                )->execute([$colegioId, $nivel, $grado, $seccion, $anio, $docenteId]);
+                setFlash('success', "Aula {$grado} de {$nivel} \"{$seccion}\" creada correctamente.");
             } catch (PDOException $e) {
                 if ($e->getCode() === '23000') {
                     setFlash('error', 'Ya existe un aula con ese grado, sección y año escolar.');
@@ -125,6 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $stmtAulas = $pdo->prepare(
     'SELECT
         a.id,
+        a.nivel,
         a.grado,
         a.seccion,
         a.anio_escolar,
@@ -231,14 +238,14 @@ include __DIR__ . '/../includes/header.php';
           background:linear-gradient(135deg,var(--blue),var(--purple));
           display:flex;align-items:center;justify-content:center;
           flex-shrink:0;font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:#fff">
-        <?= (int)$aula['grado'] ?>°
+        <?= sanitize(aulaLabel($aula)) ?>
       </div>
 
       <!-- Info -->
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px">
           <h3 style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700">
-            <?= (int)$aula['grado'] ?>° <?= sanitize($aula['seccion']) ?>
+            <?= sanitize(aulaLabel($aula)) ?>
           </h3>
           <span class="badge badge-muted"><?= (int)$aula['anio_escolar'] ?></span>
           <span class="badge">
@@ -295,7 +302,7 @@ include __DIR__ . '/../includes/header.php';
       <!-- Actions -->
       <div style="display:flex;gap:8px;flex-shrink:0">
         <button class="btn btn-ghost btn-sm"
-                onclick="openAssignModal(<?= $aulaId ?>, '<?= (int)$aula['grado'] ?>° <?= sanitize(addslashes($aula['seccion'])) ?>')">
+                onclick="openAssignModal(<?= $aulaId ?>, '<?= sanitize(addslashes(aulaLabel($aula))) ?>')">
           <i data-lucide="user-plus" style="width:14px;height:14px"></i>
           Asignar practicante
         </button>
@@ -323,12 +330,20 @@ include __DIR__ . '/../includes/header.php';
       <input type="hidden" name="action" value="create_aula">
 
       <div class="form-group">
+        <label class="form-label" for="nivel">Nivel *</label>
+        <select name="nivel" id="nivel" class="form-control" required>
+          <option value="primaria">Primaria</option>
+          <option value="secundaria">Secundaria</option>
+        </select>
+      </div>
+
+      <div class="form-group">
         <label class="form-label" for="grado">Grado *</label>
         <select name="grado" id="grado" class="form-control" required>
           <option value="">— Selecciona —</option>
-          <?php for ($g = 1; $g <= 6; $g++): ?>
-          <option value="<?= $g ?>"><?= $g ?>° grado</option>
-          <?php endfor; ?>
+          <?php foreach (GRADOS_VALIDOS as $g): ?>
+          <option value="<?= $g ?>"><?= $g ?> grado</option>
+          <?php endforeach; ?>
         </select>
       </div>
 

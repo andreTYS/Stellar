@@ -131,7 +131,7 @@ $pdo->prepare(
 if ($estrellas === 3) {
     try {
         $lid = $pdo->query("SELECT id FROM logros WHERE slug='quiz-perfecto'")->fetchColumn();
-        if ($lid) $pdo->prepare('INSERT IGNORE INTO usuario_logros (usuario_id,logro_id,ganado_en) VALUES (?,?,NOW())')->execute([$userId,$lid]);
+        if ($lid) $pdo->prepare('INSERT IGNORE INTO usuario_logros (usuario_id,logro_id,obtenido_en) VALUES (?,?,NOW())')->execute([$userId,$lid]);
     } catch (\Throwable $e) {}
 }
 

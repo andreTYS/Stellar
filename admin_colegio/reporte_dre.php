@@ -60,7 +60,7 @@ $porCurso = $porCurso->fetchAll();
 
 // Aulas with practicantes
 $aulas = $pdo->prepare("
-    SELECT a.grado, a.seccion,
+    SELECT a.nivel, a.grado, a.seccion,
            u_doc.nombre as docente_nombre, u_doc.apellido as docente_apellido,
            GROUP_CONCAT(DISTINCT CONCAT(u_prac.nombre,' ',u_prac.apellido) SEPARATOR ', ') as practicantes,
            COUNT(DISTINCT ea.estudiante_id) as estudiantes,
@@ -97,7 +97,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     fputcsv($out, []);
     fputcsv($out, ['Aula','Docente','Practicante(s)','Estudiantes','Módulos completados']);
     foreach ($aulas as $a) {
-        fputcsv($out, [$a['grado'].'"'.$a['seccion'].'"', $a['docente_apellido'].', '.$a['docente_nombre'], $a['practicantes'] ?? '', $a['estudiantes'], $a['modulos_completados']]);
+        fputcsv($out, [aulaLabel($a), $a['docente_apellido'].', '.$a['docente_nombre'], $a['practicantes'] ?? '', $a['estudiantes'], $a['modulos_completados']]);
     }
     fclose($out);
     exit;
@@ -182,7 +182,7 @@ require_once __DIR__ . '/../includes/header.php';
         <tbody>
           <?php foreach ($aulas as $a): ?>
           <tr>
-            <td style="font-weight:700;"><?= $a['grado'] ?> &ldquo;<?= sanitize($a['seccion']) ?>&rdquo;</td>
+            <td style="font-weight:700;"><?= sanitize(aulaLabel($a)) ?></td>
             <td style="color:var(--text-secondary);"><?= sanitize($a['docente_apellido'].', '.$a['docente_nombre']) ?></td>
             <td style="color:var(--text-secondary);font-size:13px;"><?= sanitize($a['practicantes'] ?? '—') ?></td>
             <td style="color:var(--blue);font-weight:700;"><?= $a['estudiantes'] ?></td>

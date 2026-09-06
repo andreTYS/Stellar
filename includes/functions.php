@@ -512,6 +512,31 @@ function getMetricasColegio(int $colegioId): array
     ];
 }
 
+// ── Aulas ────────────────────────────────────────────────────
+// Los valores del ENUM aulas.grado, en orden. Están aquí y no
+// escritos a mano en cada formulario para que no se vuelvan a
+// desincronizar del esquema, que es lo que rompía crear un aula.
+const GRADOS_VALIDOS = ['1ro', '2do', '3ro', '4to', '5to', '6to'];
+
+/**
+ * Nombre legible de un aula: «1ro de secundaria "A"».
+ *
+ * Sin el nivel no se puede distinguir 5.º de primaria de 5.º de
+ * secundaria, y desde que hay contenido de ambos ciclos conviven.
+ */
+function aulaLabel(array $aula): string
+{
+    $grado = $aula['grado'] ?? '';
+    $nivel = $aula['nivel'] ?? '';
+    $sec   = $aula['seccion'] ?? '';
+
+    $texto = $grado !== '' ? $grado : '¿?';
+    if ($nivel !== '') $texto .= ' de ' . $nivel;
+    if ($sec   !== '') $texto .= ' "' . $sec . '"';
+
+    return $texto;
+}
+
 // ── Formato ──────────────────────────────────────────────────
 function formatDate(string $date): string
 {

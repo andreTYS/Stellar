@@ -53,7 +53,7 @@ $totalAulas = (int)$stmtAulas->fetchColumn();
 
 // ── Aula cards data ───────────────────────────────────────────
 $stmtAulaList = $pdo->prepare("
-    SELECT a.id, a.grado, a.seccion,
+    SELECT a.id, a.nivel, a.grado, a.seccion,
            CONCAT(ud.nombre,' ',ud.apellido) AS docente_nombre,
            GROUP_CONCAT(DISTINCT CONCAT(up.nombre,' ',up.apellido) SEPARATOR ', ') AS practicante_nombres,
            (SELECT COUNT(*) FROM estudiante_aula ea2 WHERE ea2.aula_id=a.id) AS total_est,
@@ -185,7 +185,7 @@ include __DIR__ . '/../includes/header.php';
       <div class="aula-card">
         <div class="aula-card-header">
           <div>
-            <div class="aula-card-title"><?= (int)$aula['grado'] ?>° &ldquo;<?= sanitize($aula['seccion']) ?>&rdquo;</div>
+            <div class="aula-card-title"><?= sanitize(aulaLabel($aula)) ?></div>
             <div class="aula-card-sub">
               <?php if ($aula['docente_nombre']): ?>
                 <i data-lucide="user" style="width:11px;height:11px"></i> <?= sanitize($aula['docente_nombre']) ?>

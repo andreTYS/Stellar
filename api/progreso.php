@@ -85,7 +85,7 @@ if ($paso >= 4) {
         if ($totalComp >= 10) $slugs[] = 'maestro-steam';
         foreach ($slugs as $slug) {
             $lid = $pdo->query("SELECT id FROM logros WHERE slug='$slug'")->fetchColumn();
-            if ($lid) $pdo->prepare('INSERT IGNORE INTO usuario_logros (usuario_id,logro_id,ganado_en) VALUES (?,?,NOW())')->execute([$userId,$lid]);
+            if ($lid) $pdo->prepare('INSERT IGNORE INTO usuario_logros (usuario_id,logro_id,obtenido_en) VALUES (?,?,NOW())')->execute([$userId,$lid]);
         }
     } catch (\Throwable $e) {}
 }
