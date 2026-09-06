@@ -1,8 +1,30 @@
+<?php
+// ============================================================
+// StellarScribe — Motor de historias
+//
+// Era index2.html, un .html estático con una sola historia empotrada.
+// Pasa a .php por dos razones: para poder servir varias historias
+// (?historia=slug), y porque el registro de progreso necesita el token
+// CSRF de la sesión, que un archivo estático no puede conocer. Sin él,
+// api/capitulo_progreso.php respondía 403 a cada capítulo leído.
+// ============================================================
+require_once __DIR__ . '/../includes/config.php';
+
+// Las historias las define historias.js; aquí solo se valida la forma
+// del slug para no meter cualquier cosa en el HTML.
+$historia = strtolower(trim((string)($_GET['historia'] ?? 'aldrin')));
+if (!preg_match('/^[a-z0-9_-]{1,40}$/', $historia)) {
+    $historia = 'aldrin';
+}
+?>
 <!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <title>Aldrin: Regreso a Casa — NASA Space Apps 2025 Premium</title>
+  <?php /* El título real lo pone el JS con el de la historia elegida;
+           este es el que se ve mientras carga, así que no puede nombrar
+           una historia concreta. */ ?>
+  <title>StellarScribe</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="icon" type="image/svg+xml" href="img/ICONOO.png" />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
@@ -999,7 +1021,7 @@
       <a href="#" class="brand">
         <img src="img/faviconnasa.svg" alt="NASA Logo" />
         <div>
-          <div class="brand-name">ALDRIN & CAT</div>
+          <div class="brand-name" id="brandName">STELLARSCRIBE</div>
           <div class="brand-subtitle">StellarScribe — NASA Visual Premium</div>
         </div>
       </a>
@@ -1016,8 +1038,8 @@
   <!-- Start screen -->
   <div id="startScreen" class="start-screen" aria-hidden="false">
     <div class="start-card">
-      <div class="title">🚀 ALDRIN: REGRESO A CASA</div>
-      <div class="subtitle">Una Aventura Espacial Educativa Interactiva</div>
+      <div class="title" id="startTitle">🚀 STELLARSCRIBE</div>
+      <div class="subtitle" id="startSubtitle">Una aventura espacial educativa interactiva</div>
       <div class="start-description">
         Versión Premium — NASA Space Apps Challenge 2025<br>
         Narración automática por escena · Gato con voz propia · Aldrin con voz propia
@@ -1032,7 +1054,13 @@
   <!-- Intro screen -->
   <div id="intro" class="intro-screen" aria-hidden="true">
     <video id="introVideo" muted playsinline>
+      <?php /* El archivo intro_nasa.mp4 no está en el repositorio. Con
+               el <source> puesto, el motor abría la pantalla de intro con
+               un vídeo roto y había que pulsar "Saltar". Se pone solo si
+               el archivo existe de verdad. */ ?>
+      <?php if (is_file(__DIR__ . '/assets/intro_nasa.mp4')): ?>
       <source src="assets/intro_nasa.mp4" type="video/mp4" />
+      <?php endif; ?>
       Tu navegador no soporta video.
     </video>
     <button id="skipBtn" class="skip-btn">⏩ Saltar Intro</button>
@@ -1058,6 +1086,11 @@
     <source src="assets/music.mp3" type="audio/mpeg" />
   </audio>
 
+  <script src="historias.js?v=2"></script>
+  <script>
+    window.HISTORIA_ACTUAL = <?= json_encode($historia) ?>;
+    window.CSRF_TOKEN      = <?= json_encode(csrfToken()) ?>;
+  </script>
   <script>
   /* ===== CONFIG & DOM REFS ===== */
   const config = {
@@ -1089,117 +1122,31 @@
   };
 
   /* ===== STORY DATA ===== */
-  const story = {
-    1: {
-      title: "Nivel 1: El Despertar",
-      bg: "img/chap1-bg.jpg",
-      leftChar: "img/aldrin.gif",
-      rightChar: "img/char-aldrin.jpg",
-      education: {
-        title: "Tormentas Solares y Radiación Cósmica",
-        points: [
-          "Las tormentas solares son explosiones de partículas energéticas del Sol",
-          "Pueden dañar sistemas electrónicos y de comunicación en el espacio",
-          "La radiación cósmica puede alterar sistemas biológicos y tecnológicos",
-          "Los escudos magnéticos protegen a las naves espaciales",
-          "Las supernovas cercanas pueden generar radiación extrema"
-        ]
-      },
-      paragraphs: [
-        {type:'narr', text: "Cuando Aldrin abrió los ojos, la cabina estaba en silencio. El último recuerdo que tenía era el destello cegador que atravesó los escudos de la nave, seguido de un vacío absoluto. La tormenta solar había golpeado de lleno el casco de su nave; nunca había visto algo tan poderoso en sus años como astronauta."},
-        {type:'narr', text: "A su lado, no estaba solo. Su compañero, un gato generado por IA, el gato blanco que siempre lo acompañaba en misiones de larga duración, lo miraba fijamente. Pero había algo distinto: sus ojos brillaban con una intensidad azulada, casi humanos con un destello sorprendente como el de una nebulosa, y en el aire vibraba una ligera descarga eléctrica."},
-        {type:'dialog', who:'cat', text: "—Aldrin… ¡Despierta! —dijo el gato con una voz clara y profunda."},
-        {type:'narr', text: "El astronauta, atónito, se incorporó lentamente y un poco impactado."},
-        {type:'narr', text: "—¿Estoy… soñando? —murmuró Aldrin, con la voz rota por la confusión."},
-        {type:'narr', text: "—No. Llevas 11 días inconsciente. La radiación de la nube cósmica alteró mi sistema pero me pude recuperar. Ahora pienso, hablo… y siento cosas que antes no podía; a diferencia de ti, aún conservas tu humanidad —explicó el gato con calma."},
-        {type:'narr', text: "El gato levantó la pata izquierda, y un campo magnético chisporroteó, atrayendo un destornillador metálico que flotó hasta él."},
-        {type:'dialog', who:'cat', text: "—Te ayudaré a reparar la nave. El oxígeno comienza a escasear y debemos encontrar una fuente de energía alterna para poner a volar esta cosa. Hemos perdido todo contacto con Houston."}
-      ]
-    },
-    2: {
-      title: "Nivel 2: El Dilema Energético",
-      bg: "img/chap2-bg.jpg",
-      leftChar: "img/escena2_1.png",
-      rightChar: "img/escena2_2.gif",
-      education: {
-        title: "Electrólisis del Agua",
-        points: [
-          "La electrólisis divide moléculas de agua (H₂O) en hidrógeno (H₂) y oxígeno (O₂)",
-          "Se necesita electricidad para romper enlaces químicos",
-          "El hidrógeno es combustible eficiente y limpio",
-          "Este proceso es clave para la exploración espacial futura",
-          "En la Tierra, la electrólisis es un método conocido para obtener combustibles limpios"
-        ]
-      },
-      paragraphs: [
-        {type:'narr', text: "Tras revisar los sistemas de la nave, Aldrin comprendió la gravedad de la situación: los paneles solares apenas captaban energía. En la órbita de aquel planeta helado donde habían logrado aterrizar de emergencia, la luz de un sol era escasa y débil."},
-        {type:'dialog', who:'cat', text: "—Si no encontramos una nueva fuente de energía, mi estimado Aldrin, quedaremos varados aquí para siempre —murmuró el gato."},
-        {type:'narr', text: "El gato miró a Aldrin con determinación y comenzó a explicar: 'Te explicaré como si de un niño de escuela primaria se tratara. La energía está en todas partes. El hielo que cubre este planeta podría contener secretos que aún no imaginas. Si logramos dividir sus moléculas de agua, podemos liberar hidrógeno y oxígeno.'"},
-        {type:'narr', text: "—Y el hidrógeno… es combustible en su estado más puro para una nave de la NASA. —Debemos fabricar una celda. Por electrólisis lograremos descomponer y dividir las moléculas."}
-      ]
-    },
-    3: {
-      title: "Nivel 3: Baterías Caseras",
-      bg: "img/chap3-bg.gif",
-      leftChar: "escena3.gif",
-      rightChar: "escena3_1.jpg",
-      education: {
-        title: "Celdas Galvánicas (Baterías de Limón)",
-        points: [
-          "Una batería de limón funciona mediante reacciones químicas ácido-base",
-          "El ácido cítrico del limón actúa como electrolito conductor",
-          "Los metales diferentes (cobre y zinc) crean una diferencia de potencial",
-          "Conectadas en serie, múltiples celdas aumentan el voltaje total",
-          "La sal y el vinagre aumentan la conductividad del medio"
-        ]
-      },
-      paragraphs: [
-        {type:'narr', text: "Aldrin revisó el tablero de energía: la nave estaba en modo de emergencia, apenas alimentando el sistema de soporte vital. El gato tuvo una idea brillante."},
-        {type:'dialog', who:'cat', text: "—No subestimes lo pequeño, Aldrin. La energía puede venir de algo tan simple como la química de los ácidos."},
-        {type:'narr', text: "Con una descarga luminosa, el gato abrió un compartimiento auxiliar de la nave. Dentro había provisiones olvidadas: un cajón de limones deshidratados, paquetes de sal y frascos de vinagre."},
-        {type:'narr', text: "Improvisaron un laboratorio. Aldrin cortó los limones, los empapó con vinagre y añadió sal en cada corte. Insertaron cobre y zinc reciclados y conectaron cables: una tenue corriente comenzó a fluir."},
-        {type:'narr', text: "Encendiendo luces que parpadeaban como luciérnagas en la penumbra del cañón helado, lograron acumular energía suficiente para poner en marcha un módulo de electrólisis improvisado."}
-      ]
-    },
-    4: {
-      title: "Nivel 4: Señales en el Hielo",
-      bg: "chap4-bg.jpg",
-      leftChar: "monolith.gif",
-      rightChar: "escena4.gif",
-      education: {
-        title: "Comunicaciones Espaciales",
-        points: [
-          "Las ondas electromagnéticas viajan a la velocidad de la luz",
-          "Las antenas deben estar alineadas para recibir señales",
-          "Los campos electromagnéticos pueden amplificar o modular señales",
-          "La búsqueda de señales extraterrestres (SETI) es una ciencia real",
-          "Las frecuencias pueden transportar información compleja"
-        ]
-      },
-      paragraphs: [
-        {type:'narr', text: "Con el banco de limones funcionando, lograron iniciar la electrólisis del hielo. Mientras tanto, reconstruían la antena con partes recicladas."},
-        {type:'narr', text: "Al encender el módulo receptor, un fuerte zumbido recorrió la cabina. De pronto, entre las interferencias, emergió un pulso repetitivo: Bip… bip… bip…"},
-        {type:'dialog', who:'aldrin', text: "—Eso… ¡eso no es la NASA! —exclamó Aldrin."},
-        {type:'narr', text: "Siguiendo la dirección de la señal, descubrieron una estructura metálica enterrada bajo capas de hielo: un monolito cubierto de runas luminosas de color violeta, vibrando con la misma frecuencia detectada. El gato tocó la estructura con su garra. La señal cambió y una voz resonó en la mente de Aldrin: 'Aldrin…'."}
-      ]
-    }
-  };
+  /* ===== DATOS DE LA HISTORIA =====
+     Antes estaban escritos aquí mismo, así que el motor solo podía
+     contar una. Ahora vienen de historias.js y se elige por URL. */
+  const HISTORIA = (window.HISTORIAS || {})[window.HISTORIA_ACTUAL]
+                || (window.HISTORIAS || {}).aldrin;
 
-  const branchStories = {
-    A: [
-      {type:'narr', text:'La curiosidad es más fuerte. Aldrin se acerca al monolito mientras el gato salta sobre la estructura, concentrando su poder electromagnético.'},
-      {type:'narr', text:'En su interior, encuentran proyecciones holográficas de una antigua civilización que habitó este planeta hace eones.'},
-      {type:'dialog', who:'cat', text:'—¡Esto es increíble! Con esta tecnología, no solo podemos regresar a casa... ¡podemos cambiar el futuro energético de la humanidad!'}
-    ],
-    B: [
-      {type:'narr', text:'La prioridad es regresar a casa. Aldrin y el gato concentran sus esfuerzos en optimizar el banco de limones y la electrólisis del hielo.'},
-      {type:'narr', text:'Después de varios días de trabajo arduo, logran llenar los tanques de hidrógeno de la nave y reparar las antenas utilizando componentes reciclados.'}
-    ],
-    C: [
-      {type:'narr', text:'Aldrin y el gato configuran el equipo para enviar una respuesta a la señal. El gato canaliza su energía electromagnética para modular un mensaje de paz.'},
-      {type:'dialog', who:'cat', text:'—Forastero… Has despertado a los Guardianes de Kael. Somos los custodios de este planeta.'}
-    ]
-  };
+  if (!HISTORIA) {
+    document.body.innerHTML =
+      '<p style="color:#0ff;font-family:sans-serif;padding:40px">' +
+      'No se pudo cargar la historia. Recarga la página.</p>';
+    throw new Error('historias.js no disponible');
+  }
+
+  const story         = HISTORIA.capitulos;
+  const branchStories = HISTORIA.ramas;
+
+  // El título va en los datos de la historia, no escrito a mano en el
+  // HTML: si no, la segunda historia se presentaría como la primera.
+  document.title = HISTORIA.titulo + ' — StellarScribe';
+  const _brand = document.getElementById('brandName');
+  const _st    = document.getElementById('startTitle');
+  const _ss    = document.getElementById('startSubtitle');
+  if (_brand) _brand.textContent = HISTORIA.titulo.toUpperCase();
+  if (_st)    _st.textContent    = '🚀 ' + HISTORIA.titulo;
+  if (_ss)    _ss.textContent    = HISTORIA.subtitulo;
 
   /* ===== VOICE / TTS ===== */
   let voices = [];
@@ -1347,7 +1294,15 @@
     const _capStart = Date.now();
     const _capHandler = () => {
       const seg = Math.round((Date.now() - _capStart) / 1000);
-      navigator.sendBeacon('../api/capitulo_progreso.php', JSON.stringify({ capitulo: n, tiempo_seg: seg }));
+      // sendBeacon no admite cabeceras, así que el token va en el
+      // cuerpo, que es justo para lo que verifyCsrfJson lo acepta.
+      // Antes no se mandaba ninguno y el endpoint devolvía 403 siempre.
+      navigator.sendBeacon('../api/capitulo_progreso.php', JSON.stringify({
+        capitulo: n,
+        tiempo_seg: seg,
+        historia: window.HISTORIA_ACTUAL || 'aldrin',
+        csrf_token: window.CSRF_TOKEN || ''
+      }));
     };
     document.getElementById('continueBtn')?.addEventListener('click', _capHandler, { once: true });
 
@@ -1431,18 +1386,17 @@
     setTimeout(() => {
       d.gameArea.innerHTML = `
         <section class="scene visible">
-          <div class="bg" style="background-image:url('chap4-bg.jpg');"></div>
+          <div class="bg" style="background-image:url('${HISTORIA.decision.bg}');"></div>
           <div class="overlay"></div>
           <div class="content">
-            <h2 class="page-title">🔀 PUNTO DE DECISIÓN CRÍTICO</h2>
-            <p class="story-text visible">Aldrin y el gato se encuentran frente al misterioso monolito. ¿Qué camino decides tomar?</p>
+            <h2 class="page-title">🔀 ${HISTORIA.decision.titulo}</h2>
+            <p class="story-text visible">${HISTORIA.decision.texto}</p>
             <div class="choices-grid">
-              <div class="choice" data-branch="A">OPCIÓN A — Investigar el Monolito</div>
-              <div class="choice" data-branch="B">OPCIÓN B — Autosuficiencia</div>
-              <div class="choice" data-branch="C">OPCIÓN C — Comunicación Pacífica</div>
+              ${HISTORIA.decision.opciones.map(o =>
+                `<div class="choice" data-branch="${o.id}">${o.label}</div>`).join('')}
             </div>
           </div>
-          <div class="media"><img src="monolith.gif" alt="monolito" style="width:240px"/></div>
+          <div class="media"><img src="${HISTORIA.decision.img}" alt="decisión" style="width:240px"/></div>
         </section>
       `;
       
@@ -1473,7 +1427,7 @@
             <button id="branchContinue" class="continue-btn">VER CONCLUSIÓN →</button>
           </div>
         </div>
-        <div class="media"><img src="img/animaion.gif" alt="animación" style="width:240px"/></div>
+        <div class="media"><img src="img/animacion.gif" alt="animación" style="width:240px"/></div>
       </article>
     `;
 
@@ -1502,30 +1456,27 @@
     
     d.gameArea.innerHTML = `
       <section class="scene visible">
-        <div class="bg" style="background-image:url('img/bg_final.jpg');"></div>
+        <div class="bg" style="background-image:url('${HISTORIA.final.bg}');"></div>
         <div class="overlay"></div>
         <div class="content">
-          <h2 class="page-title">🏠 REGRESO A CASA</h2>
-          <p class="story-text visible">Con la nave reparada y los sistemas operativos, Aldrin y su fiel compañero se preparan para el viaje de regreso a casa. La experiencia en el planeta helado los ha cambiado para siempre, demostrando que incluso en los confines del universo, la ciencia, el ingenio y la conexión con lo inesperado son las claves para superar cualquier adversidad.</p>
-          <p class="story-text visible">Luego de un tiempo, Aldrin pudo llegar a la órbita del planeta Tierra y logró enviar un mensaje a la NASA para que prepararan su aterrizaje. El gato ayudó en el aterrizaje de emergencia y, más tarde, estableció una alianza con los Guardianes.</p>
+          <h2 class="page-title">🏠 ${HISTORIA.final.titulo}</h2>
+          ${HISTORIA.final.parrafos.map(p =>
+            `<p class="story-text visible">${p}</p>`).join('')}
           <div class="education-box">
             <h3>🎓 Lecciones Aprendidas</h3>
             <ul>
-              <li>Resiliencia ante la adversidad</li>
-              <li>Ciencia aplicada en situaciones extremas</li>
-              <li>Trabajo en equipo y cooperación</li>
-              <li>Innovación y pensamiento creativo</li>
+              ${HISTORIA.final.lecciones.map(l => `<li>${l}</li>`).join('')}
             </ul>
           </div>
           <div class="continue-wrap">
             <button id="restartBtn" class="continue-btn">🔄 REINICIAR AVENTURA</button>
           </div>
         </div>
-        <div class="media"><img src="img/final.gif" alt="final" style="width:240px"/></div>
+        <div class="media"><img src="${HISTORIA.final.img}" alt="final" style="width:240px"/></div>
       </section>
     `;
     
-    await speak('Final: regreso a casa. Gracias por acompañar a Aldrin y al gato.', 'narrator');
+    await speak(HISTORIA.final.cierre, 'narrator');
     
     document.getElementById('restartBtn').onclick = () => {
       config.current = 1;
