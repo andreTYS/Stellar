@@ -6,16 +6,19 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/api_auth.php';
 require_once __DIR__ . '/../includes/idempotencia.php';
 
-requireLogin('estudiante');
 header('Content-Type: application/json; charset=utf-8');
 
 // ── Input ─────────────────────────────────────────────────────
 $raw  = file_get_contents('php://input');
 $data = json_decode($raw, true);
 
-verifyCsrfJson(is_array($data) ? $data : null);
+// Acepta sesión web (con CSRF) o token Bearer: sin esto la app móvil
+// no podía enviar un quiz, solo leerlo.
+$usuario = requireAuthWebOApi(is_array($data) ? $data : null, 'estudiante');
 
 if (!is_array($data)) {
     echo json_encode(['ok' => false, 'error' => 'payload inválido']);
@@ -24,7 +27,7 @@ if (!is_array($data)) {
 
 $moduloId  = (int)($data['modulo_id'] ?? 0);
 $respuestas = $data['respuestas'] ?? [];
-$userId    = currentUserId();
+$userId    = (int)$usuario['id'];
 
 if (!$moduloId || !is_array($respuestas) || empty($respuestas)) {
     echo json_encode(['ok' => false, 'error' => 'datos inválidos']);

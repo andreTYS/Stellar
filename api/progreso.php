@@ -6,15 +6,17 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/api_auth.php';
 
-requireLogin('estudiante');
 header('Content-Type: application/json; charset=utf-8');
 
 // ── Input ─────────────────────────────────────────────────────
 $raw  = file_get_contents('php://input');
 $data = json_decode($raw, true);
 
-verifyCsrfJson(is_array($data) ? $data : null);
+// Sesión web (con CSRF) o token Bearer de la app.
+$user = requireAuthWebOApi(is_array($data) ? $data : null, 'estudiante');
 
 if (!is_array($data)) {
     echo json_encode(['ok' => false, 'error' => 'payload inválido']);
@@ -23,8 +25,7 @@ if (!is_array($data)) {
 
 $moduloId = (int)($data['modulo_id'] ?? 0);
 $paso     = (int)($data['paso']      ?? 0);   // 1–4
-$user     = currentUser();
-$userId   = currentUserId();
+$userId   = (int)$user['id'];
 
 if (!$moduloId || $paso < 1 || $paso > 4) {
     echo json_encode(['ok' => false, 'error' => 'datos inválidos']);

@@ -171,3 +171,37 @@ function apiUsuarioPublico(array $u): array
         'colegio_id'=> $u['colegio_id'] !== null ? (int)$u['colegio_id'] : null,
     ];
 }
+
+/**
+ * Autenticación que acepta las dos vías: la sesión de la web con su
+ * token CSRF, o el token Bearer de la app móvil.
+ *
+ * Los endpoints de quiz, progreso, entregable y asistencia nacieron
+ * solo con requireLogin(), es decir solo con sesión de navegador. La
+ * app móvil no tiene cookies de sesión, así que no podía llamarlos: la
+ * app quedaba reducida a leer.
+ *
+ * @param array|null $cuerpo cuerpo JSON ya decodificado, para el CSRF
+ * @param string ...$roles   roles permitidos; vacío = cualquiera
+ * @return array usuario, con id y rol garantizados
+ */
+function requireAuthWebOApi(?array $cuerpo, string ...$roles): array
+{
+    if (isLoggedIn()) {
+        // En la web el token CSRF es obligatorio: la cookie de sesión
+        // viaja sola y sin él cualquier sitio podría enviar por ti.
+        verifyCsrfJson($cuerpo);
+        $usuario = currentUser();
+        $usuario['id']  = currentUserId();
+        $usuario['rol'] = currentRole();
+
+        if (!empty($roles) && !in_array($usuario['rol'], $roles, true)) {
+            apiError('Tu rol no tiene acceso a este recurso.', 403);
+        }
+        return $usuario;
+    }
+
+    // Con token Bearer no hace falta CSRF: el token no se envía solo,
+    // hay que ponerlo a mano en la cabecera.
+    return requireApiAuth(...$roles);
+}

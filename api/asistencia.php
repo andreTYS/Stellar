@@ -9,8 +9,9 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/api_auth.php';
 
-requireLogin('practicante');
 header('Content-Type: application/json; charset=utf-8');
 
 // ── Only POST ─────────────────────────────────────────────────
@@ -24,7 +25,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $raw  = file_get_contents('php://input');
 $data = json_decode($raw, true);
 
-verifyCsrfJson(is_array($data) ? $data : null);
+// Sesión web o token Bearer: la asistencia se pasa desde el aula, que
+// es justo donde el practicante tiene el celular y no una computadora.
+$usuario = requireAuthWebOApi(is_array($data) ? $data : null, 'practicante');
 
 if (!is_array($data)) {
     echo json_encode(['ok' => false, 'error' => 'payload inválido']);
@@ -36,7 +39,7 @@ $moduloId    = (int)($data['modulo_id']    ?? 0);
 $fechaSesion = trim($data['fecha_sesion']  ?? '');
 $asistentes  = $data['asistentes']         ?? [];  // array of estudiante_id ints
 $notas       = trim($data['notas']         ?? '');
-$userId      = currentUserId();
+$userId      = (int)$usuario['id'];
 
 // ── Validation ────────────────────────────────────────────────
 $errors = [];

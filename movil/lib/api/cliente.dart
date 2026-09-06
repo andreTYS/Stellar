@@ -201,6 +201,86 @@ class ClienteApi {
         .map((h) => Hijo.desdeJson(h as Map<String, dynamic>))
         .toList();
   }
+
+  /// Contenido completo de un módulo: los cuatro pasos y las preguntas.
+  Future<DetalleModulo> modulo(int id) async =>
+      DetalleModulo.desdeJson(await _get('movil.php?recurso=modulo&id=$id'));
+
+  // ── Escritura ────────────────────────────────────────────
+  // Estos endpoints nacieron aceptando solo la sesión del navegador.
+  // Ahora también aceptan el token, que es lo que permite que la app
+  // deje de ser de solo lectura.
+
+  /// Marca un paso como visto y devuelve el siguiente.
+  Future<Map<String, dynamic>> avanzarPaso(int moduloId, int paso) =>
+      _post('progreso.php', {'modulo_id': moduloId, 'paso': paso});
+
+  /// Envía las respuestas del quiz. `respuestas` va como
+  /// {idPregunta: índiceElegido}.
+  Future<ResultadoQuiz> enviarQuiz(int moduloId, Map<int, int> respuestas) async {
+    final datos = await _post('quiz.php', {
+      'modulo_id': moduloId,
+      'respuestas': respuestas.entries
+          .map((e) => {'pregunta_id': e.key, 'opcion_elegida': e.value})
+          .toList(),
+    });
+    return ResultadoQuiz.desdeJson(datos);
+  }
+
+  /// Sube la foto del entregable.
+  ///
+  /// Va como multipart, no como JSON: el archivo en base64 dentro de un
+  /// JSON crecería un tercio, y con la conexión de un aula eso se nota.
+  Future<String> subirEntregable({
+    required int moduloId,
+    required String formato,
+    required String rutaArchivo,
+  }) async {
+    final peticion = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/api/entregable.php'),
+    );
+    if (_token != null) {
+      peticion.headers['Authorization'] = 'Bearer $_token';
+    }
+    peticion.fields['modulo_id'] = moduloId.toString();
+    peticion.fields['formato'] = formato;
+    peticion.files.add(await http.MultipartFile.fromPath('archivo', rutaArchivo));
+
+    try {
+      // Más tiempo que el resto: aquí viaja una foto, no un JSON corto.
+      final flujo = await peticion.send().timeout(const Duration(seconds: 60));
+      final r = await http.Response.fromStream(flujo);
+      final datos = _procesar(r);
+      return datos['url'] as String;
+    } on SocketException catch (e) {
+      throw _errorDeRed(e);
+    } on TimeoutException {
+      throw const ErrorApi('La foto tardó demasiado en subir. Reinténtalo con mejor señal.', 0);
+    }
+  }
+
+  // ── Practicante ──────────────────────────────────────────
+
+  Future<DatosAsistencia> aulas() async =>
+      DatosAsistencia.desdeJson(await _get('movil.php?recurso=aulas'));
+
+  Future<int> registrarAsistencia({
+    required int aulaId,
+    required int moduloId,
+    required String fecha,
+    required List<int> presentes,
+    String notas = '',
+  }) async {
+    final datos = await _post('asistencia.php', {
+      'aula_id': aulaId,
+      'modulo_id': moduloId,
+      'fecha_sesion': fecha,
+      'asistentes': presentes,
+      'notas': notas,
+    });
+    return datos['asistentes'] as int? ?? presentes.length;
+  }
 }
 
 // ── Modelos ────────────────────────────────────────────────
@@ -380,5 +460,185 @@ class Hijo {
         estrellas: j['estrellas'] as int? ?? 0,
         logros: j['logros'] as int? ?? 0,
         diasSinEntrar: j['dias_sin_entrar'] as int?,
+      );
+}
+
+// ── Modelos del módulo ─────────────────────────────────────
+
+class PreguntaQuiz {
+  final int id;
+  final String texto;
+  final List<String> opciones;
+
+  const PreguntaQuiz({
+    required this.id,
+    required this.texto,
+    required this.opciones,
+  });
+
+  factory PreguntaQuiz.desdeJson(Map<String, dynamic> j) => PreguntaQuiz(
+        id: j['id'] as int,
+        texto: j['texto'] as String? ?? '',
+        // El servidor no manda cuál es la correcta: en el celular el
+        // JSON está al alcance de quien sepa mirarlo.
+        opciones: (j['opciones'] as List? ?? const [])
+            .map((o) => o.toString())
+            .toList(),
+      );
+}
+
+class Paso {
+  final int numero;
+  final String tipo;   // historia · actividad · quiz · entregable
+  final Map<String, dynamic> contenido;
+  final List<PreguntaQuiz> preguntas;
+
+  const Paso({
+    required this.numero,
+    required this.tipo,
+    required this.contenido,
+    required this.preguntas,
+  });
+
+  factory Paso.desdeJson(Map<String, dynamic> j) => Paso(
+        numero: j['numero'] as int? ?? 0,
+        tipo: j['tipo'] as String? ?? '',
+        contenido: (j['contenido'] as Map?)?.cast<String, dynamic>() ?? const {},
+        preguntas: (j['preguntas'] as List? ?? const [])
+            .map((p) => PreguntaQuiz.desdeJson(p as Map<String, dynamic>))
+            .toList(),
+      );
+
+  /// Lista de textos de una clave del contenido (materiales,
+  /// instrucciones, conceptos…). El JSON las guarda como arreglo.
+  List<String> lista(String clave) =>
+      (contenido[clave] as List? ?? const []).map((x) => x.toString()).toList();
+
+  String texto(String clave) => (contenido[clave] ?? '').toString();
+}
+
+class DetalleModulo {
+  final int id;
+  final String titulo;
+  final String curso;
+  final String color;
+  final int minutos;
+  final List<Paso> pasos;
+  final int pasoActual;
+  final bool completado;
+  final int estrellas;
+
+  const DetalleModulo({
+    required this.id,
+    required this.titulo,
+    required this.curso,
+    required this.color,
+    required this.minutos,
+    required this.pasos,
+    required this.pasoActual,
+    required this.completado,
+    required this.estrellas,
+  });
+
+  factory DetalleModulo.desdeJson(Map<String, dynamic> j) {
+    final m = j['modulo'] as Map<String, dynamic>;
+    final p = (j['progreso'] as Map?)?.cast<String, dynamic>() ?? const {};
+    return DetalleModulo(
+      id: m['id'] as int,
+      titulo: m['titulo'] as String? ?? '',
+      curso: m['curso'] as String? ?? '',
+      color: m['color'] as String? ?? '#4361ee',
+      minutos: m['minutos'] as int? ?? 45,
+      pasos: (j['pasos'] as List)
+          .map((x) => Paso.desdeJson(x as Map<String, dynamic>))
+          .toList(),
+      pasoActual: p['paso_actual'] as int? ?? 1,
+      completado: p['completado'] as bool? ?? false,
+      estrellas: p['estrellas'] as int? ?? 0,
+    );
+  }
+}
+
+class ResultadoQuiz {
+  final int correctas;
+  final int total;
+  final int estrellas;
+
+  const ResultadoQuiz({
+    required this.correctas,
+    required this.total,
+    required this.estrellas,
+  });
+
+  factory ResultadoQuiz.desdeJson(Map<String, dynamic> j) => ResultadoQuiz(
+        correctas: j['correctas'] as int? ?? 0,
+        total: j['total'] as int? ?? 0,
+        estrellas: j['estrellas'] as int? ?? 0,
+      );
+}
+
+// ── Modelos del practicante ────────────────────────────────
+
+class EstudianteAula {
+  final int id;
+  final String nombre;
+
+  const EstudianteAula({required this.id, required this.nombre});
+
+  factory EstudianteAula.desdeJson(Map<String, dynamic> j) =>
+      EstudianteAula(id: j['id'] as int, nombre: j['nombre'] as String? ?? '');
+}
+
+class AulaPracticante {
+  final int id;
+  final String nombre;
+  final List<EstudianteAula> estudiantes;
+
+  const AulaPracticante({
+    required this.id,
+    required this.nombre,
+    required this.estudiantes,
+  });
+
+  factory AulaPracticante.desdeJson(Map<String, dynamic> j) => AulaPracticante(
+        id: j['id'] as int,
+        nombre: j['nombre'] as String? ?? '',
+        estudiantes: (j['estudiantes'] as List? ?? const [])
+            .map((e) => EstudianteAula.desdeJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+}
+
+class ModuloCatalogo {
+  final int id;
+  final String titulo;
+  final String curso;
+
+  const ModuloCatalogo({
+    required this.id,
+    required this.titulo,
+    required this.curso,
+  });
+
+  factory ModuloCatalogo.desdeJson(Map<String, dynamic> j) => ModuloCatalogo(
+        id: j['id'] as int,
+        titulo: j['titulo'] as String? ?? '',
+        curso: j['curso'] as String? ?? '',
+      );
+}
+
+class DatosAsistencia {
+  final List<AulaPracticante> aulas;
+  final List<ModuloCatalogo> modulos;
+
+  const DatosAsistencia({required this.aulas, required this.modulos});
+
+  factory DatosAsistencia.desdeJson(Map<String, dynamic> j) => DatosAsistencia(
+        aulas: (j['aulas'] as List? ?? const [])
+            .map((a) => AulaPracticante.desdeJson(a as Map<String, dynamic>))
+            .toList(),
+        modulos: (j['modulos'] as List? ?? const [])
+            .map((m) => ModuloCatalogo.desdeJson(m as Map<String, dynamic>))
+            .toList(),
       );
 }

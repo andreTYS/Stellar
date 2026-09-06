@@ -16,6 +16,11 @@ dependencies:
   # generación de código para nueve endpoints.
   http: ^1.2.2
 
+  # Cámara y galería para la foto del entregable. Se configura sola
+  # con el android/ que genera flutter create; no hace falta tocar
+  # gradle a mano.
+  image_picker: ^1.1.2
+
   # Guarda el token entre arranques. Para producción conviene mover el
   # token a flutter_secure_storage, que usa el llavero del sistema.
   shared_preferences: ^2.3.2

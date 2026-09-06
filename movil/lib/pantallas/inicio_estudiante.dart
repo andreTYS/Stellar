@@ -1,8 +1,7 @@
-import 'dart:ui' show FontFeature;
-
 import 'package:flutter/material.dart';
 
 import '../api/cliente.dart';
+import 'modulo.dart';
 import 'login.dart';
 
 /// Convierte '#4361ee' del backend en un Color de Flutter.
@@ -361,6 +360,30 @@ class _PantallaCursoState extends State<PantallaCurso> {
                               ? 'Sin empezar'
                               : 'Completa el módulo anterior',
                 ),
+                trailing: m.desbloqueado
+                    ? const Icon(Icons.chevron_right)
+                    : null,
+                // Los módulos se listaban y no se podían abrir: para
+                // estudiar había que salir al navegador.
+                onTap: !m.desbloqueado
+                    ? null
+                    : () async {
+                        final hecho = await Navigator.of(context).push<bool>(
+                          MaterialPageRoute(
+                            builder: (_) => PantallaModulo(
+                              api: widget.api,
+                              moduloId: m.id,
+                              titulo: m.titulo,
+                            ),
+                          ),
+                        );
+                        // Al volver de completar, la lista tiene que
+                        // reflejar el módulo desbloqueado siguiente.
+                        if (hecho == true && context.mounted) {
+                          setState(() =>
+                              _datos = widget.api.curso(widget.cursoId));
+                        }
+                      },
               );
             },
           );

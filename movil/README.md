@@ -1,9 +1,26 @@
 # App móvil de INNOVA-STEAM
 
-App Flutter para **estudiante** y **apoderado**. Los otros cuatro roles siguen
-en la web, donde una pantalla grande ayuda a calificar y ver reportes.
+App Flutter para **estudiante**, **apoderado** y **practicante**. Docente y
+administración siguen en la web, donde una pantalla grande ayuda a calificar y
+ver reportes.
 
 El backend es el mismo PHP de siempre: la app no lo sustituye, lo consume.
+
+## Qué se puede hacer desde el celular
+
+| Rol | Pantallas |
+|---|---|
+| Estudiante | Cursos, módulos y **el módulo completo**: historia, actividad, quiz y entrega de la foto del trabajo |
+| Apoderado | Progreso de sus hijos |
+| Practicante | **Pasar asistencia** en el aula: aula, módulo trabajado, presentes y notas |
+
+Hasta hace poco la app era de solo lectura, y no por diseño: los endpoints de
+escritura —quiz, progreso, entregable, asistencia— solo aceptaban la sesión del
+navegador. Ahora aceptan también el token, así que la app puede escribir.
+
+El celular es el aparato que los estudiantes sí tienen, y el practicante
+trabaja de pie en el aula. Que ambos tuvieran que ir a una computadora para lo
+más frecuente de su día era el problema real.
 
 ## Antes de empezar
 
@@ -178,3 +195,20 @@ contrato de la API pasan, incluido que un acceso sin token responde 401 en
 JSON y no un 302 a HTML. **El código Dart no está compilado**: el entorno
 donde se escribió no tenía Flutter ni Dart instalados, así que puede necesitar
 algún ajuste en el primer `flutter run`.
+
+## Pruebas
+
+```bash
+flutter analyze     # sin avisos
+flutter test        # tres pruebas de widget
+```
+
+Las pruebas de `test/modulo_test.dart` levantan las pantallas reales contra un
+servidor simulado con la forma exacta que devuelve `api/movil.php`, y
+comprueban lo que importa: que el módulo recorre sus cuatro pasos, que el quiz
+envía la opción elegida por índice, que **no se puede saltar el quiz sin
+responderlo**, que sin foto no se puede entregar, y que la asistencia manda el
+aula, el módulo, la fecha en formato ISO y solo los estudiantes marcados.
+
+Si cambias el contrato de `api/movil.php`, esas respuestas simuladas dejan de
+reflejar la realidad: hay que actualizarlas en el mismo cambio.

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'api/cliente.dart';
+import 'pantallas/asistencia.dart';
 import 'pantallas/login.dart';
 import 'pantallas/inicio_estudiante.dart';
 import 'pantallas/hijos_apoderado.dart';
@@ -108,15 +109,20 @@ class _ArranqueState extends State<Arranque> {
   }
 }
 
-/// Cada rol entra a su propia pantalla. La app cubre estudiante y
-/// apoderado; los demás roles siguen usando la web, donde una pantalla
-/// grande es una ventaja para calificar y ver reportes.
+/// Cada rol entra a su propia pantalla. La app cubre estudiante,
+/// apoderado y practicante; docente y administración siguen en la web,
+/// donde una pantalla grande es una ventaja para calificar y ver
+/// reportes.
 Widget pantallaParaRol(ClienteApi api, Usuario usuario) {
   switch (usuario.rol) {
     case 'estudiante':
       return PantallaInicioEstudiante(api: api, usuario: usuario);
     case 'apoderado':
       return PantallaHijos(api: api, usuario: usuario);
+    case 'practicante':
+      // El practicante trabaja de pie en el aula: pedirle una
+      // computadora para marcar quién vino no tiene sentido.
+      return PantallaAsistencia(api: api, usuario: usuario);
     default:
       return PantallaRolNoSoportado(api: api, usuario: usuario);
   }

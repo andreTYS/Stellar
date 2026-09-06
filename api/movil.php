@@ -82,7 +82,9 @@ switch ($recurso) {
 
         // Todo el progreso del curso de una vez, igual que en la web.
         $progreso = getProgresoPorCurso($id, $cursoId);
-        $modulos  = getModulosByCurso($cursoId);
+        // Por ciclo, igual que la web: sin esto un estudiante de
+        // primaria vería en el celular los módulos de secundaria.
+        $modulos  = getModulosByCurso($cursoId, cicloDeEstudiante($id));
 
         $salida = [];
         $anteriorCompletado = true;   // el primero siempre se desbloquea
@@ -157,6 +159,113 @@ switch ($recurso) {
         ]);
     }
 
+    // ── Contenido de un módulo ───────────────────────────────
+    // La app solo sabía listar; para estudiar de verdad necesita los
+    // cuatro pasos y las preguntas del quiz.
+    case 'modulo': {
+        $u  = requireApiAuth('estudiante');
+        $id = (int)$u['id'];
+        $moduloId = (int)($_GET['id'] ?? 0);
+        if ($moduloId <= 0) apiError('Falta el id del módulo.', 422);
+
+        $modulo = getModuloById($moduloId);
+        if (!$modulo) apiError('Módulo no encontrado.', 404);
+
+        $pasos = [];
+        foreach (getPasosByModulo($moduloId) as $p) {
+            $contenido = is_array($p['contenido'])
+                ? $p['contenido']
+                : (json_decode((string)$p['contenido'], true) ?: []);
+
+            $fila = [
+                'numero'    => (int)$p['numero_paso'],
+                'tipo'      => $p['tipo'],
+                'contenido' => $contenido,
+            ];
+
+            // Las preguntas van aparte, y SIN decir cuál es la correcta:
+            // en la app el JSON está a la vista de quien sepa mirarlo.
+            if ($p['tipo'] === 'quiz') {
+                $fila['preguntas'] = array_map(static function (array $q): array {
+                    $ops = is_array($q['opciones'])
+                        ? $q['opciones']
+                        : (json_decode((string)$q['opciones'], true) ?: []);
+                    return [
+                        'id'       => (int)$q['id'],
+                        'texto'    => $q['texto'],
+                        'opciones' => array_map(fn($o) => (string)($o['texto'] ?? ''), $ops),
+                    ];
+                }, getPreguntasByPaso((int)$p['id']));
+            }
+
+            $pasos[] = $fila;
+        }
+
+        $progreso = getProgreso($id, $moduloId);
+
+        apiJson([
+            'ok' => true,
+            'modulo' => [
+                'id'          => (int)$modulo['id'],
+                'titulo'      => $modulo['titulo'],
+                'descripcion' => $modulo['descripcion'],
+                'curso'       => $modulo['curso_nombre'],
+                'color'       => $modulo['color_hex'] ?: '#4361ee',
+                'minutos'     => (int)$modulo['minutos_estimados'],
+            ],
+            'pasos'    => $pasos,
+            'progreso' => [
+                'paso_actual' => $progreso ? (int)$progreso['paso_actual'] : 1,
+                'completado'  => (bool)($progreso['completado'] ?? false),
+                'estrellas'   => $progreso ? (int)$progreso['estrellas_quiz'] : 0,
+            ],
+        ]);
+    }
+
+    // ── Aulas del practicante, con sus estudiantes ───────────
+    // Para pasar asistencia desde el celular, que es lo que lleva
+    // encima en el aula.
+    case 'aulas': {
+        $u  = requireApiAuth('practicante');
+        $id = (int)$u['id'];
+
+        $aulas = [];
+        foreach (getAulasByPracticante($id) as $a) {
+            $estudiantes = array_map(static function (array $e): array {
+                return [
+                    'id'     => (int)$e['id'],
+                    'nombre' => trim($e['apellido'] . ', ' . $e['nombre']),
+                ];
+            }, getEstudiantesByAula((int)$a['id']));
+
+            $aulas[] = [
+                'id'          => (int)$a['id'],
+                'nombre'      => aulaLabel($a),
+                'estudiantes' => $estudiantes,
+            ];
+        }
+
+        // Los módulos del catálogo, para elegir cuál se trabajó. Van
+        // en una sola lista y no por aula: son los mismos.
+        $catalogo = $pdo->query(
+            'SELECT m.id, m.titulo, c.nombre AS curso
+               FROM modulos m JOIN cursos c ON c.id = m.curso_id
+              WHERE m.activo = 1 ORDER BY c.id, m.orden'
+        )->fetchAll();
+
+        apiJson([
+            'ok'      => true,
+            'aulas'   => $aulas,
+            'modulos' => array_map(static function (array $m): array {
+                return [
+                    'id'     => (int)$m['id'],
+                    'titulo' => $m['titulo'],
+                    'curso'  => $m['curso'],
+                ];
+            }, $catalogo),
+        ]);
+    }
+
     default:
-        apiError('Recurso no reconocido. Usa inicio, curso o hijos.', 404);
+        apiError('Recurso no reconocido. Usa inicio, curso, modulo, aulas o hijos.', 404);
 }

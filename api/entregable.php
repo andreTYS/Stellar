@@ -6,9 +6,10 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/api_auth.php';
 require_once __DIR__ . '/../includes/idempotencia.php';
 
-requireLogin('estudiante');
 header('Content-Type: application/json; charset=utf-8');
 
 // ── Only POST ─────────────────────────────────────────────────
@@ -18,12 +19,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-verifyCsrf();
+// Va como multipart, no como JSON, así que el token CSRF llega por
+// $_POST. La app móvil, en cambio, manda Bearer y no necesita CSRF.
+$usuario = requireAuthWebOApi($_POST, 'estudiante');
 
 // ── Input ─────────────────────────────────────────────────────
 $moduloId = (int)($_POST['modulo_id'] ?? 0);
 $formato  = trim($_POST['formato'] ?? '');
-$userId   = currentUserId();
+$userId   = (int)$usuario['id'];
 
 if (!$moduloId) {
     echo json_encode(['ok' => false, 'error' => 'modulo_id requerido']);
