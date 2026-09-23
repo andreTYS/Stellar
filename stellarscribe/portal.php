@@ -136,6 +136,71 @@ require_once __DIR__ . '/../includes/header.php';
   <!-- Left: Chapters + CME ─────────────────────────────────── -->
   <div style="display:flex;flex-direction:column;gap:20px">
 
+    <!-- ── Biblioteca de ciencia ──────────────────────────────
+         Va primero y ocupa el ancho entero a propósito: las
+         historias se leen una vez, la biblioteca se vuelve a
+         visitar. Es lo que convierte StellarScribe en un sitio
+         donde aprender ciencia y no solo en dos cuentos. -->
+    <?php
+      $bibTotal = 0; $bibLeidos = 0; $bibDestacados = [];
+      try {
+          $bd = getDB();
+          $bibTotal = (int)$bd->query('SELECT COUNT(*) FROM ciencia_articulos WHERE activo=1')->fetchColumn();
+          $q = $bd->prepare('SELECT COUNT(*) FROM ciencia_leidos WHERE usuario_id=?');
+          $q->execute([currentUserId()]);
+          $bibLeidos = (int)$q->fetchColumn();
+          // Tres preguntas que todavía no ha leído, para dar por dónde entrar.
+          $q2 = $bd->prepare(
+              'SELECT a.slug, a.pregunta, t.color_hex
+                 FROM ciencia_articulos a
+                 JOIN ciencia_temas t ON t.id=a.tema_id
+            LEFT JOIN ciencia_leidos l ON l.articulo_id=a.id AND l.usuario_id=?
+                WHERE a.activo=1 AND l.articulo_id IS NULL
+             ORDER BY RAND() LIMIT 3'
+          );
+          $q2->execute([currentUserId()]);
+          $bibDestacados = $q2->fetchAll();
+      } catch (\Throwable $e) {
+          // Sin la migración 015 aplicada, la tarjeta simplemente no sale.
+      }
+    ?>
+    <?php if ($bibTotal > 0): ?>
+    <div class="card" style="border-top:3px solid #2f8fa8">
+      <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <h2 class="card-title" style="font-size:15px;display:flex;align-items:center;gap:7px">
+          <i data-lucide="library" style="width:16px;height:16px"></i> Biblioteca de ciencia
+        </h2>
+        <span style="font-size:12px;color:var(--text-muted)">
+          <?= $bibLeidos ?> de <?= $bibTotal ?> leídos
+        </span>
+      </div>
+
+      <p style="font-size:13px;color:var(--text-secondary);line-height:1.55;margin-bottom:14px">
+        Preguntas cortas con respuesta clara, un dibujo que lo explica y algo
+        que puedes hacer en casa. Entra por la que te dé curiosidad.
+      </p>
+
+      <?php if ($bibDestacados): ?>
+      <div style="display:grid;gap:8px;margin-bottom:14px">
+        <?php foreach ($bibDestacados as $d): ?>
+        <a href="<?= BASE_URL ?>/stellarscribe/articulo.php?a=<?= urlencode($d['slug']) ?>"
+           style="display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:9px;
+                  background:var(--bg-elevated);text-decoration:none;
+                  border-left:2px solid <?= htmlspecialchars($d['color_hex'], ENT_QUOTES) ?>">
+          <i data-lucide="help-circle" style="width:14px;height:14px;color:<?= htmlspecialchars($d['color_hex'], ENT_QUOTES) ?>;flex-shrink:0"></i>
+          <span style="font-size:13px;color:var(--text-primary);line-height:1.35"><?= sanitize($d['pregunta']) ?></span>
+        </a>
+        <?php endforeach; ?>
+      </div>
+      <?php endif; ?>
+
+      <a href="<?= BASE_URL ?>/stellarscribe/ciencia.php" class="btn btn-primary" style="width:100%;justify-content:center">
+        <i data-lucide="library" style="width:15px;height:15px"></i>
+        Ver la biblioteca completa
+      </a>
+    </div>
+    <?php endif; ?>
+
     <!-- Chapter launch cards -->
     <div class="card">
       <div class="card-header">
