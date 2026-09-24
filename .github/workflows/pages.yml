@@ -1,0 +1,87 @@
+### Publica el sitio público en GitHub Pages.
+#
+# Ojo con lo que esto es y lo que no: GitHub Pages solo sirve archivos.
+# La plataforma completa —login, aulas, calificación, asistencia, el
+# asistente— necesita PHP y base de datos, y NO corre aquí. Lo que se
+# publica es la cara pública: la portada, las dos historias de
+# StellarScribe y los 18 artículos de la biblioteca de ciencia.
+#
+# El sitio se genera con herramientas/construir_sitio.php. En el runner
+# no hay MySQL, así que el generador lee los artículos del volcado
+# herramientas/contenido_ciencia.json, que se actualiza solo cuando se
+# construye en una máquina que sí tiene base de datos.
+
+name: Publicar sitio en GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'herramientas/**'
+      - 'stellarscribe/**'
+      - 'assets/**'
+      - '.github/workflows/pages.yml'
+  # Para poder publicar a mano desde la pestaña Actions sin esperar a
+  # un push: es lo que hace falta la primera vez.
+  workflow_dispatch:
+
+# Un solo despliegue a la vez. Si llegan dos push seguidos, el segundo
+# espera en vez de pisar al primero a medio subir.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  construir:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, json
+          coverage: none
+
+      - name: Generar el sitio
+        # En Pages de proyecto el sitio cuelga de /<repo>, no de la raíz
+        # del dominio. Si la base no coincide, se rompen todos los
+        # enlaces y las hojas de estilo.
+        run: php herramientas/construir_sitio.php --base=/${{ github.event.repository.name }}
+
+      - name: Comprobar que salió algo utilizable
+        # Sin esto, un fallo del generador publicaría un sitio vacío y
+        # nadie se enteraría hasta abrirlo.
+        run: |
+          set -e
+          test -f _site/index.html            || { echo "falta la portada"; exit 1; }
+          test -f _site/ciencia/index.html    || { echo "falta la biblioteca"; exit 1; }
+          test -f _site/stellarscribe/historias.js || { echo "falta historias.js"; exit 1; }
+          test -f _site/.nojekyll             || { echo "falta .nojekyll"; exit 1; }
+          n=$(ls _site/ciencia/*.html | wc -l)
+          [ "$n" -ge 19 ] || { echo "solo $n páginas de ciencia"; exit 1; }
+          if grep -rIl '<?php' _site --include='*.html' | grep .; then
+            echo "quedó PHP sin resolver"; exit 1
+          fi
+          echo "OK: $n páginas de ciencia, portada e historias presentes"
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  desplegar:
+    needs: construir
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.despliegue.outputs.page_url }}
+    steps:
+      - id: despliegue
+        uses: actions/deploy-pages@v4
