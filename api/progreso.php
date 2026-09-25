@@ -77,18 +77,32 @@ if ($paso >= 4) {
 
     $completado = true;
 
-    // Award achievements
-    try {
-        $totalComp = (int)$pdo->prepare('SELECT COUNT(*) FROM progreso_estudiante WHERE estudiante_id=? AND completado=1')
-            ->execute([$userId]) ? $pdo->query("SELECT COUNT(*) FROM progreso_estudiante WHERE estudiante_id=$userId AND completado=1")->fetchColumn() : 0;
-        $slugs = ['primer-modulo'];
-        if ($totalComp >= 5)  $slugs[] = 'explorador-aprendiz';
-        if ($totalComp >= 10) $slugs[] = 'maestro-steam';
-        foreach ($slugs as $slug) {
-            $lid = $pdo->query("SELECT id FROM logros WHERE slug='$slug'")->fetchColumn();
-            if ($lid) $pdo->prepare('INSERT IGNORE INTO usuario_logros (usuario_id,logro_id,obtenido_en) VALUES (?,?,NOW())')->execute([$userId,$lid]);
-        }
-    } catch (\Throwable $e) {}
+    // ── Logros ───────────────────────────────────────────────
+    // Esto pedía 'explorador-aprendiz' y 'maestro-steam', dos slugs que
+    // no están en la tabla: la consulta devolvía false, el catch estaba
+    // vacío y nadie se enteraba. El logro "Maestro STEAM" no se podía
+    // ganar de ninguna manera. El de la tabla se llama 'todos-modulos'.
+    $stmtComp = $pdo->prepare(
+        'SELECT COUNT(*) FROM progreso_estudiante WHERE estudiante_id = ? AND completado = 1'
+    );
+    $stmtComp->execute([$userId]);
+    $totalComp = (int)$stmtComp->fetchColumn();
+
+    concederLogro($userId, 'primer-modulo');
+
+    // "Maestro STEAM — completaste todos los módulos disponibles": los
+    // de SU ciclo, que son los únicos que puede ver. Con un número fijo
+    // (antes, 10) el de primaria lo ganaba sin terminar y el de
+    // secundaria no lo ganaba nunca.
+    $stmtTotal = $pdo->prepare(
+        "SELECT COUNT(*) FROM modulos WHERE activo = 1 AND grado_ciclo IN (?, 'ambos')"
+    );
+    $stmtTotal->execute([cicloDeEstudiante($userId)]);
+    $totalCiclo = (int)$stmtTotal->fetchColumn();
+
+    if ($totalCiclo > 0 && $totalComp >= $totalCiclo) {
+        concederLogro($userId, 'todos-modulos');
+    }
 }
 
 // ── Return current state ──────────────────────────────────────

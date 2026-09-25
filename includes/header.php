@@ -54,7 +54,12 @@ $navItems = match ($rol) {
         ['href' => BASE_URL . '/mensajes/',          'icon' => 'mail',             'label' => 'Mensajes',  'key' => 'mensajes'],
     ],
     'apoderado' => [
-        ['href' => BASE_URL . '/apoderado/index.php', 'icon' => 'home', 'label' => 'Inicio', 'key' => 'dashboard'],
+        ['href' => BASE_URL . '/apoderado/index.php',      'icon' => 'home',   'label' => 'Inicio',       'key' => 'dashboard'],
+        // El apoderado ya podía abrir StellarScribe y la biblioteca de
+        // ciencia —el permiso estaba—, pero no había ningún enlace: para
+        // llegar había que escribir la dirección a mano.
+        ['href' => BASE_URL . '/stellarscribe/ciencia.php', 'icon' => 'telescope', 'label' => 'Ciencia',  'key' => 'ciencia'],
+        ['href' => BASE_URL . '/mensajes/',                 'icon' => 'mail',      'label' => 'Mensajes', 'key' => 'mensajes'],
     ],
     default => [],
 };

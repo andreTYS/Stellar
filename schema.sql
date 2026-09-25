@@ -50,6 +50,7 @@ DROP TABLE IF EXISTS envios_idempotentes;
 DROP TABLE IF EXISTS ciencia_leidos;
 DROP TABLE IF EXISTS ciencia_articulos;
 DROP TABLE IF EXISTS ciencia_temas;
+DROP TABLE IF EXISTS dias_activos;
 
 DROP TABLE IF EXISTS asistencia;
 DROP TABLE IF EXISTS sesiones;

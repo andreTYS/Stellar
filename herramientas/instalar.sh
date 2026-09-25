@@ -33,6 +33,15 @@ if [[ "${1:-}" != "--si" ]]; then
   [[ "$respuesta" == "si" ]] || { echo "Cancelado."; exit 1; }
 fi
 
+# Se tira la base entera antes de empezar, en vez de fiarse de la
+# tanda de DROP TABLE de schema.sql. Esa lista hay que ir ampliándola a
+# mano cada vez que una migración añade una tabla, y cuando se queda
+# corta el archivo muere a media ejecución con un error 1451 de clave
+# foránea, dejando media docena de tablas ya borradas. Esto no se puede
+# quedar corto.
+echo "0/3  borrando la base anterior"
+"$MYSQL" "${args[@]}" -e "DROP DATABASE IF EXISTS innovasteam;"
+
 echo "1/3  schema.sql"
 "$MYSQL" "${args[@]}" < schema.sql
 

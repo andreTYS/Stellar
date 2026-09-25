@@ -140,6 +140,25 @@ function loginUser(string $emailOrCodigo, string $password): ?array
            ->execute([$user['id']]);
     } catch (\Throwable $e) {}
 
+    // ── Logros de constancia ─────────────────────────────────
+    // Solo los estudiantes coleccionan insignias; para el resto sería
+    // una escritura por cada inicio de sesión sin motivo.
+    if (($user['rol'] ?? '') === 'estudiante') {
+        $racha = registrarDiaActivo((int)$user['id']);
+
+        // "Constancia Sideral — 7 días seguidos usando la plataforma".
+        if ($racha >= 7) {
+            concederLogro((int)$user['id'], 'racha-7');
+        }
+
+        // "Observador Nocturno — iniciaste sesión antes de las 6am".
+        // La hora es la del servidor, que en un colegio de Moquegua es
+        // la del colegio: no hay zonas horarias de por medio.
+        if ((int)date('G') < 6) {
+            concederLogro((int)$user['id'], 'madrugador');
+        }
+    }
+
     return $user;
 }
 
@@ -579,6 +598,88 @@ function modulosDeLaSemana(int $estudianteId, int $limite = 3): array
     );
     $stmt->execute([$estudianteId]);
     return $stmt->fetchAll();
+}
+
+// ── Logros ───────────────────────────────────────────────────
+/**
+ * Concede un logro por su slug. Devuelve el nombre si es nuevo, null si
+ * ya lo tenía o si el slug no existe.
+ *
+ * Existe porque cada endpoint se lo montaba por su cuenta, y dos de
+ * ellos pedían slugs inventados —'explorador-aprendiz', 'maestro-steam'—
+ * que no están en la tabla. Como el catch estaba vacío, la consulta
+ * devolvía false, no se insertaba nada y nadie se enteraba: el logro no
+ * se podía ganar y la página seguía diciendo "bloqueado" para siempre.
+ */
+function concederLogro(int $usuarioId, string $slug): ?string
+{
+    if ($usuarioId <= 0 || $slug === '') return null;
+    try {
+        $pdo  = getDB();
+        $stmt = $pdo->prepare('SELECT id, nombre FROM logros WHERE slug = ?');
+        $stmt->execute([$slug]);
+        $logro = $stmt->fetch();
+
+        if (!$logro) {
+            // Un slug que no existe es un fallo de programación, no del
+            // estudiante: que quede en el log y no en silencio.
+            // Con comillas dobles, "«$slug»" no funciona: los bytes de »
+            // son >= 0x80 y PHP los admite dentro de un nombre de
+            // variable, así que busca $slug» y avisa de que no existe.
+            error_log('concederLogro: no existe el logro «' . $slug . '»');
+            return null;
+        }
+
+        $ins = $pdo->prepare(
+            'INSERT IGNORE INTO usuario_logros (usuario_id, logro_id, obtenido_en) VALUES (?,?,NOW())'
+        );
+        $ins->execute([$usuarioId, (int)$logro['id']]);
+        return $ins->rowCount() > 0 ? (string)$logro['nombre'] : null;
+    } catch (\Throwable $e) {
+        error_log('concederLogro(' . $slug . '): ' . $e->getMessage());
+        return null;
+    }
+}
+
+/**
+ * Deja constancia de que el usuario entró hoy y devuelve cuántos días
+ * seguidos lleva, contando hoy.
+ *
+ * usuarios.ultimo_acceso solo guarda la última vez, así que con esa
+ * columna no hay forma de saber si son siete días seguidos o el mismo
+ * día siete veces. Una fila por usuario y día, y la racha sale de
+ * contar hacia atrás.
+ */
+function registrarDiaActivo(int $usuarioId): int
+{
+    if ($usuarioId <= 0) return 0;
+    try {
+        $pdo = getDB();
+        $pdo->prepare('INSERT IGNORE INTO dias_activos (usuario_id, dia) VALUES (?, CURDATE())')
+            ->execute([$usuarioId]);
+
+        // Como mucho ocho días hacia atrás: la racha que interesa es de
+        // siete y no hace falta leer el historial entero.
+        $stmt = $pdo->prepare(
+            'SELECT dia FROM dias_activos
+              WHERE usuario_id = ? AND dia >= DATE_SUB(CURDATE(), INTERVAL 8 DAY)
+           ORDER BY dia DESC'
+        );
+        $stmt->execute([$usuarioId]);
+        $dias = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        $racha    = 0;
+        $esperado = new DateTime('today');
+        foreach ($dias as $d) {
+            if ($d !== $esperado->format('Y-m-d')) break;
+            $racha++;
+            $esperado->modify('-1 day');
+        }
+        return $racha;
+    } catch (\Throwable $e) {
+        error_log('registrarDiaActivo: ' . $e->getMessage());
+        return 0;
+    }
 }
 
 // ── Sesiones ─────────────────────────────────────────────────

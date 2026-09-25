@@ -228,6 +228,37 @@ INSERT IGNORE INTO progreso_estudiante (estudiante_id, modulo_id, paso_actual, c
 -- Isabella (colegio 3)
 (24, 2, 4, 0, NULL, NULL);
 
+-- ── Logros que se derivan de ese progreso ────────────────────
+-- El progreso de arriba se escribe directo en la tabla, sin pasar por
+-- api/progreso.php, que es quien concede las insignias. Sin esto, en
+-- una demostración la pantalla "Mis Logros" sale 0 de 13 para un
+-- estudiante que sí ha terminado tres módulos con quizzes perfectos, y
+-- parece que la mecánica no funciona.
+--
+-- Se conceden las dos que el propio progreso demuestra, y ninguna más.
+
+-- "Ingeniero STEAM": completaste tu primer módulo.
+INSERT IGNORE INTO usuario_logros (usuario_id, logro_id, obtenido_en)
+SELECT DISTINCT pe.estudiante_id, l.id, MAX(pe.completado_en)
+  FROM progreso_estudiante pe
+  JOIN logros l ON l.slug = 'primer-modulo'
+ WHERE pe.completado = 1
+ GROUP BY pe.estudiante_id, l.id;
+
+-- "Mente Científica": 100/100 en un quiz, que aquí son 3 estrellas.
+INSERT IGNORE INTO usuario_logros (usuario_id, logro_id, obtenido_en)
+SELECT DISTINCT pe.estudiante_id, l.id, MAX(pe.completado_en)
+  FROM progreso_estudiante pe
+  JOIN logros l ON l.slug = 'quiz-perfecto'
+ WHERE pe.estrellas_quiz = 3
+ GROUP BY pe.estudiante_id, l.id;
+
+-- Y el día del último avance cuenta como día activo, para que la racha
+-- no empiece de cero al instalar.
+INSERT IGNORE INTO dias_activos (usuario_id, dia)
+SELECT DISTINCT estudiante_id, DATE(completado_en)
+  FROM progreso_estudiante WHERE completado_en IS NOT NULL;
+
 -- ── Mensajes demo ────────────────────────────────────────────
 INSERT IGNORE INTO mensajes (id, remitente_id, destinatario_id, asunto, cuerpo, leido, created_at) VALUES
 (1, 10, 4,

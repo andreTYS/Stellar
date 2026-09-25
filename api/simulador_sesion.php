@@ -23,14 +23,36 @@ try {
     $pdo->prepare('UPDATE simulador_sesiones SET duracion_seg=?, completado=IF(?>=60,1,0) WHERE id=? AND usuario_id=?')
         ->execute([$dur, $dur, $id, $uid]);
 
-    // Achievement: primer simulador
+    // ── Logros ───────────────────────────────────────────────
+    // Aquí solo se concedía "primer simulador". Los otros dos que la
+    // tabla promete —"Astrónomo Amateur: 5+ minutos explorando el
+    // Sistema Solar" y "Meteorólogo Espacial: completaste el simulador
+    // de Clima Espacial"— no se concedían en ningún sitio de la
+    // plataforma: salían bloqueados para todo el mundo, para siempre.
     if ($dur >= 10) {
-        $logro = $pdo->query("SELECT id FROM logros WHERE slug='primer-sim'")->fetchColumn();
-        if ($logro) {
-            try {
-                $pdo->prepare('INSERT IGNORE INTO usuario_logros (usuario_id,logro_id) VALUES (?,?)')->execute([$uid, $logro]);
-            } catch (\Throwable $e) {}
+        concederLogro($uid, 'primer-sim');
+    }
+
+    // Cuál de los dos simuladores era esta sesión.
+    $stmtSim = $pdo->prepare('SELECT simulador FROM simulador_sesiones WHERE id = ? AND usuario_id = ?');
+    $stmtSim->execute([$id, $uid]);
+    $simulador = (string)($stmtSim->fetchColumn() ?: '');
+
+    if ($simulador === 'sistema-solar') {
+        // Cinco minutos sumando todas las visitas, no de una sentada:
+        // un niño de diez años no aguanta cinco minutos seguidos en una
+        // pantalla sin tocar nada, y tampoco haría falta.
+        $stmtTot = $pdo->prepare(
+            'SELECT COALESCE(SUM(duracion_seg),0) FROM simulador_sesiones
+              WHERE usuario_id = ? AND simulador = ?'
+        );
+        $stmtTot->execute([$uid, 'sistema-solar']);
+        if ((int)$stmtTot->fetchColumn() >= 300) {
+            concederLogro($uid, 'sim-solar-5min');
         }
+    } elseif ($simulador === 'clima-espacial' && $dur >= 60) {
+        // Un minuto es lo que la propia tabla considera "completado".
+        concederLogro($uid, 'sim-clima');
     }
 
     echo '{"ok":true}';
