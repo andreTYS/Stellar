@@ -145,6 +145,62 @@ include __DIR__ . '/../includes/header.php';
   </div>
 </div>
 
+<?php
+// Lo que la docente planificó para estos días. Sin esto, planificar el
+// aula no cambiaba absolutamente nada de lo que el estudiante veía.
+$semana = modulosDeLaSemana($estudianteId);
+if ($semana):
+?>
+<div class="card mb-32">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">Esta semana en tu aula</h2>
+      <p class="card-subtitle">Lo que tu docente planificó para estos días</p>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:2px;padding:6px">
+    <?php foreach ($semana as $s):
+      $hecho   = !empty($s['completado']);
+      $dia     = new DateTime((string)$s['fecha_planificada']);
+      $hoy     = new DateTime('today');
+      $difDias = (int)$hoy->diff($dia)->format('%r%a');
+      $cuando  = match (true) {
+          $difDias === 0  => 'hoy',
+          $difDias === 1  => 'mañana',
+          $difDias === -1 => 'ayer',
+          $difDias  >  1  => 'en ' . $difDias . ' días',
+          default         => 'hace ' . abs($difDias) . ' días',
+      };
+    ?>
+    <a href="<?= BASE_URL ?>/estudiante/curso.php?id=<?= (int)$s['curso_id'] ?>"
+       style="display:flex;align-items:center;gap:13px;padding:11px 14px;border-radius:10px;text-decoration:none;transition:background .15s"
+       onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''">
+      <span style="width:34px;height:34px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:<?= sanitize($s['color_hex']) ?>22;color:<?= sanitize($s['color_hex']) ?>">
+        <?= iconoCurso($s['icono'], 17) ?>
+      </span>
+      <span style="flex:1;min-width:0">
+        <span style="display:block;font-size:13.5px;font-weight:600;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+          <?= sanitize($s['titulo']) ?>
+        </span>
+        <span style="display:block;font-size:11.5px;color:var(--text-muted)">
+          <?= sanitize($s['curso']) ?> · <?= $cuando ?> · <?= (int)$s['minutos_estimados'] ?> min
+        </span>
+      </span>
+      <?php if ($hecho): ?>
+        <span style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--success);flex-shrink:0">
+          <i data-lucide="check-circle" style="width:14px;height:14px"></i> Hecho
+        </span>
+      <?php elseif (!empty($s['paso_actual'])): ?>
+        <span style="font-size:12px;font-weight:600;color:var(--warning);flex-shrink:0">A medias</span>
+      <?php else: ?>
+        <span style="font-size:12px;font-weight:600;color:var(--accent);flex-shrink:0">Empezar →</span>
+      <?php endif; ?>
+    </a>
+    <?php endforeach; ?>
+  </div>
+</div>
+<?php endif; ?>
+
 <?php if (!empty($ranking) && $miPosicion !== null): ?>
 <!-- Posición en el aula -->
 <div class="card mb-32">

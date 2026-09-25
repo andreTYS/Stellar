@@ -23,10 +23,17 @@ SET NAMES utf8mb4;
 -- ---------------------------------------------------------------------------
 -- 2. DROP TABLES (reverse FK order)
 -- ---------------------------------------------------------------------------
--- Tablas que añaden las migraciones 001/004/005/008. Van primero porque
--- todas apuntan a usuarios: sin borrarlas, reejecutar este archivo sobre
--- una base ya migrada falla con error 1451 al llegar a DROP usuarios, y
--- se queda a medias.
+-- Tablas que añaden las migraciones. Van primero porque todas apuntan a
+-- usuarios, a modulos o a entregables: sin borrarlas, reejecutar este
+-- archivo sobre una base ya migrada falla con error 1451 y se queda a
+-- medias, con media docena de tablas ya borradas.
+--
+-- Pasó de verdad: la lista solo cubría las migraciones 001/004/005/008
+-- y se quedó corta en cuanto 011 añadió entregable_criterios, que
+-- apunta a entregables. El DROP de entregables falló, la ejecución se
+-- detuvo ahí y las doce tablas de más arriba ya no estaban.
+--
+-- Al añadir una migración con una tabla nueva, añádela también aquí.
 DROP TABLE IF EXISTS api_tokens;
 DROP TABLE IF EXISTS login_intentos;
 DROP TABLE IF EXISTS apoderado_estudiante;
@@ -36,6 +43,13 @@ DROP TABLE IF EXISTS simulador_sesiones;
 DROP TABLE IF EXISTS capitulos_progreso;
 DROP TABLE IF EXISTS notificaciones;
 DROP TABLE IF EXISTS mensajes;
+DROP TABLE IF EXISTS chatbot_mensajes;
+DROP TABLE IF EXISTS entregable_criterios;
+DROP TABLE IF EXISTS rubrica_criterios;
+DROP TABLE IF EXISTS envios_idempotentes;
+DROP TABLE IF EXISTS ciencia_leidos;
+DROP TABLE IF EXISTS ciencia_articulos;
+DROP TABLE IF EXISTS ciencia_temas;
 
 DROP TABLE IF EXISTS asistencia;
 DROP TABLE IF EXISTS sesiones;
@@ -730,24 +744,28 @@ INSERT INTO quiz_preguntas (paso_id, texto, opciones, orden) VALUES
 
 
 -- ===========================================================================
--- 7. aula_modulos — 15 módulos asignados al aula 1, fechas semanales
+-- 7. aula_modulos — 15 módulos asignados al aula 1, una clase por semana
+--
+-- Las fechas son relativas al día en que se instala: con fechas fijas,
+-- una demostración en septiembre enseñaba un trimestre entero vencido y
+-- el estudiante no llegaba a ver nunca "Esta semana en tu aula".
 -- ===========================================================================
 INSERT INTO aula_modulos (aula_id, modulo_id, fecha_planificada, asignado_por) VALUES
-(1,  1, '2026-04-14', 1),
-(1,  2, '2026-04-21', 1),
-(1,  3, '2026-04-28', 1),
-(1,  4, '2026-05-05', 1),
-(1,  5, '2026-05-12', 1),
-(1,  6, '2026-05-19', 1),
-(1,  7, '2026-05-26', 1),
-(1,  8, '2026-06-02', 1),
-(1,  9, '2026-06-09', 1),
-(1, 10, '2026-06-16', 1),
-(1, 11, '2026-06-23', 1),
-(1, 12, '2026-06-30', 1),
-(1, 13, '2026-07-07', 1),
-(1, 14, '2026-07-14', 1),
-(1, 15, '2026-07-21', 1);
+(1,  1, DATE_ADD(CURDATE(), INTERVAL -21 DAY), 1),
+(1,  2, DATE_ADD(CURDATE(), INTERVAL -14 DAY), 1),
+(1,  3, DATE_ADD(CURDATE(), INTERVAL -7 DAY), 1),
+(1,  4, DATE_ADD(CURDATE(), INTERVAL +0 DAY), 1),
+(1,  5, DATE_ADD(CURDATE(), INTERVAL +7 DAY), 1),
+(1,  6, DATE_ADD(CURDATE(), INTERVAL +14 DAY), 1),
+(1,  7, DATE_ADD(CURDATE(), INTERVAL +21 DAY), 1),
+(1,  8, DATE_ADD(CURDATE(), INTERVAL +28 DAY), 1),
+(1,  9, DATE_ADD(CURDATE(), INTERVAL +35 DAY), 1),
+(1, 10, DATE_ADD(CURDATE(), INTERVAL +42 DAY), 1),
+(1, 11, DATE_ADD(CURDATE(), INTERVAL +49 DAY), 1),
+(1, 12, DATE_ADD(CURDATE(), INTERVAL +56 DAY), 1),
+(1, 13, DATE_ADD(CURDATE(), INTERVAL +63 DAY), 1),
+(1, 14, DATE_ADD(CURDATE(), INTERVAL +70 DAY), 1),
+(1, 15, DATE_ADD(CURDATE(), INTERVAL +77 DAY), 1);
 
 -- ===========================================================================
 -- Notificaciones & Mensajes (added in migration 001)

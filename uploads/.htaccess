@@ -1,0 +1,12 @@
+# Nada de lo que hay aquí lo escribe la plataforma: son archivos que
+# suben los estudiantes. Aunque api/entregable.php solo acepta imágenes
+# y les pone la extensión que dice el MIME real, si algún día se
+# ampliaran los formatos, esto evita que Apache ejecute lo que se
+# guarde en esta carpeta.
+php_flag engine off
+<IfModule mod_php.c>
+  php_flag engine off
+</IfModule>
+RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8 .phar
+AddType text/plain .php .phtml .php3 .php4 .php5 .php7 .php8 .phar
+Options -ExecCGI -Indexes

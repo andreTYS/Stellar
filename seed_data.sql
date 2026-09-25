@@ -160,12 +160,18 @@ INSERT IGNORE INTO estudiante_aula (estudiante_id, aula_id) VALUES
 (19, 5), (20, 5), (24, 5);
 
 -- ── Aula-Módulos ─────────────────────────────────────────────
+-- Fechas relativas al día de la instalación y no fijas: con fechas
+-- fijas, una demostración hecha meses después enseña un trimestre
+-- vencido y el estudiante no llega a ver "Esta semana en tu aula".
 INSERT IGNORE INTO aula_modulos (aula_id, modulo_id, fecha_planificada) VALUES
-(1, 1, '2026-07-10'), (1, 2, '2026-07-17'), (1, 4, '2026-07-24'), (1, 5, '2026-07-31'),
-(2, 1, '2026-07-10'), (2, 3, '2026-07-17'), (2, 7, '2026-07-24'),
-(3, 4, '2026-07-10'), (3, 6, '2026-07-17'), (3, 9, '2026-07-24'),
-(4, 5, '2026-07-10'), (4, 10,'2026-07-17'),
-(5, 2, '2026-07-10'), (5, 8, '2026-07-17');
+(1, 1, DATE_ADD(CURDATE(), INTERVAL -14 DAY)), (1, 2, DATE_ADD(CURDATE(), INTERVAL  -7 DAY)),
+(1, 4, DATE_ADD(CURDATE(), INTERVAL   0 DAY)), (1, 5, DATE_ADD(CURDATE(), INTERVAL  +7 DAY)),
+(2, 1, DATE_ADD(CURDATE(), INTERVAL  -7 DAY)), (2, 3, DATE_ADD(CURDATE(), INTERVAL  +2 DAY)),
+(2, 7, DATE_ADD(CURDATE(), INTERVAL  +9 DAY)),
+(3, 4, DATE_ADD(CURDATE(), INTERVAL  -3 DAY)), (3, 6, DATE_ADD(CURDATE(), INTERVAL  +4 DAY)),
+(3, 9, DATE_ADD(CURDATE(), INTERVAL +11 DAY)),
+(4, 5, DATE_ADD(CURDATE(), INTERVAL  -1 DAY)), (4, 10,DATE_ADD(CURDATE(), INTERVAL  +6 DAY)),
+(5, 2, DATE_ADD(CURDATE(), INTERVAL  +1 DAY)), (5, 8, DATE_ADD(CURDATE(), INTERVAL  +8 DAY));
 
 -- ── Progreso estudiantes ─────────────────────────────────────
 INSERT IGNORE INTO progreso_estudiante (estudiante_id, modulo_id, paso_actual, completado, completado_en, estrellas_quiz) VALUES

@@ -224,6 +224,20 @@ function cicloDeAula(?array $aula): string
 }
 
 /**
+ * El ciclo escrito como lo escribe el CNEB, para enseñárselo al docente:
+ * "ciclo_vii" no le dice nada a nadie.
+ */
+function cicloEtiqueta(string $ciclo): string
+{
+    return match ($ciclo) {
+        'ciclo_v'   => 'ciclo V (5.º y 6.º de primaria)',
+        'ciclo_vi'  => 'ciclo VI (1.º y 2.º de secundaria)',
+        'ciclo_vii' => 'ciclo VII (3.º a 5.º de secundaria)',
+        default     => $ciclo,
+    };
+}
+
+/**
  * Ciclo del estudiante, a partir del aula en la que está matriculado.
  * Sin aula, se asume ciclo V.
  */
@@ -479,6 +493,17 @@ function estudianteEnAulasDe(int $personalId, string $rol, int $estudianteId): b
 }
 
 /**
+ * ¿El aula es de este docente?
+ */
+function aulaEsDelDocente(int $aulaId, int $docenteId): bool
+{
+    if ($aulaId <= 0 || $docenteId <= 0) return false;
+    $stmt = getDB()->prepare('SELECT 1 FROM aulas WHERE id = ? AND docente_id = ? LIMIT 1');
+    $stmt->execute([$aulaId, $docenteId]);
+    return (bool)$stmt->fetchColumn();
+}
+
+/**
  * ¿El aula pertenece a este colegio?
  *
  * Para el director: las páginas de admin_colegio escribían en el
@@ -519,6 +544,40 @@ function getModulosByAula(int $aulaId): array
          ORDER BY c.id, m.orden'
     );
     $stmt->execute([$aulaId]);
+    return $stmt->fetchAll();
+}
+
+/**
+ * Lo que toca estos días en el aula del estudiante.
+ *
+ * El plan del aula existía desde el principio, pero solo lo veían el
+ * docente y el practicante en su panel: para el estudiante era
+ * invisible, así que planificar no cambiaba nada de lo que él veía.
+ *
+ * Se mira una ventana de la semana pasada a la siguiente: lo de hace
+ * unos días sigue importando si aún no lo ha hecho, y lo de la próxima
+ * semana le dice qué viene.
+ */
+function modulosDeLaSemana(int $estudianteId, int $limite = 3): array
+{
+    $stmt = getDB()->prepare(
+        'SELECT m.id, m.titulo, m.minutos_estimados, am.fecha_planificada,
+                c.id AS curso_id, c.nombre AS curso, c.color_hex, c.icono,
+                pe.completado, pe.paso_actual
+           FROM estudiante_aula ea
+           JOIN aula_modulos am ON am.aula_id = ea.aula_id
+           JOIN modulos m       ON m.id = am.modulo_id AND m.activo = 1
+           JOIN cursos  c       ON c.id = m.curso_id
+      LEFT JOIN progreso_estudiante pe
+                 ON pe.modulo_id = m.id AND pe.estudiante_id = ea.estudiante_id
+          WHERE ea.estudiante_id = ?
+            AND am.fecha_planificada IS NOT NULL
+            AND am.fecha_planificada BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+                                         AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+       ORDER BY am.fecha_planificada
+          LIMIT ' . max(1, min(10, $limite))
+    );
+    $stmt->execute([$estudianteId]);
     return $stmt->fetchAll();
 }
 

@@ -1,8 +1,12 @@
 # INNOVA-STEAM — PHP/XAMPP project
 
 # Uploads (user files)
-/uploads/
+# Con "/uploads/" git ignora la carpeta entera y las excepciones de
+# debajo no llegan a mirarse: hay que ignorar su contenido, no la
+# carpeta, para poder conservar el .htaccess que la protege.
+/uploads/*
 !/uploads/.gitkeep
+!/uploads/.htaccess
 
 # PHP env / local config overrides
 .env
