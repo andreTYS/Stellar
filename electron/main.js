@@ -62,7 +62,7 @@ function createWindow() {
           <html><head><meta charset="utf-8">
           <style>body{margin:0;background:#080c18;color:#c7d9ff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center}
           h1{color:#e8f0fe;font-size:24px}p{color:#5c7ab0;margin:12px auto;max-width:400px}
-          button{background:#4361ee;color:#fff;border:none;border-radius:8px;padding:10px 24px;cursor:pointer;font-size:14px;margin-top:16px}</style>
+          button{background:#23697E;color:#fff;border:none;border-radius:8px;padding:10px 24px;cursor:pointer;font-size:14px;margin-top:16px}</style>
           </head><body>
           <div><h1>🛸 Sin conexión al servidor</h1>
           <p>No se pudo conectar a <strong>${APP_URL}</strong>.<br>

@@ -121,7 +121,7 @@ if (!preg_match('/^[a-z0-9_-]{1,40}$/', $historia)) {
     position: fixed;
     inset: 0;
     background: 
-      radial-gradient(ellipse at 15% 20%, rgba(139, 92, 246, 0.25) 0%, transparent 50%),
+      radial-gradient(ellipse at 15% 20%, rgba(46, 107, 76, 0.25) 0%, transparent 50%),
       radial-gradient(ellipse at 85% 80%, rgba(59, 130, 246, 0.2) 0%, transparent 50%),
       radial-gradient(ellipse at 50% 50%, rgba(6, 182, 212, 0.15) 0%, transparent 60%);
     animation: nebula-pulse 25s ease-in-out infinite;
@@ -282,7 +282,7 @@ if (!preg_match('/^[a-z0-9_-]{1,40}$/', $historia)) {
     align-items: center;
     justify-content: center;
     z-index: 1200;
-    background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.2) 0%, #000510 70%);
+    background: radial-gradient(ellipse at center, rgba(46, 107, 76, 0.2) 0%, #000510 70%);
   }
   
   .start-card {

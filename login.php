@@ -76,13 +76,13 @@ $queryError = $_GET['error'] ?? '';
   <style>
     /* ── Design tokens ─────────────────────────────────────── */
     :root {
-      --accent:     #4361ee;
-      --accent-h:   #3451d1;
-      --text-dark:  #1a1f36;
-      --text-muted: #8898aa;
-      --border:     #e4e8f0;
+      --accent:     #23697E;
+      --accent-h:   #1B5567;
+      --text-dark:  #16211C;
+      --text-muted: #6B7A72;
+      --border:     #DCE1D9;
       --bg-input:   #ffffff;
-      --bg-right:   #f0f2f8;
+      --bg-right:   #EFF1ED;
     }
 
     /* ── Reset ─────────────────────────────────────────────── */
@@ -142,7 +142,7 @@ $queryError = $_GET['error'] ?? '';
     .login-left {
       width: 48%;
       flex-shrink: 0;
-      background: #0d1024;
+      background: #0F1A20;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -156,7 +156,7 @@ $queryError = $_GET['error'] ?? '';
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(135deg, #0d1024 0%, #141830 40%, #1a2050 70%, #0d1024 100%);
+      background: linear-gradient(135deg, #0F1A20 0%, #14262E 40%, #1B3A44 70%, #0F1A20 100%);
       background-size: 300% 300%;
       animation: gradientShift 12s ease infinite;
       z-index: 0;
@@ -170,7 +170,7 @@ $queryError = $_GET['error'] ?? '';
       width: 480px;
       height: 480px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(67,97,238,.42) 0%, rgba(67,97,238,.10) 50%, transparent 75%);
+      background: radial-gradient(circle, rgba(35,105,126,.42) 0%, rgba(35,105,126,.10) 50%, transparent 75%);
       animation: floatOrb1 14s ease-in-out infinite;
       z-index: 1;
       pointer-events: none;
@@ -184,7 +184,7 @@ $queryError = $_GET['error'] ?? '';
       width: 420px;
       height: 420px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(139,92,246,.38) 0%, rgba(139,92,246,.08) 50%, transparent 72%);
+      background: radial-gradient(circle, rgba(46,107,76,.38) 0%, rgba(46,107,76,.08) 50%, transparent 72%);
       animation: floatOrb2 18s ease-in-out infinite;
       z-index: 1;
       pointer-events: none;
@@ -198,7 +198,7 @@ $queryError = $_GET['error'] ?? '';
       width: 260px;
       height: 260px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(6,182,212,.22) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(143,214,172,.20) 0%, transparent 70%);
       animation: floatOrb3 10s ease-in-out infinite;
       z-index: 1;
       pointer-events: none;
@@ -228,7 +228,7 @@ $queryError = $_GET['error'] ?? '';
     .logo-mark {
       width: 46px;
       height: 46px;
-      background: linear-gradient(135deg, #4361ee 0%, #6366f1 100%);
+      background: linear-gradient(135deg, #2E7F96 0%, var(--accent) 55%, #1B5567 100%);
       border-radius: 13px;
       display: flex;
       align-items: center;
@@ -239,7 +239,7 @@ $queryError = $_GET['error'] ?? '';
       color: #ffffff;
       letter-spacing: -0.02em;
       flex-shrink: 0;
-      box-shadow: 0 4px 20px rgba(67,97,238,.45);
+      box-shadow: 0 4px 20px rgba(35, 105, 126,.45);
     }
 
     .brand-name {
@@ -265,15 +265,15 @@ $queryError = $_GET['error'] ?? '';
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: rgba(67,97,238,.18);
-      border: 1px solid rgba(67,97,238,.35);
+      background: rgba(35, 105, 126,.18);
+      border: 1px solid rgba(35, 105, 126,.35);
       border-radius: 99px;
       padding: 5px 14px;
       font-size: 11px;
       font-weight: 700;
       letter-spacing: .08em;
       text-transform: uppercase;
-      color: #818cf8;
+      color: #6FBDD4;
       margin-bottom: 22px;
       width: fit-content;
     }
@@ -282,7 +282,7 @@ $queryError = $_GET['error'] ?? '';
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: #4361ee;
+      background: var(--accent);
       animation: pulse-dot 2s ease infinite;
     }
 
@@ -303,7 +303,7 @@ $queryError = $_GET['error'] ?? '';
     }
 
     .left-heading span {
-      background: linear-gradient(135deg, #818cf8, #38bdf8);
+      background: linear-gradient(135deg, #8FD6E6, #4FA8C0);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -311,7 +311,7 @@ $queryError = $_GET['error'] ?? '';
 
     .left-subtitle {
       font-size: 14.5px;
-      color: #7888a0;
+      color: #93A6A0;
       line-height: 1.65;
       max-width: 340px;
       margin-bottom: 40px;
@@ -342,7 +342,7 @@ $queryError = $_GET['error'] ?? '';
 
     .stat-pill-label {
       font-size: 11px;
-      color: #4e6080;
+      color: #7D9298;
       letter-spacing: .04em;
     }
 
@@ -370,8 +370,8 @@ $queryError = $_GET['error'] ?? '';
       width: 36px;
       height: 36px;
       border-radius: 10px;
-      background: rgba(67,97,238,.14);
-      border: 1px solid rgba(67,97,238,.28);
+      background: rgba(35, 105, 126,.14);
+      border: 1px solid rgba(35, 105, 126,.28);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -381,7 +381,7 @@ $queryError = $_GET['error'] ?? '';
     .feature-icon-wrap svg {
       width: 16px;
       height: 16px;
-      stroke: #818cf8;
+      stroke: #6FBDD4;
       stroke-width: 2;
       fill: none;
       stroke-linecap: round;
@@ -390,14 +390,15 @@ $queryError = $_GET['error'] ?? '';
 
     .feature-text {
       font-size: 13.5px;
-      color: #a0b0c4;
+      color: #A8BAB4;
       line-height: 1.4;
     }
 
     /* ── Left footer ───────────────────────────────────────── */
     .left-footer {
       font-size: 12px;
-      color: #2a3550;
+      /* #2a3550 sobre el fondo #0F1A20 daba 1.4:1 — el pie no se leía. */
+      color: #6B8189;
       position: relative;
       z-index: 10;
     }
@@ -425,7 +426,7 @@ $queryError = $_GET['error'] ?? '';
       width: 600px;
       height: 600px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(67,97,238,.06) 0%, transparent 65%);
+      background: radial-gradient(circle, rgba(35, 105, 126,.06) 0%, transparent 65%);
       pointer-events: none;
     }
 
@@ -453,7 +454,7 @@ $queryError = $_GET['error'] ?? '';
       position: absolute;
       inset: -1px;
       border-radius: 21px;
-      background: linear-gradient(90deg, #4361ee, #8b5cf6, #38bdf8, #4361ee);
+      background: linear-gradient(90deg, var(--accent), #4FA8C0, #8FD6E6, var(--accent));
       background-size: 200% 100%;
       opacity: 0;
       transition: opacity .3s;
@@ -536,7 +537,7 @@ $queryError = $_GET['error'] ?? '';
     .field-input {
       width: 100%;
       background: rgba(255,255,255,.7);
-      border: 1.5px solid #dde3ef;
+      border: 1.5px solid #DCE1D9;
       border-radius: 11px;
       padding: 12px 14px;
       font-size: 14px;
@@ -548,13 +549,13 @@ $queryError = $_GET['error'] ?? '';
     }
 
     .field-input::placeholder {
-      color: #bac3d0;
+      color: #9EA9A2;
     }
 
     .field-input:focus {
       border-color: var(--accent);
       background: rgba(255,255,255,.95);
-      box-shadow: 0 0 0 3px rgba(67,97,238,.14), 0 2px 8px rgba(67,97,238,.08);
+      box-shadow: 0 0 0 3px rgba(35, 105, 126,.14), 0 2px 8px rgba(35, 105, 126,.08);
     }
 
     .field-input.has-toggle {
@@ -574,7 +575,7 @@ $queryError = $_GET['error'] ?? '';
       background: transparent;
       border: none;
       cursor: pointer;
-      color: #bac3d0;
+      color: #9EA9A2;
       transition: color .15s;
       border-radius: 0 11px 11px 0;
     }
@@ -598,7 +599,7 @@ $queryError = $_GET['error'] ?? '';
     .btn-login {
       width: 100%;
       padding: 13px 20px;
-      background: linear-gradient(135deg, #4361ee 0%, #6366f1 100%);
+      background: linear-gradient(135deg, #2E7F96 0%, var(--accent) 55%, #1B5567 100%);
       color: #ffffff;
       font-family: 'Syne', sans-serif;
       font-weight: 700;
@@ -609,12 +610,12 @@ $queryError = $_GET['error'] ?? '';
       cursor: pointer;
       transition: opacity .15s, transform .1s, box-shadow .2s;
       margin-top: 4px;
-      box-shadow: 0 4px 20px rgba(67,97,238,.30);
+      box-shadow: 0 4px 20px rgba(35, 105, 126,.30);
     }
 
     .btn-login:hover {
       opacity: .92;
-      box-shadow: 0 6px 28px rgba(67,97,238,.42);
+      box-shadow: 0 6px 28px rgba(35,105,126,.42);
     }
 
     .btn-login:active {
@@ -636,7 +637,7 @@ $queryError = $_GET['error'] ?? '';
     .demo-separator-line {
       flex: 1;
       height: 1px;
-      background: #dde3ef;
+      background: #DCE1D9;
     }
 
     .demo-separator-text {
@@ -661,7 +662,7 @@ $queryError = $_GET['error'] ?? '';
       gap: 2px;
       padding: 10px 12px;
       background: rgba(255,255,255,.6);
-      border: 1.5px solid #dde3ef;
+      border: 1.5px solid #DCE1D9;
       border-radius: 10px;
       cursor: pointer;
       transition: border-color .15s, background .15s, box-shadow .15s;
@@ -671,7 +672,7 @@ $queryError = $_GET['error'] ?? '';
     .demo-btn:hover {
       background: rgba(255,255,255,.95);
       border-color: var(--accent);
-      box-shadow: 0 2px 10px rgba(67,97,238,.12);
+      box-shadow: 0 2px 10px rgba(35, 105, 126,.12);
     }
 
     .demo-btn-role {

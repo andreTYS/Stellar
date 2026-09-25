@@ -40,7 +40,7 @@ require_once __DIR__ . '/../../includes/header.php';
       <button id="btn-flare" onclick="triggerFlare()" style="background:rgba(251,146,60,.15);border:1px solid rgba(251,146,60,.4);color:#fb923c;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px">
         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg> Llamarada Solar
       </button>
-      <button onclick="toggleLabels()" style="background:rgba(67,97,238,.15);border:1px solid rgba(67,97,238,.4);color:#818cf8;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px">
+      <button onclick="toggleLabels()" style="background:rgba(35, 105, 126,.15);border:1px solid rgba(35, 105, 126,.4);color:#818cf8;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px">
         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Etiquetas
       </button>
       <button onclick="toggleOrbits()" style="background:rgba(62,207,142,.15);border:1px solid rgba(62,207,142,.4);color:#3ecf8e;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px">
@@ -49,7 +49,7 @@ require_once __DIR__ . '/../../includes/header.php';
       <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
         <span style="font-size:11px;color:#5c7ab0">Velocidad</span>
         <input type="range" id="speed-slider" min="0.1" max="5" step="0.1" value="1" oninput="setSpeed(this.value)"
-               style="width:80px;accent-color:#4361ee">
+               style="width:80px;accent-color:var(--accent)">
       </div>
     </div>
   </div>
@@ -60,7 +60,7 @@ require_once __DIR__ . '/../../includes/header.php';
     <!-- Aldrin card -->
     <div id="aldrin-card" style="background:#02040d;border:1px solid #1a2340;border-radius:16px;padding:20px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#4361ee,#3ecf8e);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></div>
+        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#3ecf8e);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></div>
         <div>
           <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#e8f0fe">Aldrin</div>
           <div style="font-size:11px;color:#5c7ab0">Guía Astronauta</div>
@@ -160,7 +160,7 @@ function draw(ts) {
             const or = p.orbit * scale;
             ctx.beginPath();
             ctx.arc(CX, CY, or, 0, Math.PI * 2);
-            ctx.strokeStyle = 'rgba(67,97,238,.15)';
+            ctx.strokeStyle = 'rgba(35, 105, 126,.15)';
             ctx.lineWidth = 0.5;
             ctx.stroke();
         });

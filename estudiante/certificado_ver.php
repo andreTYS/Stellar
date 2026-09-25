@@ -44,7 +44,7 @@ if ($certId > 0) {
 $cert = $stmt->fetch();
 if (!$cert) redirect(BASE_URL . '/estudiante/certificados.php');
 
-$color     = htmlspecialchars($cert['color_hex'] ?? '#4361ee', ENT_QUOTES, 'UTF-8');
+$color     = htmlspecialchars($cert['color_hex'] ?? 'var(--accent)', ENT_QUOTES, 'UTF-8');
 $nombre    = sanitize($cert['est_nombre'] . ' ' . $cert['est_apellido']);
 $modulo    = sanitize($cert['modulo_titulo']);
 $curso     = sanitize($cert['curso_nombre']);

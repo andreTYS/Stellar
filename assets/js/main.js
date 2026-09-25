@@ -155,7 +155,7 @@ function showToast(message, type = 'info', duration = 3500) {
     document.body.appendChild(container);
   }
 
-  const palette = { success:'#22c55e', error:'#ef4444', warning:'#f59e0b', info:'#4361ee' };
+  const palette = { success:'#22c55e', error:'#ef4444', warning:'#f59e0b', info:'#23697E' };
   const color = palette[type] || palette.info;
 
   const toast = document.createElement('div');

@@ -49,11 +49,11 @@ require_once __DIR__ . '/../../includes/header.php';
     [
       'slug'  => 'clima-espacial',
       'href'  => BASE_URL . '/stellarscribe/simuladores/clima-espacial.php',
-      'icon'  => '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4361ee" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/></svg>',
+      'icon'  => '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/></svg>',
       'name'  => 'Clima Espacial',
       'desc'  => 'Monitorea el índice Kp, viento solar y llamaradas en tiempo real con datos NASA. Simula tormentas geomagnéticas históricas y descubre cuándo una aurora podría ser visible desde Perú.',
       'tags'  => ['Datos NASA','CMEs','Auroras'],
-      'clr'   => '#4361ee',
+      'clr'   => 'var(--accent)',
       'nivel' => 'Intermedio',
     ],
     [

@@ -454,11 +454,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         datasets: [{
           label: 'Completaciones',
           data: d.values,
-          borderColor: '#4361ee',
-          backgroundColor: 'rgba(67,97,238,.08)',
+          borderColor: 'var(--accent)',
+          backgroundColor: 'rgba(35, 105, 126,.08)',
           fill: true,
           tension: .4,
-          pointBackgroundColor: '#4361ee',
+          pointBackgroundColor: 'var(--accent)',
           pointRadius: 4,
           pointHoverRadius: 6,
         }]

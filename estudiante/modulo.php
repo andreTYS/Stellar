@@ -448,7 +448,7 @@ require_once __DIR__ . '/../includes/header.php';
 <div class="modal-overlay" id="modal-celebracion">
   <div class="modal-box" style="text-align:center;padding:40px 32px;max-width:440px;">
     <div style="width:64px;height:64px;border-radius:50%;background:var(--accent-light,#eef2ff);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
-      <i data-lucide="award" style="width:32px;height:32px;color:var(--accent,#4361ee)"></i>
+      <i data-lucide="award" style="width:32px;height:32px;color:var(--accent,var(--accent))"></i>
     </div>
     <h2 style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:8px;color:var(--text-primary,#1a1f36);">Modulo completado</h2>
     <p style="color:var(--text-secondary,#4e5d78);font-size:14px;margin-bottom:16px;">

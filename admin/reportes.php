@@ -154,7 +154,7 @@ require_once __DIR__ . '/../includes/header.php';
     <div class="stat-label">Entregables subidos</div>
   </div>
   <div class="stat-card">
-    <div class="stat-icon" style="background:rgba(67,97,238,.12);color:var(--accent)"><i data-lucide="trending-up" style="width:22px;height:22px"></i></div>
+    <div class="stat-icon" style="background:rgba(35, 105, 126,.12);color:var(--accent)"><i data-lucide="trending-up" style="width:22px;height:22px"></i></div>
     <div class="stat-value" style="color:var(--accent)"><?= $tasaComp ?>%</div>
     <div class="stat-label">Tasa de completación</div>
   </div>
@@ -314,12 +314,12 @@ document.addEventListener('DOMContentLoaded', () => {
       datasets: [{
         label: 'Completaciones',
         data: <?= json_encode($dailyValues) ?>,
-        borderColor: '#4361ee',
-        backgroundColor: 'rgba(67,97,238,.12)',
+        borderColor: 'var(--accent)',
+        backgroundColor: 'rgba(35, 105, 126,.12)',
         fill: true,
         tension: .4,
         pointRadius: 4,
-        pointBackgroundColor: '#4361ee',
+        pointBackgroundColor: 'var(--accent)',
       }]
     },
     options: {

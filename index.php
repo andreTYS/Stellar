@@ -6,15 +6,23 @@ if (isLoggedIn()) {
     redirect(dashboardUrl());
 }
 
-// Live stats from DB
+// Cifras del catálogo, no de uso.
+//
+// Antes se contaban colegios, estudiantes y certificados: en una
+// instalación recién montada eso enseña "0 certificados emitidos" en
+// la página más pública del proyecto, y el respaldo cuando fallaba la
+// base eran cifras inventadas. Lo que hay en el catálogo es cierto,
+// se puede comprobar y nunca es cero.
+$_statModulos = 35; $_statCursos = 6; $_statArticulos = 18; $_statRoles = 6;
 try {
     $_pdo = getDB();
-    $_statColegios  = (int)$_pdo->query("SELECT COUNT(*) FROM colegios WHERE activo=1")->fetchColumn();
-    $_statEst       = (int)$_pdo->query("SELECT COUNT(*) FROM usuarios WHERE rol='estudiante' AND activo=1")->fetchColumn();
-    $_statModulos   = (int)$_pdo->query("SELECT COUNT(*) FROM progreso_estudiante WHERE completado=1")->fetchColumn();
-    $_statCerts     = (int)$_pdo->query("SELECT COUNT(*) FROM certificados")->fetchColumn();
+    $_statModulos   = (int)$_pdo->query("SELECT COUNT(*) FROM modulos WHERE activo=1")->fetchColumn();
+    $_statCursos    = (int)$_pdo->query("SELECT COUNT(*) FROM cursos WHERE activo=1")->fetchColumn();
+    $_statArticulos = (int)$_pdo->query("SELECT COUNT(*) FROM ciencia_articulos WHERE activo=1")->fetchColumn();
+    $fila = $_pdo->query("SHOW COLUMNS FROM usuarios LIKE 'rol'")->fetch();
+    if ($fila && preg_match_all("/'([^']+)'/", $fila['Type'] ?? '', $m)) $_statRoles = count($m[1]);
 } catch (\Throwable $e) {
-    $_statColegios = 12; $_statEst = 347; $_statModulos = 1204; $_statCerts = 98;
+    // Sin base de datos la portada sigue en pie con las cifras de arriba.
 }
 ?>
 <!DOCTYPE html>
@@ -181,12 +189,12 @@ try {
       text-decoration: none;
       cursor: pointer;
       transition: background .15s, transform .1s, box-shadow .15s;
-      box-shadow: 0 4px 16px rgba(67,97,238,.35);
+      box-shadow: 0 4px 16px rgba(35, 105, 126,.35);
     }
     .lp-btn-primary:hover {
       background: var(--accent-hover);
       transform: translateY(-1px);
-      box-shadow: 0 6px 24px rgba(67,97,238,.45);
+      box-shadow: 0 6px 24px rgba(35, 105, 126,.45);
     }
     .lp-btn-ghost {
       display: inline-flex;
@@ -598,10 +606,12 @@ try {
       Plataforma Educativa STEAM · Moquegua
     </div>
     <h1 class="lp-hero-title">
-      Educación <span>STEAM</span><br/>para cada colegio
+      La ciencia que sus estudiantes<br/><span>ya tienen delante</span>
     </h1>
     <p class="lp-hero-subtitle">
-      INNOVA-STEAM conecta colegios, docentes, practicantes y estudiantes en una sola plataforma. Gestión de aulas, portafolios, módulos y certificados en tiempo real.
+      Los 35 módulos empiezan con una persona del valle y un problema real:
+      un precio en el mercado, un recibo de luz, un andén que hay que regar.
+      Con aulas, rúbricas, asistencia y portafolios en una sola plataforma.
     </p>
     <div class="lp-hero-actions">
       <a href="<?= BASE_URL ?>/login.php" class="lp-btn-primary">
@@ -621,7 +631,7 @@ try {
       <div class="lp-hero-card-header">
         <div class="lp-mini-avatar">ES</div>
         <div>
-          <div style="font-size:13px;font-weight:600;color:var(--text-primary)">Estudiante · Aula 3B</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text-primary)">Estudiante · 5.º A</div>
           <div style="font-size:12px;color:var(--text-muted)">I.E. Mariscal Nieto</div>
         </div>
         <span class="badge" style="margin-left:auto;background:rgba(62,207,142,.12);color:var(--green);font-size:11px">Activo</span>
@@ -629,16 +639,16 @@ try {
 
       <div class="lp-progress-list">
         <div class="lp-progress-item">
-          <div class="lp-progress-label"><span>Módulo 1 — Pensamiento Computacional</span><span style="color:var(--green);font-weight:600">100%</span></div>
+          <div class="lp-progress-label"><span>El mercado de Moquegua</span><span style="color:var(--green);font-weight:600">100%</span></div>
           <div class="lp-progress-track"><div class="lp-progress-fill" style="width:100%;background:var(--green)"></div></div>
         </div>
         <div class="lp-progress-item">
-          <div class="lp-progress-label"><span>Módulo 2 — Robótica Básica</span><span style="color:var(--accent);font-weight:600">72%</span></div>
+          <div class="lp-progress-label"><span>Construyendo terrazas</span><span style="color:var(--accent);font-weight:600">72%</span></div>
           <div class="lp-progress-track"><div class="lp-progress-fill" style="width:72%"></div></div>
         </div>
         <div class="lp-progress-item">
-          <div class="lp-progress-label"><span>Módulo 3 — Diseño y Prototipado</span><span style="color:var(--text-muted);font-weight:600">30%</span></div>
-          <div class="lp-progress-track"><div class="lp-progress-fill" style="width:30%;background:var(--purple)"></div></div>
+          <div class="lp-progress-label"><span>El cielo de Moquegua</span><span style="color:var(--text-muted);font-weight:600">30%</span></div>
+          <div class="lp-progress-track"><div class="lp-progress-fill" style="width:30%"></div></div>
         </div>
       </div>
 
@@ -660,7 +670,7 @@ try {
       </div>
       <div>
         <div style="font-size:12px;color:var(--text-muted);font-weight:500">Módulo completado</div>
-        <div>Pensamiento Computacional</div>
+        <div>El mercado de Moquegua</div>
       </div>
     </div>
   </div>
@@ -670,20 +680,20 @@ try {
 <div class="lp-statsbar">
   <div class="lp-statsbar-inner">
     <div class="lp-stat">
-      <div class="lp-stat-value"><?= number_format($_statColegios) ?></div>
-      <div class="lp-stat-label">Colegios activos</div>
-    </div>
-    <div class="lp-stat">
-      <div class="lp-stat-value"><?= number_format($_statEst) ?></div>
-      <div class="lp-stat-label">Estudiantes registrados</div>
-    </div>
-    <div class="lp-stat">
       <div class="lp-stat-value"><?= number_format($_statModulos) ?></div>
-      <div class="lp-stat-label">Módulos completados</div>
+      <div class="lp-stat-label">Módulos listos para el aula</div>
     </div>
     <div class="lp-stat">
-      <div class="lp-stat-value"><?= number_format($_statCerts) ?></div>
-      <div class="lp-stat-label">Certificados emitidos</div>
+      <div class="lp-stat-value"><?= number_format($_statCursos) ?></div>
+      <div class="lp-stat-label">Cursos, de 5.º de primaria a 5.º de secundaria</div>
+    </div>
+    <div class="lp-stat">
+      <div class="lp-stat-value"><?= number_format($_statArticulos) ?></div>
+      <div class="lp-stat-label">Artículos de ciencia con experimentos</div>
+    </div>
+    <div class="lp-stat">
+      <div class="lp-stat-value"><?= number_format($_statRoles) ?></div>
+      <div class="lp-stat-label">Roles, del director al apoderado</div>
     </div>
   </div>
 </div>
@@ -708,7 +718,7 @@ try {
       <div class="lp-feature-desc">Contenidos estructurados por niveles con videos, cuestionarios y entregables. El estudiante avanza a su ritmo y registra su progreso automáticamente.</div>
     </div>
     <div class="lp-feature-card">
-      <div class="lp-feature-icon" style="background:rgba(167,139,250,.12);color:var(--purple)">
+      <div class="lp-feature-icon" style="background:rgba(124,107,176,.12);color:var(--purple)">
         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
       </div>
       <div class="lp-feature-title">Portafolio Digital</div>
@@ -765,7 +775,7 @@ try {
         <div class="lp-role-desc">Visión global, gestión de colegios y usuarios</div>
       </div>
       <div class="lp-role-card">
-        <div class="lp-role-icon" style="background:rgba(167,139,250,.12);color:var(--purple)">
+        <div class="lp-role-icon" style="background:rgba(124,107,176,.12);color:var(--purple)">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
         </div>
         <div class="lp-role-name">Director</div>

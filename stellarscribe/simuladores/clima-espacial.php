@@ -50,7 +50,7 @@ require_once __DIR__ . '/../../includes/header.php';
     color:#c7d9ff;font-size:13px;display:flex;align-items:center;gap:10px;
     transition:border-color .15s,background .15s;
 }
-.scenario-btn:hover{background:#131d35;border-color:#4361ee}
+.scenario-btn:hover{background:#131d35;border-color:var(--accent)}
 </style>
 
 <div class="page-action-header">
@@ -78,7 +78,7 @@ require_once __DIR__ . '/../../includes/header.php';
     <div style="margin-top:16px">
       <label style="font-size:11px;color:#5c7ab0;display:block;margin-bottom:4px">Simula diferentes niveles de Kp</label>
       <input type="range" id="kp-slider" min="0" max="9" step="0.1" value="<?= $kpNow ?>"
-             oninput="setKp(this.value)" style="width:100%;accent-color:#4361ee">
+             oninput="setKp(this.value)" style="width:100%;accent-color:var(--accent)">
       <div style="display:flex;justify-content:space-between;font-size:10px;color:#5c7ab0;margin-top:2px">
         <span>0 Calma</span><span>4 Menor</span><span>7 Severa</span><span>9 Extrema</span>
       </div>
@@ -112,7 +112,7 @@ require_once __DIR__ . '/../../includes/header.php';
     <div id="aurora-text" style="font-size:13px;color:#8898aa;line-height:1.6"></div>
     <div style="margin-top:14px">
       <div class="bar-row"><span class="bar-label">Visible hasta</span><div class="bar-track"><div class="bar-fill" id="bar-lat" style="background:#3ecf8e"></div></div><span id="bar-lat-val" style="font-size:11px;color:#c7d9ff;width:36px;text-align:right"></span></div>
-      <div class="bar-row"><span class="bar-label">Intensidad</span><div class="bar-track"><div class="bar-fill" id="bar-int" style="background:#4361ee"></div></div><span id="bar-int-val" style="font-size:11px;color:#c7d9ff;width:36px;text-align:right"></span></div>
+      <div class="bar-row"><span class="bar-label">Intensidad</span><div class="bar-track"><div class="bar-fill" id="bar-int" style="background:var(--accent)"></div></div><span id="bar-int-val" style="font-size:11px;color:#c7d9ff;width:36px;text-align:right"></span></div>
     </div>
   </div>
 

@@ -57,7 +57,7 @@ if ($codigo !== '') {
   :root{
     --bg:#f0f2f7; --card:#fff; --line:#e4e8f0;
     --ink:#1a1f36; --ink-2:#4e5d78; --ink-3:#8898aa;
-    --accent:#4361ee; --ok:#2dca73; --bad:#f5365c;
+    --accent:#23697E; --ok:#2E8B57; --bad:#C0453F;
   }
   @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
     --bg:#080c18; --card:#0f1629; --line:#1e2d4a;

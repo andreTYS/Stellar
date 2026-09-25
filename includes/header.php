@@ -71,7 +71,7 @@ $rolLabel = match ($rol) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title><?= sanitize($pageTitle) ?> — INNOVA-STEAM</title>
   <link rel="manifest" href="<?= BASE_URL ?>/manifest.json"/>
-  <meta name="theme-color" content="#4361ee"/>
+  <meta name="theme-color" content="#23697E"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <!-- Prevent flash of wrong theme — must run before stylesheets -->
@@ -216,7 +216,9 @@ $rolLabel = match ($rol) {
               <a :href="n.url || '#'"
                  @click="fetch('<?= BASE_URL ?>/api/notificaciones.php?action=mark_read',{method:'POST',headers:{'X-CSRF-Token':window.CSRF_TOKEN||''},body:new URLSearchParams({action:'mark_read',id:n.id})}).then(()=>{if(!n.leida)notifCount=Math.max(0,notifCount-1);n.leida=1})"
                  style="display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-bottom:1px solid var(--bg-border);text-decoration:none;transition:background .1s"
-                 :style="!n.leida ? 'background:var(--accent-light)' : ''"
+                 <?php /* Objeto y no cadena: Alpine con :style="'...'" reescribe cssText
+                          entero y borra el style estático de al lado. Con objeto lo fusiona. */ ?>
+                 :style="{ background: n.leida ? '' : 'var(--accent-light)' }"
                  onmouseover="this.style.background='var(--bg-hover)'"
                  onmouseout="this.style.background=''">
                 <div style="width:32px;height:32px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0">
@@ -247,10 +249,10 @@ $rolLabel = match ($rol) {
         <!-- User avatar + dropdown -->
         <button @click="userOpen = !userOpen" @click.away="userOpen = false"
                 class="topbar-user-btn" style="display:flex;align-items:center;gap:8px;background:transparent;border:none;cursor:pointer;padding:4px 8px;border-radius:8px;transition:background .15s"
-                :style="userOpen ? 'background:var(--bg-hover)' : ''">
+                :style="{ background: userOpen ? 'var(--bg-hover)' : '' }">
           <div class="user-avatar" style="width:32px;height:32px;font-size:13px"><?= $initials ?></div>
           <span style="font-size:13px;font-weight:600;color:var(--text-primary);max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><?= sanitize($user['nombre'] ?? '') ?></span>
-          <i data-lucide="chevron-down" style="width:14px;height:14px;color:var(--text-muted);transition:transform .2s" :style="userOpen ? 'transform:rotate(180deg)' : ''"></i>
+          <i data-lucide="chevron-down" style="width:14px;height:14px;color:var(--text-muted);transition:transform .2s" :style="{ transform: userOpen ? 'rotate(180deg)' : '' }"></i>
         </button>
         <!-- Dropdown -->
         <div x-show="userOpen" x-transition:enter="transition ease-out duration-150"

@@ -133,7 +133,7 @@ require_once __DIR__ . '/../includes/header.php';
 <!-- Summary stats -->
 <div class="stats-grid-6" style="--cols:3;margin-bottom:24px">
   <div class="stat-card">
-    <div class="stat-icon" style="background:rgba(67,97,238,.12);color:var(--accent)">
+    <div class="stat-icon" style="background:rgba(35, 105, 126,.12);color:var(--accent)">
       <i data-lucide="layers" style="width:22px;height:22px"></i>
     </div>
     <div class="stat-value" style="color:var(--accent)"><?= $totalAulas ?></div>

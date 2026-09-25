@@ -52,7 +52,7 @@ if (!$cert) {
 }
 
 $codigo    = certificadoCodigo($pdo, (int)$cert['id']);
-$color     = preg_match('/^#[0-9a-f]{6}$/i', $cert['color_hex'] ?? '') ? $cert['color_hex'] : '#4361ee';
+$color     = preg_match('/^#[0-9a-f]{6}$/i', $cert['color_hex'] ?? '') ? $cert['color_hex'] : '#23697E';
 $nombre    = htmlspecialchars(trim($cert['est_nombre'] . ' ' . $cert['est_apellido']), ENT_QUOTES, 'UTF-8');
 $modulo    = htmlspecialchars($cert['modulo_titulo'], ENT_QUOTES, 'UTF-8');
 $curso     = htmlspecialchars($cert['curso_nombre'], ENT_QUOTES, 'UTF-8');

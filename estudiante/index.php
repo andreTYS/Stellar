@@ -14,14 +14,14 @@ $pdo            = getDB();
 $ciclo = cicloDeEstudiante($estudianteId);
 
 $cursosData = $pdo->prepare("
-    SELECT c.id, c.nombre, c.descripcion, c.color_hex,
+    SELECT c.id, c.nombre, c.descripcion, c.color_hex, c.icono,
            COUNT(DISTINCT m.id)                          AS total_modulos,
            COUNT(DISTINCT CASE WHEN pe.completado=1 THEN pe.modulo_id END) AS completados
     FROM cursos c
     LEFT JOIN modulos m
            ON m.curso_id = c.id AND m.activo = 1 AND m.grado_ciclo IN (?, 'ambos')
     LEFT JOIN progreso_estudiante pe ON pe.modulo_id = m.id AND pe.estudiante_id = ?
-    GROUP BY c.id, c.nombre, c.descripcion, c.color_hex
+    GROUP BY c.id, c.nombre, c.descripcion, c.color_hex, c.icono
     ORDER BY c.id
 ");
 $cursosData->execute([$ciclo, $estudianteId]);
@@ -203,14 +203,14 @@ include __DIR__ . '/../includes/header.php';
 <div style="margin-bottom:32px">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
     <h2 style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:8px">
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4361ee" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/><path d="M20 3v4M22 5h-4"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/><path d="M20 3v4M22 5h-4"/></svg>
       Tu actividad espacial
     </h2>
     <a href="<?= BASE_URL ?>/stellarscribe/portal.php" style="font-size:12px;color:var(--accent);text-decoration:none;font-weight:600">Ver StellarScribe →</a>
   </div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
     <div style="background:linear-gradient(135deg,#0d1b33,#1a2d4a);border:1px solid #1e3058;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:12px">
-      <div style="width:40px;height:40px;border-radius:10px;background:rgba(67,97,238,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <div style="width:40px;height:40px;border-radius:10px;background:rgba(124,159,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c9fff" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
       </div>
       <div>
@@ -219,7 +219,7 @@ include __DIR__ . '/../includes/header.php';
       </div>
     </div>
     <div style="background:linear-gradient(135deg,#0d1b33,#1a2d4a);border:1px solid #1e3058;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:12px">
-      <div style="width:40px;height:40px;border-radius:10px;background:rgba(124,58,237,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <div style="width:40px;height:40px;border-radius:10px;background:rgba(167,139,250,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
       </div>
       <div>
@@ -249,17 +249,25 @@ include __DIR__ . '/../includes/header.php';
 <?php else: ?>
 <div class="courses-grid">
   <?php foreach ($cursosData as $c):
-    $color      = sanitize($c['color_hex'] ?? '#4361ee');
+    $color      = sanitize($c['color_hex'] ?? 'var(--accent)');
     $total      = (int)$c['total_modulos'];
     $comp       = (int)$c['completados'];
-    $pct        = $total > 0 ? round($comp / $total * 100) : 0;
-    $initial    = strtoupper(mb_substr(trim($c['nombre'] ?? 'C'), 0, 1));
+    // (int) a propósito: round() devuelve float y 0.0 === 0 es false, así
+    // que sin el cast las comparaciones de abajo no se cumplen nunca.
+    $pct        = $total > 0 ? (int)round($comp / $total * 100) : 0;
+    // El porcentaje en el color del curso hacía que "0%" saliera verde en
+    // Arte y rojo en Inglés: el mismo dato con dos lecturas opuestas.
+    // Sin avance es un dato neutro; al 100% sí es un éxito.
+    $pctColor   = $pct === 0 ? 'var(--text-muted)' : ($pct === 100 ? 'var(--success)' : $color);
   ?>
   <a href="<?= BASE_URL ?>/estudiante/curso.php?id=<?= (int)$c['id'] ?>"
      class="course-card" style="--color:<?= $color ?>;text-decoration:none">
 
     <div class="course-card-header" style="background:linear-gradient(135deg,<?= $color ?>,<?= $color ?>cc);position:relative;overflow:hidden">
-      <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:48px;color:rgba(255,255,255,.9);line-height:1;position:relative;z-index:1;user-select:none"><?= htmlspecialchars($initial) ?></span>
+      <?php /* La inicial no distinguía nada: Comunicación y Ciencia eran
+               las dos una "C", Ingeniería e Inglés las dos una "I". El
+               icono del curso ya está en la base y sí dice de qué va. */ ?>
+      <span style="color:rgba(255,255,255,.92);position:relative;z-index:1;display:flex;align-items:center;justify-content:center"><?= iconoCurso($c['icono'] ?? null, 44) ?></span>
       <?php if ($pct === 100): ?>
       <span style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,.25);color:#fff;border-radius:99px;padding:3px 10px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px;z-index:1">
         <i data-lucide="check-circle" style="width:12px;height:12px"></i> Completado
@@ -281,7 +289,7 @@ include __DIR__ . '/../includes/header.php';
       </div>
       <div class="progress-label">
         <span><?= $comp ?> / <?= $total ?> módulos</span>
-        <span style="color:<?= $color ?>;font-weight:600"><?= $pct ?>%</span>
+        <span style="color:<?= $pctColor ?>;font-weight:600"><?= $pct ?>%</span>
       </div>
     </div>
 

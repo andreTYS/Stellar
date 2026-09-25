@@ -12,56 +12,60 @@
 /* ── Design Tokens ─────────────────────────────────────────── */
 :root {
   /* Backgrounds */
-  --bg-page:    #f0f2f7;
+  --bg-page:    #EFF1ED;
   --bg-surface: #ffffff;
   --bg-card:    #ffffff;
-  --bg-input:   #f8f9fc;
-  --bg-muted:   #f0f2f7;
-  --bg-border:  #e4e8f0;
-  --bg-hover:   #f5f7fa;
+  --bg-input:   #F7F9F5;
+  --bg-muted:   #E9EDE6;
+  --bg-border:  #DCE1D9;
+  --bg-hover:   #F2F5EF;
 
   /* Text */
-  --text-primary:   #1a1f36;
-  --text-secondary: #4e5d78;
-  --text-muted:     #5d6e8b;
+  --text-primary:   #16211C;
+  --text-secondary: #3F4F48;
+  --text-muted:     #6B7A72;
   --text-inverse:   #ffffff;
 
   /* Brand / Accent */
-  --accent:        #4361ee;
-  --accent-hover:  #3451d1;
-  --accent-light:  rgba(67, 97, 238, .10);
-  --accent-border: rgba(67, 97, 238, .30);
+  --accent:        #23697E;
+  --accent-hover:  #1B5567;
+  --accent-light:  rgba(35, 105, 126, .10);
+  --accent-border: rgba(35, 105, 126, .30);
 
   /* Status */
-  --success:       #2dca73;
-  --success-light: rgba(45, 202, 115, .10);
-  --danger:        #f5365c;
-  --danger-light:  rgba(245, 54, 92, .10);
-  --warning:       #fb8c00;
-  --warning-light: rgba(251, 140, 0, .10);
-  --info:          #4361ee;
-  --info-light:    rgba(67, 97, 238, .10);
+  --success:       #2E8B57;
+  --success-light: rgba(46, 139, 87, .10);
+  --danger:        #C0453F;
+  --danger-light:  rgba(192, 69, 63, .10);
+  --warning:       #A9702B;
+  --warning-light: rgba(169, 112, 43, .10);
+  --info:          #23697E;
+  --info-light:    rgba(35, 105, 126, .10);
 
   /* Stars / Gold */
-  --star-color: #f6a609;
-  --gold:       #f5c842;
+  --star-color: #DFA426;
+  --gold:       #C9942F;
 
   /* Elevated surface (cards within cards, quiz options, etc.) */
-  --bg-elevated: #f5f7fa;
+  --bg-elevated: #F2F5EF;
+  /* Alias histórico: admin/reportes.php y admin/usuarios.php lo usan sin
+     valor de reserva, así que sin definirlo los botones de paginación se
+     quedaban sin fondo. */
+  --bg-card-alt: #F2F5EF;
 
   /* Sidebar (dark) */
-  --sidebar-bg:      #1a1f36;
-  --sidebar-surface: #222840;
-  --sidebar-border:  #2d3561;
-  --sidebar-text:    #a0aec0;
+  --sidebar-bg:      #0F1A20;
+  --sidebar-surface: #16242C;
+  --sidebar-border:  #223039;
+  --sidebar-text:    #93A6A0;
   --sidebar-active:  #ffffff;
 
   /* Extended palette — used by admin/docente pages */
-  --blue:   #4a9eff;
-  --green:  #3ecf8e;
-  --purple: #a78bfa;
-  --coral:  #ff6b6b;
-  --teal:   #06b6d4;
+  --blue:   #3C82B4;
+  --green:  #2E8B57;
+  --purple: #7C6BB0;
+  --coral:  #C4643F;
+  --teal:   #23697E;
 
   /* Sidebar width — consumed by sidebar.css */
   --sidebar-width: 240px;
@@ -72,9 +76,9 @@
   --radius-lg: 16px;
 
   /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(16, 24, 64, .06), 0 1px 2px rgba(16, 24, 64, .04);
-  --shadow:    0 4px 16px rgba(16, 24, 64, .10);
-  --shadow-lg: 0 8px 32px rgba(16, 24, 64, .14);
+  --shadow-sm: 0 1px 3px rgba(17, 34, 30, .06), 0 1px 2px rgba(17, 34, 30, .04);
+  --shadow:    0 4px 16px rgba(17, 34, 30, .10);
+  --shadow-lg: 0 8px 32px rgba(17, 34, 30, .14);
 
   /* Transition */
   --transition: 150ms ease;
@@ -246,7 +250,7 @@ small {
   border-color: var(--accent-hover);
   color: #ffffff;
   text-decoration: none;
-  box-shadow: 0 4px 12px rgba(67, 97, 238, .30);
+  box-shadow: 0 4px 12px rgba(35, 105, 126, .30);
 }
 
 /* Ghost */
@@ -479,7 +483,7 @@ select.form-control {
 .alert-info {
   background: var(--accent-light);
   color: #2a3d9e;
-  border-color: rgba(67, 97, 238, .20);
+  border-color: rgba(35, 105, 126, .20);
   border-left-color: var(--accent);
 }
 
@@ -630,7 +634,7 @@ tbody tr:last-child {
 }
 
 tbody tr:nth-child(even) {
-  background: rgba(67, 97, 238, .018);
+  background: rgba(35, 105, 126, .018);
 }
 
 tbody tr:hover {
@@ -1483,7 +1487,7 @@ a.module-item:hover {
   transform: scale(.96);
 }
 .btn-primary:hover {
-  box-shadow: 0 4px 18px rgba(67,97,238,.30);
+  box-shadow: 0 4px 18px rgba(35, 105, 126,.30);
 }
 .btn-success:hover {
   box-shadow: 0 4px 18px rgba(45,202,115,.30);
@@ -1491,7 +1495,7 @@ a.module-item:hover {
 
 /* Module item hover accent */
 a.module-item:hover {
-  box-shadow: 0 4px 16px rgba(67,97,238,.10);
+  box-shadow: 0 4px 16px rgba(35, 105, 126,.10);
 }
 
 /* Chart container */
@@ -1560,7 +1564,20 @@ a.module-item:hover {
 .opacity-100{ opacity: 1; }
 [x-cloak]   { display: none !important; }
 
-/* Topbar user button */
+/* Topbar user button.
+   La maqueta vive aquí y no en el atributo style: si Alpine no llega a
+   cargar, el botón sigue siendo una fila y no un botón gris del navegador. */
+.topbar-user-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background .15s;
+}
 .topbar-user-btn:hover {
   background: var(--bg-hover) !important;
 }
@@ -1581,12 +1598,12 @@ a.module-item:hover {
 
 /* Premium button gradients */
 .btn-primary {
-  background: linear-gradient(135deg, #4361ee 0%, #3451d1 100%);
-  box-shadow: 0 2px 8px rgba(67,97,238,.25);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+  box-shadow: 0 2px 8px rgba(35, 105, 126,.25);
 }
 .btn-primary:hover {
-  background: linear-gradient(135deg, #3451d1 0%, #2a41be 100%);
-  box-shadow: 0 4px 16px rgba(67,97,238,.35);
+  background: linear-gradient(135deg, var(--accent-hover) 0%, #2a41be 100%);
+  box-shadow: 0 4px 16px rgba(35, 105, 126,.35);
   transform: translateY(-1px);
 }
 .btn-success {
@@ -1889,44 +1906,45 @@ select.form-control { height: 40px; }
    ============================================================ */
 html[data-theme="dark"] {
   /* Backgrounds */
-  --bg-page:     #0d1117;
-  --bg-surface:  #161b27;
-  --bg-card:     #1e2336;
-  --bg-input:    #161b27;
-  --bg-muted:    #161b27;
-  --bg-border:   #2d3561;
-  --bg-hover:    #252d4a;
-  --bg-elevated: #252d4a;
+  --bg-page:     #0B1310;
+  --bg-surface:  #111C17;
+  --bg-card:     #16231D;
+  --bg-input:    #111C17;
+  --bg-muted:    #111C17;
+  --bg-border:   #24332B;
+  --bg-hover:    #1C2A23;
+  --bg-elevated: #1C2A23;
+  --bg-card-alt: #1C2A23;
 
   /* Text */
-  --text-primary:   #f1f5f9;
-  --text-secondary: #cbd5e1;
-  --text-muted:     #7a8aa8;
-  --text-inverse:   #0d1117;
+  --text-primary:   #E6EDE7;
+  --text-secondary: #B7C4BC;
+  --text-muted:     #8B998F;
+  --text-inverse:   #0B1310;
 
   /* Accent — slightly brighter for dark bg */
-  --accent:        #6080f8;
-  --accent-hover:  #7090ff;
-  --accent-light:  rgba(96, 128, 248, .15);
-  --accent-border: rgba(96, 128, 248, .35);
+  --accent:        #6FBDD4;
+  --accent-hover:  #8ACEE2;
+  --accent-light:  rgba(111, 189, 212, .15);
+  --accent-border: rgba(111, 189, 212, .35);
 
   /* Status */
-  --success:       #34d399;
-  --success-light: rgba(52, 211, 153, .15);
-  --danger:        #f87171;
-  --danger-light:  rgba(248, 113, 113, .15);
-  --warning:       #fbbf24;
-  --warning-light: rgba(251, 191, 36, .15);
-  --info:          #6080f8;
-  --info-light:    rgba(96, 128, 248, .15);
+  --success:       #6FC291;
+  --success-light: rgba(111, 194, 145, .15);
+  --danger:        #E0796F;
+  --danger-light:  rgba(224, 121, 111, .15);
+  --warning:       #D3A063;
+  --warning-light: rgba(211, 160, 99, .15);
+  --info:          #6FBDD4;
+  --info-light:    rgba(111, 189, 212, .15);
 
   /* Extended palette */
-  --blue:   #60a5fa;
-  --green:  #34d399;
-  --purple: #c4b5fd;
-  --coral:  #fb7185;
-  --gold:   #fbbf24;
-  --teal:   #22d3ee;
+  --blue:   #6FAEDC;
+  --green:  #6FC291;
+  --purple: #AFA0DC;
+  --coral:  #E0906F;
+  --gold:   #DFB765;
+  --teal:   #6FBDD4;
 
   /* Shadows — more prominent on dark */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, .40), 0 1px 2px rgba(0, 0, 0, .30);
@@ -1972,7 +1990,7 @@ html:not([data-theme="dark"]) .theme-icon-moon { display: block !important; }
 
 /* ── Welcome banner ────────────────────────────────────────── */
 .welcome-banner {
-  background: linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, #0F1A20 0%, #1A3A44 58%, #23697E 100%);
   border-radius: var(--radius-lg);
   padding: 28px 32px;
   margin-bottom: 28px;

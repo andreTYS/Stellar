@@ -241,8 +241,8 @@ document.addEventListener('DOMContentLoaded', () => {
       labels: ['Con módulo', 'Sin módulo'],
       datasets: [{
         data: [conMod, sinMod],
-        backgroundColor: ['rgba(67,97,238,.85)', isDark ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.08)'],
-        borderColor: ['#4361ee', 'transparent'],
+        backgroundColor: ['rgba(35, 105, 126,.85)', isDark ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.08)'],
+        borderColor: ['var(--accent)', 'transparent'],
         borderWidth: [2, 0],
         hoverOffset: 4,
       }]

@@ -39,15 +39,15 @@ require_once __DIR__ . '/../includes/header.php';
 <!-- ── Hero banner ──────────────────────────────────────────── -->
 <div style="background:linear-gradient(135deg,#0d1024 0%,#1a0e3a 50%,#0d1024 100%);border-radius:16px;padding:36px 40px;margin-bottom:28px;position:relative;overflow:hidden">
   <!-- Animated orbs -->
-  <div style="position:absolute;top:-60px;right:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(67,97,238,.35) 0%,transparent 70%);pointer-events:none"></div>
-  <div style="position:absolute;bottom:-40px;left:30%;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.3) 0%,transparent 70%);pointer-events:none"></div>
+  <div style="position:absolute;top:-60px;right:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(35, 105, 126,.35) 0%,transparent 70%);pointer-events:none"></div>
+  <div style="position:absolute;bottom:-40px;left:30%;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(46, 107, 76,.3) 0%,transparent 70%);pointer-events:none"></div>
   <!-- Grid -->
   <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:36px 36px;pointer-events:none;border-radius:16px"></div>
 
   <div style="position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap">
     <div>
-      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(67,97,238,.2);border:1px solid rgba(67,97,238,.4);border-radius:99px;padding:5px 14px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#818cf8;margin-bottom:14px">
-        <span style="width:6px;height:6px;border-radius:50%;background:#4361ee;display:inline-block"></span>
+      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(35, 105, 126,.2);border:1px solid rgba(35, 105, 126,.4);border-radius:99px;padding:5px 14px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#818cf8;margin-bottom:14px">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block"></span>
         NASA Space Apps 2025 · Perú Es Clave
       </div>
       <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;color:#fff;margin-bottom:8px;letter-spacing:-.02em">
@@ -60,13 +60,13 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
     <div style="display:flex;gap:10px;flex-shrink:0">
       <a href="<?= BASE_URL ?>/stellarscribe/historia.php?historia=aldrin" target="_blank"
-         style="display:inline-flex;align-items:center;gap:8px;padding:11px 20px;background:linear-gradient(135deg,#4361ee,#7c3aed);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:13px;text-decoration:none;box-shadow:0 4px 20px rgba(67,97,238,.4);transition:opacity .2s"
+         style="display:inline-flex;align-items:center;gap:8px;padding:11px 20px;background:linear-gradient(135deg,var(--accent),#1A3A44);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:13px;text-decoration:none;box-shadow:0 4px 20px rgba(35, 105, 126,.4);transition:opacity .2s"
          onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
         <i data-lucide="rocket" style="width:15px;height:15px"></i>
         El Despertar de Aldrin
       </a>
       <a href="<?= BASE_URL ?>/stellarscribe/historia.php?historia=tormenta" target="_blank"
-         style="display:inline-flex;align-items:center;gap:8px;padding:11px 20px;background:linear-gradient(135deg,#0891b2,#7c3aed);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:13px;text-decoration:none;box-shadow:0 4px 20px rgba(8,145,178,.4);transition:opacity .2s"
+         style="display:inline-flex;align-items:center;gap:8px;padding:11px 20px;background:linear-gradient(135deg,#0891b2,#1A3A44);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:13px;text-decoration:none;box-shadow:0 4px 20px rgba(8,145,178,.4);transition:opacity .2s"
          onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
         <i data-lucide="radio" style="width:15px;height:15px"></i>
         La noche sin señal
@@ -221,7 +221,7 @@ require_once __DIR__ . '/../includes/header.php';
             <div style="padding:14px 16px">
               <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--text-primary);margin-bottom:4px">El Despertar de Aldrin</div>
               <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Un astronauta varado en un planeta helado. Tormentas solares, electrólisis y baterías caseras.</div>
-              <div style="margin-top:12px;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#4361ee">
+              <div style="margin-top:12px;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--accent)">
                 <i data-lucide="play-circle" style="width:13px;height:13px"></i>
                 Iniciar aventura
               </div>
@@ -231,11 +231,11 @@ require_once __DIR__ . '/../includes/header.php';
 
         <!-- Cap 2 -->
         <a href="<?= BASE_URL ?>/stellarscribe/historia.php?historia=tormenta" target="_blank" style="text-decoration:none">
-          <div style="background:linear-gradient(135deg,#0d1024,#1a0e3a);border:1.5px solid rgba(139,92,246,.3);border-radius:14px;overflow:hidden;transition:border-color .2s,transform .2s"
-               onmouseover="this.style.borderColor='rgba(139,92,246,.7)';this.style.transform='translateY(-2px)'"
-               onmouseout="this.style.borderColor='rgba(139,92,246,.3)';this.style.transform=''">
+          <div style="background:linear-gradient(135deg,#0d1024,#1a0e3a);border:1.5px solid rgba(46, 107, 76,.3);border-radius:14px;overflow:hidden;transition:border-color .2s,transform .2s"
+               onmouseover="this.style.borderColor='rgba(46, 107, 76,.7)';this.style.transform='translateY(-2px)'"
+               onmouseout="this.style.borderColor='rgba(46, 107, 76,.3)';this.style.transform=''">
             <div style="height:120px;background:linear-gradient(135deg,#0d1024,#2d1b4e);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;position:relative;overflow:hidden">
-              <div style="position:absolute;top:-30px;right:-30px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.3) 0%,transparent 70%)"></div>
+              <div style="position:absolute;top:-30px;right:-30px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(46, 107, 76,.3) 0%,transparent 70%)"></div>
               <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>
               <span style="font-size:11px;color:#c4b5fd;font-weight:700;letter-spacing:.06em;position:relative">HISTORIA 2</span>
             </div>
@@ -270,10 +270,10 @@ require_once __DIR__ . '/../includes/header.php';
           </div>
         </a>
         <a href="<?= BASE_URL ?>/stellarscribe/simuladores/clima-espacial.php" style="text-decoration:none">
-          <div style="background:var(--bg-elevated);border:1px solid rgba(67,97,238,.3);border-radius:12px;padding:16px;transition:border-color .2s,transform .2s"
-               onmouseover="this.style.borderColor='rgba(67,97,238,.7)';this.style.transform='translateY(-2px)'"
-               onmouseout="this.style.borderColor='rgba(67,97,238,.3)';this.style.transform=''">
-            <div style="margin-bottom:8px;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;background:rgba(67,97,238,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4361ee" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6a6 6 0 0 0 6 6"/><circle cx="18" cy="6" r="2" fill="#4361ee"/></svg></div>
+          <div style="background:var(--bg-elevated);border:1px solid rgba(35, 105, 126,.3);border-radius:12px;padding:16px;transition:border-color .2s,transform .2s"
+               onmouseover="this.style.borderColor='rgba(35, 105, 126,.7)';this.style.transform='translateY(-2px)'"
+               onmouseout="this.style.borderColor='rgba(35, 105, 126,.3)';this.style.transform=''">
+            <div style="margin-bottom:8px;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;background:rgba(35, 105, 126,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6a6 6 0 0 0 6 6"/><circle cx="18" cy="6" r="2" fill="var(--accent)"/></svg></div>
             <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:4px">Clima Espacial</div>
             <div style="font-size:11px;color:var(--text-muted)">Kp index · CME · auroras · datos reales</div>
           </div>
@@ -406,7 +406,7 @@ require_once __DIR__ . '/../includes/header.php';
     <?php endif; ?>
 
     <!-- About card -->
-    <div class="card" style="background:linear-gradient(135deg,#0d1024,#1a1f3c);border-color:rgba(67,97,238,.25)">
+    <div class="card" style="background:linear-gradient(135deg,#0d1024,#1a1f3c);border-color:rgba(35, 105, 126,.25)">
       <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#818cf8;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">Sobre StellarScribe</div>
       <p style="font-size:13px;color:#7888a0;line-height:1.6;margin-bottom:12px">
         Proyecto ganador del <strong style="color:#c4b5fd">NASA Space Apps Challenge 2025</strong> por el equipo peruano de Moquegua.

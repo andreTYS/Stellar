@@ -129,7 +129,7 @@ $pasos = $pdo->prepare('SELECT * FROM modulo_pasos WHERE modulo_id=? ORDER BY nu
 $pasos->execute([$moduloId]);
 $pasos = $pasos->fetchAll();
 
-$color = htmlspecialchars($modulo['color_hex'] ?? '#4361ee', ENT_QUOTES);
+$color = htmlspecialchars($modulo['color_hex'] ?? 'var(--accent)', ENT_QUOTES);
 
 $tiposIcon = [
     'historia'   => 'book-open',

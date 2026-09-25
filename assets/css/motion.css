@@ -160,7 +160,7 @@
 .topbar.is-stuck {
   backdrop-filter: blur(12px) saturate(160%);
   -webkit-backdrop-filter: blur(12px) saturate(160%);
-  box-shadow: 0 4px 24px rgba(16, 24, 64, .10);
+  box-shadow: 0 4px 24px rgba(17, 34, 30, .10);
 }
 
 /* Los estilos de .empty-state viven en stellar.css — no se redefinen
@@ -266,7 +266,7 @@ td.num,
   font-size: 13.5px;
   font-weight: 600;
   text-decoration: none;
-  box-shadow: 0 6px 24px rgba(16, 24, 64, .28);
+  box-shadow: 0 6px 24px rgba(17, 34, 30, .28);
 }
 
 .saltar-al-contenido:focus,
@@ -341,7 +341,7 @@ td.num,
 .paso-card.arrastrando {
   opacity: .4;
   transform: scale(.99);
-  box-shadow: 0 12px 32px rgba(16, 24, 64, .18);
+  box-shadow: 0 12px 32px rgba(17, 34, 30, .18);
   outline: 2px dashed var(--accent);
   outline-offset: 3px;
 }
@@ -437,7 +437,7 @@ td.num,
   cursor: pointer;
   display: grid;
   place-items: center;
-  box-shadow: 0 6px 22px rgba(16, 24, 64, .3);
+  box-shadow: 0 6px 22px rgba(17, 34, 30, .3);
   transition: transform .18s cubic-bezier(.22, 1, .36, 1);
 }
 
@@ -455,7 +455,7 @@ td.num,
   background: var(--bg-surface);
   border: 1px solid var(--bg-border);
   border-radius: 16px;
-  box-shadow: 0 18px 50px rgba(16, 24, 64, .22);
+  box-shadow: 0 18px 50px rgba(17, 34, 30, .22);
   overflow: hidden;
 }
 
