@@ -18,8 +18,8 @@
   top: 0;
   bottom: 0;
   width: var(--sidebar-width);
-  background: var(--sidebar-bg, #1a1f36);
-  border-right: 1px solid var(--sidebar-border, #2d3561);
+  background: var(--sidebar-bg, #0F1A20);
+  border-right: 1px solid var(--sidebar-border, #223039);
   display: flex;
   flex-direction: column;
   z-index: 100;
@@ -35,7 +35,7 @@
   background: transparent;
 }
 .sidebar::-webkit-scrollbar-thumb {
-  background: var(--sidebar-border, #2d3561);
+  background: var(--sidebar-border, #223039);
   border-radius: 99px;
 }
 
@@ -45,7 +45,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  border-bottom: 1px solid var(--sidebar-border, #2d3561);
+  border-bottom: 1px solid var(--sidebar-border, #223039);
   flex-shrink: 0;
   text-decoration: none;
 }
@@ -81,7 +81,7 @@
 
 .brand-sub {
   font-size: 10px;
-  color: var(--sidebar-text, #a0aec0);
+  color: var(--sidebar-text, #93A6A0);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   line-height: 1.4;
@@ -102,7 +102,7 @@
   padding: 16px 20px 6px;
   font-size: 10px;
   font-weight: 600;
-  color: #4a556b;
+  color: #6B7F78;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   line-height: 1;
@@ -116,7 +116,7 @@
   padding: 9px 20px;
   font-size: 14px;
   font-weight: 500;
-  color: var(--sidebar-text, #a0aec0);
+  color: var(--sidebar-text, #93A6A0);
   text-decoration: none;
   cursor: pointer;
   border: none;
@@ -144,7 +144,7 @@
 
 .nav-item:hover {
   background: rgba(255, 255, 255, .05);
-  color: #e2e8f0;
+  color: #E9EDE6;
   text-decoration: none;
 }
 
@@ -171,19 +171,19 @@
 
 /* Danger variant (e.g. logout) */
 .nav-item-danger {
-  color: #fc8181;
+  color: #E0796F;
 }
 
 .nav-item-danger:hover {
   background: rgba(245, 54, 92, .08);
-  color: #feb2b2;
+  color: #EFA098;
 }
 
 /* Badge counter inside nav items */
 .nav-item .nav-badge {
   margin-left: auto;
   background: rgba(255, 255, 255, .08);
-  color: var(--sidebar-text, #a0aec0);
+  color: var(--sidebar-text, #93A6A0);
   font-size: 10px;
   font-weight: 700;
   padding: 1px 7px;
@@ -193,13 +193,13 @@
 
 .nav-item.active .nav-badge {
   background: rgba(35, 105, 126, .35);
-  color: #c7d3ff;
+  color: #BFE0EA;
 }
 
 /* ── Sidebar Footer ────────────────────────────────────────── */
 .sidebar-footer {
   padding: 12px;
-  border-top: 1px solid var(--sidebar-border, #2d3561);
+  border-top: 1px solid var(--sidebar-border, #223039);
   margin-top: auto;
   flex-shrink: 0;
 }
@@ -243,7 +243,7 @@
 
 .user-role {
   font-size: 11px;
-  color: var(--sidebar-text, #a0aec0);
+  color: var(--sidebar-text, #93A6A0);
   line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -252,7 +252,7 @@
 
 /* Keep legacy class names working */
 .sidebar-user-name { font-size: 13px; font-weight: 600; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; max-width: 120px; }
-.sidebar-user-role { font-size: 11px; color: var(--sidebar-text, #a0aec0); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+.sidebar-user-role { font-size: 11px; color: var(--sidebar-text, #93A6A0); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
 .sidebar-user-info { flex: 1; min-width: 0; }
 
 /* ── Main Content Area ─────────────────────────────────────── */
@@ -261,14 +261,14 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--bg-page, #f0f2f7);
+  background: var(--bg-page, #EFF1ED);
   min-width: 0;
 }
 
 /* ── Topbar ────────────────────────────────────────────────── */
 .topbar {
   background: var(--bg-surface);
-  border-bottom: 1px solid var(--bg-border, #e4e8f0);
+  border-bottom: 1px solid var(--bg-border, #DCE1D9);
   padding: 0 28px;
   height: 56px;
   display: flex;
@@ -289,17 +289,17 @@
   width: 36px;
   height: 36px;
   background: transparent;
-  border: 1px solid var(--bg-border, #e4e8f0);
+  border: 1px solid var(--bg-border, #DCE1D9);
   border-radius: var(--radius-sm, 8px);
-  color: var(--text-secondary, #4e5d78);
+  color: var(--text-secondary, #3F4F48);
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
   flex-shrink: 0;
 }
 
 .topbar-toggle:hover {
-  background: var(--bg-hover, #f5f7fa);
-  color: var(--text-primary, #1a1f36);
+  background: var(--bg-hover, #E9EDE6);
+  color: var(--text-primary, #0F1A20);
 }
 
 /* Hamburger lines via box-shadow trick */
@@ -331,7 +331,7 @@
   font-family: 'Syne', sans-serif;
   font-size: 16px;
   font-weight: 700;
-  color: var(--text-primary, #1a1f36);
+  color: var(--text-primary, #0F1A20);
   flex: 1;
   white-space: nowrap;
   overflow: hidden;
@@ -374,20 +374,20 @@
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: var(--text-muted, #8898aa);
+  color: var(--text-muted, #6B7A72);
 }
 
 .topbar-breadcrumb .crumb {
-  color: var(--text-secondary, #4e5d78);
+  color: var(--text-secondary, #3F4F48);
 }
 
 .topbar-breadcrumb .crumb-sep {
-  color: var(--text-muted, #8898aa);
+  color: var(--text-muted, #6B7A72);
   font-size: 11px;
 }
 
 .topbar-breadcrumb .crumb:last-child {
-  color: var(--text-primary, #1a1f36);
+  color: var(--text-primary, #0F1A20);
   font-weight: 500;
 }
 
@@ -427,16 +427,16 @@
   width: 36px;
   height: 36px;
   background: transparent;
-  border: 1px solid var(--bg-border, #e4e8f0);
+  border: 1px solid var(--bg-border, #DCE1D9);
   border-radius: var(--radius-sm, 8px);
-  color: var(--text-secondary, #4e5d78);
+  color: var(--text-secondary, #3F4F48);
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
   flex-shrink: 0;
 }
 .topbar-menu-btn:hover {
-  background: var(--bg-hover, #f5f7fa);
-  color: var(--text-primary, #1a1f36);
+  background: var(--bg-hover, #E9EDE6);
+  color: var(--text-primary, #0F1A20);
 }
 
 /* ── Responsive — Tablet & Mobile (≤ 768px) ────────────────── */
@@ -504,15 +504,15 @@
   width: 36px;
   height: 36px;
   background: transparent;
-  border: 1px solid var(--bg-border, #e4e8f0);
+  border: 1px solid var(--bg-border, #DCE1D9);
   border-radius: var(--radius-sm, 8px);
-  color: var(--text-secondary, #4e5d78);
+  color: var(--text-secondary, #3F4F48);
   cursor: pointer;
   flex-shrink: 0;
   transition: background .15s ease, color .15s ease, border-color .15s ease;
 }
 .topbar-icon-btn:hover {
-  background: var(--bg-hover, #f5f7fa);
-  color: var(--text-primary, #1a1f36);
-  border-color: var(--bg-border, #e4e8f0);
+  background: var(--bg-hover, #E9EDE6);
+  color: var(--text-primary, #0F1A20);
+  border-color: var(--bg-border, #DCE1D9);
 }

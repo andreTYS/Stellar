@@ -34,6 +34,9 @@ $navItems = match ($rol) {
     'admin_colegio' => [
         ['href' => BASE_URL . '/admin_colegio/index.php',         'icon' => 'layout-dashboard', 'label' => 'Dashboard',   'key' => 'dashboard'],
         ['href' => BASE_URL . '/admin_colegio/aulas.php',         'icon' => 'layers',           'label' => 'Aulas',       'key' => 'aulas'],
+        // Vive bajo /admin/ por el árbol de archivos; quién entra lo
+        // decide el requireLogin de esa página, no la carpeta.
+        ['href' => BASE_URL . '/admin/importar.php',              'icon' => 'upload',           'label' => 'Importar',    'key' => 'importar'],
         ['href' => BASE_URL . '/admin_colegio/modulos.php',       'icon' => 'book-open',        'label' => 'Modulos',     'key' => 'modulos'],
         ['href' => BASE_URL . '/admin_colegio/reporte_dre.php',   'icon' => 'download',         'label' => 'Reporte DRE', 'key' => 'reporte_dre'],
         ['href' => BASE_URL . '/stellarscribe/portal.php',        'icon' => 'rocket',           'label' => 'StellarScribe','key' => 'stellarscribe'],
@@ -43,6 +46,7 @@ $navItems = match ($rol) {
         ['href' => BASE_URL . '/admin/index.php',    'icon' => 'layout-dashboard', 'label' => 'Dashboard', 'key' => 'dashboard'],
         ['href' => BASE_URL . '/admin/colegios.php', 'icon' => 'building-2',       'label' => 'Colegios',  'key' => 'colegios'],
         ['href' => BASE_URL . '/admin/usuarios.php', 'icon' => 'users',            'label' => 'Usuarios',  'key' => 'usuarios'],
+        ['href' => BASE_URL . '/admin/importar.php','icon' => 'upload',           'label' => 'Importar',  'key' => 'importar'],
         ['href' => BASE_URL . '/admin/modulos.php',  'icon' => 'book-open',        'label' => 'Modulos',   'key' => 'modulos'],
         ['href' => BASE_URL . '/admin/reportes.php', 'icon' => 'bar-chart-2',      'label' => 'Reportes',  'key' => 'reportes'],
         ['href' => BASE_URL . '/stellarscribe/portal.php', 'icon' => 'rocket',          'label' => 'StellarScribe','key' => 'stellarscribe'],
