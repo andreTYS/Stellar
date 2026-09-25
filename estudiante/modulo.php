@@ -195,20 +195,37 @@ require_once __DIR__ . '/../includes/header.php';
     <!-- Main narrative -->
     <div id="historia-texto" style="font-size:15px;color:var(--text-primary);line-height:1.9;margin-bottom:0;">
       <?php
-        // Split narrative into intro (first paragraph) and body (rest)
-        $paragraphs = array_filter(array_map('trim', preg_split('/\n{2,}/', trim($rawNarrativa))));
-        $paragraphs = array_values($paragraphs);
-        $intro      = $paragraphs[0] ?? '';
-        $body       = array_slice($paragraphs, 1);
-      ?>
-      <?php if ($intro): ?>
-      <p style="font-size:16px;font-weight:600;color:var(--text-primary);line-height:1.8;margin-bottom:18px;padding:18px 20px;background:<?= $color ?>0c;border-radius:12px;border-left:4px solid <?= $color ?>;">
-        <?= sanitize($intro) ?>
-      </p>
-      <?php endif; ?>
+        // Esto partía la narrativa por líneas en blanco y ponía el primer
+        // párrafo en negrita, dentro de un recuadro de color, a modo de
+        // entradilla. Solo que NINGUNA de las 35 historias tiene líneas
+        // en blanco: son un bloque de unos mil cien caracteres. Es decir
+        // que en todos los módulos de la plataforma el cuento entero
+        // salía en negrita dentro del recuadro. Doscientas cincuenta
+        // palabras en negrita, para quinto de primaria.
+        //
+        // Si no viene partida, se parte aquí cada tres oraciones. Es
+        // maquetación y no contenido: en la base la historia sigue
+        // guardada tal cual.
+        $parrafos = array_values(array_filter(array_map('trim', preg_split('/\n{2,}/', trim($rawNarrativa)))));
 
-      <?php foreach ($body as $para): ?>
-      <p style="margin-bottom:14px;line-height:1.9;"><?= sanitize($para) ?></p>
+        if (count($parrafos) === 1 && mb_strlen($parrafos[0]) > 420) {
+            // El límite de ancho mira hacia atrás para no cortar dentro
+            // de "S/ 4.50" ni de "Dr. Vargas".
+            $oraciones = preg_split('/(?<=[.!?…])\s+(?=[¿¡"“A-ZÁÉÍÓÚÑ])/u', $parrafos[0]) ?: [$parrafos[0]];
+            $parrafos  = array_map(
+                static fn(array $g) => implode(' ', $g),
+                array_chunk($oraciones, 3)
+            );
+        }
+      ?>
+      <?php foreach ($parrafos as $i => $para): ?>
+        <?php if ($i === 0): ?>
+        <p style="font-size:16px;line-height:1.85;margin-bottom:16px;padding:16px 20px;background:<?= $color ?>0c;border-radius:12px;border-left:4px solid <?= $color ?>;">
+          <?= sanitize($para) ?>
+        </p>
+        <?php else: ?>
+        <p style="margin-bottom:14px;line-height:1.9;"><?= sanitize($para) ?></p>
+        <?php endif; ?>
       <?php endforeach; ?>
     </div>
 
@@ -494,12 +511,14 @@ document.querySelectorAll('.opcion-btn').forEach(btn => {
       b.style.pointerEvents = 'none';
       if (b.dataset.correcta === '1') {
         b.style.borderColor = 'var(--success)';
-        b.style.background  = '#22c55e1a';
+        b.style.background  = 'var(--success-light)';
+        b.style.color       = 'var(--success-text)';
       }
     });
     if (!esCorrecta) {
       this.style.borderColor = 'var(--danger)';
-      this.style.background  = '#ef44441a';
+      this.style.background  = 'var(--danger-light)';
+      this.style.color       = 'var(--danger-text)';
     }
 
     quizRespuestas.push({ pregunta_id: pregId, opcion_elegida: opcion });
@@ -508,9 +527,12 @@ document.querySelectorAll('.opcion-btn').forEach(btn => {
     const qIdx = parseInt(this.closest('.quiz-pregunta').id.split('-')[1]);
     const fb   = document.getElementById('feedback-' + qIdx);
     fb.style.display    = 'block';
-    fb.style.background = esCorrecta ? '#22c55e1a' : '#ef44441a';
+    // Tokens y no verdes y rojos fijos: el color de estado a secas se
+    // queda corto de contraste sobre su propio tinte, y en modo oscuro
+    // un #22c55e1a fijo deja el texto verde sobre fondo casi negro.
+    fb.style.background = esCorrecta ? 'var(--success-light)' : 'var(--danger-light)';
     fb.style.borderLeft = '4px solid ' + (esCorrecta ? 'var(--success)' : 'var(--danger)');
-    fb.style.color      = esCorrecta ? 'var(--success)' : 'var(--danger)';
+    fb.style.color      = esCorrecta ? 'var(--success-text)' : 'var(--danger-text)';
     fb.textContent      = esCorrecta
       ? '¡Correcto!'
       : 'Incorrecto — la opción correcta está marcada en verde.';
