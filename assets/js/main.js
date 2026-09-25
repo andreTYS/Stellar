@@ -87,6 +87,10 @@ async function apiPost(url, data) {
 function openSearch() {
   const modal = document.getElementById('search-modal');
   if (!modal) return;
+  // El modal lleva style="display:none" en el HTML, y un estilo en
+  // línea gana a cualquier clase: con solo añadir .active el buscador
+  // global (y su Ctrl+K) nunca llegó a abrirse. Se toca el display.
+  modal.style.display = 'flex';
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
   setTimeout(() => {
@@ -98,6 +102,7 @@ function openSearch() {
 function closeSearch() {
   const modal = document.getElementById('search-modal');
   if (!modal) return;
+  modal.style.display = 'none';
   modal.classList.remove('active');
   document.body.style.overflow = '';
   const inp = document.getElementById('search-input');
@@ -143,6 +148,11 @@ function doSearch(q) {
 
 document.addEventListener('keydown', e => {
   if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
+  // El propio modal enseña una tecla "Esc" y nadie la escuchaba.
+  if (e.key === 'Escape') {
+    const modal = document.getElementById('search-modal');
+    if (modal && modal.style.display !== 'none') { e.preventDefault(); closeSearch(); }
+  }
 });
 
 // ── Toast notifications ──────────────────────────────────────

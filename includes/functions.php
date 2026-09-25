@@ -447,6 +447,67 @@ function getEstudiantesByAula(int $aulaId): array
     return $stmt->fetchAll();
 }
 
+// ── Alcance: ¿este estudiante es de quien lo pide? ───────────
+/**
+ * ¿El estudiante está en alguna de las aulas de este docente o
+ * practicante?
+ *
+ * Hacía falta porque las páginas del docente leían el id del estudiante
+ * de la URL y lo consultaban sin más: cambiando el número se abría el
+ * portafolio de cualquier estudiante de la plataforma —sus trabajos,
+ * sus notas y los comentarios de su propia docente— y se podían
+ * sobrescribir.
+ *
+ * El admin y el director tienen su propio alcance (toda la plataforma y
+ * todo su colegio) y no pasan por aquí.
+ */
+function estudianteEnAulasDe(int $personalId, string $rol, int $estudianteId): bool
+{
+    if ($estudianteId <= 0 || $personalId <= 0) return false;
+
+    $sql = $rol === 'docente'
+        ? 'SELECT 1 FROM estudiante_aula ea
+             JOIN aulas a ON a.id = ea.aula_id
+            WHERE ea.estudiante_id = ? AND a.docente_id = ? LIMIT 1'
+        : 'SELECT 1 FROM estudiante_aula ea
+             JOIN practicante_aula pa ON pa.aula_id = ea.aula_id
+            WHERE ea.estudiante_id = ? AND pa.practicante_id = ? LIMIT 1';
+
+    $stmt = getDB()->prepare($sql);
+    $stmt->execute([$estudianteId, $personalId]);
+    return (bool)$stmt->fetchColumn();
+}
+
+/**
+ * ¿El aula pertenece a este colegio?
+ *
+ * Para el director: las páginas de admin_colegio escribían en el
+ * aula_id que venía del formulario o de la URL, así que un director
+ * podía planificar —y desplanificar— los módulos de las aulas de otro
+ * colegio.
+ */
+function aulaEsDelColegio(int $aulaId, ?int $colegioId): bool
+{
+    if ($aulaId <= 0 || !$colegioId) return false;
+    $stmt = getDB()->prepare('SELECT 1 FROM aulas WHERE id = ? AND colegio_id = ? LIMIT 1');
+    $stmt->execute([$aulaId, $colegioId]);
+    return (bool)$stmt->fetchColumn();
+}
+
+/**
+ * ¿El entregable es de un estudiante de este docente o practicante?
+ * Se resuelve por el dueño del entregable, no por lo que diga el
+ * formulario.
+ */
+function entregableEnAulasDe(int $personalId, string $rol, int $entregableId): bool
+{
+    if ($entregableId <= 0) return false;
+    $stmt = getDB()->prepare('SELECT estudiante_id FROM entregables WHERE id = ?');
+    $stmt->execute([$entregableId]);
+    $duenio = (int)($stmt->fetchColumn() ?: 0);
+    return $duenio > 0 && estudianteEnAulasDe($personalId, $rol, $duenio);
+}
+
 function getModulosByAula(int $aulaId): array
 {
     $stmt = getDB()->prepare(

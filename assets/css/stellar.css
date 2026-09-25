@@ -443,7 +443,7 @@ textarea.form-control {
 }
 
 select.form-control {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238898aa' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236B7A72' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   padding-right: 32px;
@@ -1581,6 +1581,19 @@ a.module-item:hover {
 .opacity-0  { opacity: 0; }
 .opacity-100{ opacity: 1; }
 [x-cloak]   { display: none !important; }
+
+/* Etiqueta de curso: icono + nombre en una sola línea. Sueltos dentro
+   de una celda estrecha, el nombre se iba debajo del icono. */
+.chip-curso {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
 
 /* Topbar user button.
    La maqueta vive aquí y no en el atributo style: si Alpine no llega a

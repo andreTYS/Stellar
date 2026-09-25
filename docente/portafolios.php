@@ -13,6 +13,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comentar'])) {
     $entregableId = (int)$_POST['entregable_id'];
     $comentario   = sanitize($_POST['comentario']);
 
+    // El id del entregable viene del formulario y no se comprobaba: un
+    // docente podía calificar el trabajo de un estudiante de otro
+    // colegio, borrando el comentario de la docente que sí lo tiene, y
+    // el estudiante recibía la notificación firmada por quien no era.
+    if (!entregableEnAulasDe((int)$user['id'], 'docente', $entregableId)) {
+        setFlash('error', 'Ese entregable no es de ninguna de tus aulas.');
+        redirect(BASE_URL . '/docente/portafolios.php');
+    }
+
     // ── Rúbrica ───────────────────────────────────────────────
     // Antes se guardaba un número suelto de 1 a 5 y no quedaba dicho
     // por qué: dos docentes calificaban el mismo trabajo con criterios
@@ -80,6 +89,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comentar'])) {
 $entregables = [];
 $estudiante  = null;
 
+// El id llega por la URL. Sin esta comprobación bastaba cambiar el
+// número para leer el portafolio de cualquier estudiante del país.
+if ($estudianteId && !estudianteEnAulasDe((int)$user['id'], 'docente', $estudianteId)) {
+    setFlash('error', 'Ese estudiante no está en ninguna de tus aulas.');
+    redirect(BASE_URL . '/docente/portafolios.php');
+}
+
 if ($estudianteId) {
     $stmt = $pdo->prepare("SELECT id, nombre, apellido FROM usuarios WHERE id=? AND rol='estudiante'");
     $stmt->execute([$estudianteId]);
@@ -134,7 +150,7 @@ require_once __DIR__ . '/../includes/header.php';
         <?php foreach ($entregables as $ent): ?>
         <div class="card" style="padding:20px;">
           <!-- Course badge -->
-          <span style="background:<?= $ent['color_hex'] ?>22; color:<?= $ent['color_hex'] ?>; border:1px solid <?= $ent['color_hex'] ?>44; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;">
+          <span class="chip-curso" style="background:<?= $ent['color_hex'] ?>22;color:<?= $ent['color_hex'] ?>;border:1px solid <?= $ent['color_hex'] ?>44">
             <?= iconoCurso($ent['icono']) ?> <?= sanitize($ent['curso_nombre']) ?>
           </span>
           <h3 style="font-size:15px; font-weight:600; color:var(--text-primary); margin:10px 0 4px;"><?= sanitize($ent['modulo_titulo']) ?></h3>

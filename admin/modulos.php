@@ -117,7 +117,7 @@ require_once __DIR__ . '/../includes/header.php';
     </a>
     <?php foreach ($cursos as $c): ?>
     <a href="modulos.php?curso=<?= $c['id'] ?>" style="text-decoration:none;">
-      <span style="display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:600; background:<?= $cursoId==$c['id']?$c['color_hex'].'33':'var(--bg-elevated)' ?>; color:<?= $cursoId==$c['id']?$c['color_hex']:'var(--text-secondary)' ?>; border:1px solid <?= $cursoId==$c['id']?$c['color_hex'].'55':'var(--bg-border)' ?>;">
+      <span style="display:inline-flex; align-items:center; gap:6px; white-space:nowrap; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:600; background:<?= $cursoId==$c['id']?$c['color_hex'].'33':'var(--bg-elevated)' ?>; color:<?= $cursoId==$c['id']?$c['color_hex']:'var(--text-secondary)' ?>; border:1px solid <?= $cursoId==$c['id']?$c['color_hex'].'55':'var(--bg-border)' ?>;">
         <?= iconoCurso($c['icono']) ?> <?= sanitize($c['nombre']) ?>
       </span>
     </a>
@@ -139,7 +139,7 @@ require_once __DIR__ . '/../includes/header.php';
               <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;"><?= sanitize(substr($m['descripcion'] ?? '', 0, 60)) ?>...</div>
             </td>
             <td>
-              <span style="background:<?= $m['color_hex'] ?>22; color:<?= $m['color_hex'] ?>; border:1px solid <?= $m['color_hex'] ?>44; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;">
+              <span class="chip-curso" style="background:<?= $m['color_hex'] ?>22;color:<?= $m['color_hex'] ?>;border:1px solid <?= $m['color_hex'] ?>44">
                 <?= iconoCurso($m['icono']) ?> <?= sanitize($m['curso_nombre']) ?>
               </span>
             </td>

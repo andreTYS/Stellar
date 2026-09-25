@@ -13,18 +13,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['asignar'])) {
     $aId    = (int)$_POST['aula_id'];
     $mId    = (int)$_POST['modulo_id'];
     $fecha  = $_POST['fecha_planificada'] ?? null;
+
+    // El aula venía del formulario y nadie comprobaba de quién era: un
+    // director podía planificar los módulos de otro colegio.
+    if (!aulaEsDelColegio($aId, (int)($user['colegio_id'] ?? 0))) {
+        setFlash('error', 'Ese aula no es de tu colegio.');
+        redirect(BASE_URL . '/admin_colegio/modulos.php');
+    }
+
     try {
         $pdo->prepare("INSERT IGNORE INTO aula_modulos (aula_id, modulo_id, fecha_planificada, asignado_por) VALUES (?,?,?,?)")
             ->execute([$aId, $mId, $fecha ?: null, $user['id']]);
-    } catch (Exception $e) {}
+    } catch (Exception $e) {
+        error_log('asignar módulo a aula: ' . $e->getMessage());
+    }
     redirect(BASE_URL . '/admin_colegio/modulos.php?aula_id='.$aId.'&ok=1');
 }
 
-// Desasignar
-if (isset($_GET['quitar_modulo'], $_GET['aula'])) {
-    $pdo->prepare("DELETE FROM aula_modulos WHERE aula_id=? AND modulo_id=?")
-        ->execute([(int)$_GET['aula'], (int)$_GET['quitar_modulo']]);
-    redirect(BASE_URL . '/admin_colegio/modulos.php?aula_id='.$_GET['aula']);
+// Desasignar. Por POST y con token: como GET, bastaba una etiqueta
+// <img src="…?quitar_modulo=5&aula=3"> en un mensaje para borrar la
+// planificación de un aula ajena sin que nadie hiciera clic.
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['quitar_modulo'])) {
+    verifyCsrf();
+    $aId = (int)($_POST['aula_id'] ?? 0);
+    $mId = (int)$_POST['quitar_modulo'];
+
+    if (!aulaEsDelColegio($aId, (int)($user['colegio_id'] ?? 0))) {
+        setFlash('error', 'Ese aula no es de tu colegio.');
+        redirect(BASE_URL . '/admin_colegio/modulos.php');
+    }
+
+    $pdo->prepare("DELETE FROM aula_modulos WHERE aula_id=? AND modulo_id=?")->execute([$aId, $mId]);
+    redirect(BASE_URL . '/admin_colegio/modulos.php?aula_id='.$aId);
 }
 
 // Aulas del colegio
@@ -118,7 +138,7 @@ require_once __DIR__ . '/../includes/header.php';
                 <tr>
                   <td style="font-weight:600;"><?= sanitize($am['titulo']) ?></td>
                   <td>
-                    <span style="background:<?= $am['color_hex'] ?>22;color:<?= $am['color_hex'] ?>;border:1px solid <?= $am['color_hex'] ?>44;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;">
+                    <span class="chip-curso" style="background:<?= $am['color_hex'] ?>22;color:<?= $am['color_hex'] ?>;border:1px solid <?= $am['color_hex'] ?>44">
                       <?= iconoCurso($am['icono']) ?> <?= sanitize($am['curso_nombre']) ?>
                     </span>
                   </td>
@@ -132,9 +152,14 @@ require_once __DIR__ . '/../includes/header.php';
                   </td>
                   <td style="font-size:13px;color:var(--text-secondary);"><?= $am['fecha_planificada'] ? date('d/m/Y', strtotime($am['fecha_planificada'])) : '—' ?></td>
                   <td>
-                    <a href="?aula_id=<?= $aulaId ?>&quitar_modulo=<?= $am['modulo_id'] ?>&aula=<?= $aulaId ?>"
-                       style="color:var(--danger);font-size:12px;text-decoration:none;"
-                       onclick="return confirm('¿Quitar este módulo del aula?')">Quitar</a>
+                    <form method="POST" data-no-loading style="display:inline"
+                          onsubmit="return confirm('¿Quitar este módulo del aula?')">
+                      <?= csrfField() ?>
+                      <input type="hidden" name="aula_id"        value="<?= (int)$aulaId ?>">
+                      <input type="hidden" name="quitar_modulo"  value="<?= (int)$am['modulo_id'] ?>">
+                      <button type="submit"
+                              style="background:none;border:none;padding:0;cursor:pointer;color:var(--danger);font-size:12px;font-family:inherit">Quitar</button>
+                    </form>
                   </td>
                 </tr>
                 <?php endforeach; ?>
