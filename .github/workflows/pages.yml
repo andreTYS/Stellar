@@ -71,13 +71,16 @@ jobs:
           fi
           echo "OK: $n páginas de ciencia, portada e historias presentes"
 
-      # enablement: activa Pages en el repositorio la primera vez, en vez
-      # de fallar con "Get Pages site failed" hasta que alguien entre a
-      # Settings → Pages y lo ponga a mano. Si la organización no permite
-      # activarlo desde aquí, sigue haciendo falta ese clic.
+      # Este paso falla con "Get Pages site failed" hasta que alguien
+      # active Pages UNA vez a mano:
+      #
+      #     Settings → Pages → Source: GitHub Actions
+      #
+      # No se puede automatizar desde aquí. `enablement: true` está para
+      # eso y se probó: el GITHUB_TOKEN del flujo no puede crear el sitio
+      # ("Resource not accessible by integration"), porque esa API pide
+      # permisos de administración que un token de workflow no tiene.
       - uses: actions/configure-pages@v5
-        with:
-          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
