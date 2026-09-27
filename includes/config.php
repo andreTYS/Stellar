@@ -73,10 +73,31 @@ function getDB(): PDO
                 ]
             );
         } catch (PDOException $e) {
-            die('<div style="font-family:monospace;padding:20px;background:#1a0000;color:#ff6b6b;border:1px solid #ff6b6b;border-radius:8px;margin:20px">
-                <strong>Error de base de datos:</strong><br>' . htmlspecialchars($e->getMessage()) . '
-                <p style="color:#94a3b8;font-size:12px">Verifica que XAMPP esté corriendo y que la base de datos <code>innovasteam</code> exista.</p>
-            </div>');
+            // El mensaje de PDO lleva el usuario, el host y el nombre de
+            // la base: útil en tu máquina, un regalo en un servidor
+            // público. Al log siempre; a la pantalla solo si esto es una
+            // instalación local.
+            error_log('getDB: ' . $e->getMessage());
+
+            // Lo decide el dominio por el que entró, y nada más. Mirar
+            // REMOTE_ADDR no vale: en un servidor también es 127.0.0.1
+            // cuando la petición viene del propio servidor, y entonces
+            // el detalle se filtraba en producción.
+            $host  = $_SERVER['HTTP_HOST'] ?? '';
+            $local = PHP_SAPI === 'cli'
+                  || preg_match('/^(localhost|127\.0\.0\.1|\[::1\]|.*\.local|.*\.test)(:\d+)?$/i', $host) === 1;
+
+            http_response_code(503);
+            die('<div style="font-family:system-ui,sans-serif;max-width:560px;margin:60px auto;padding:24px;border:1px solid #DCE1D9;border-radius:12px;color:#16211C">
+                <strong>La plataforma no puede conectarse a su base de datos.</strong>
+                <p style="color:#6B7A72;font-size:14px;line-height:1.6">Vuelve a intentarlo en un momento. Si el problema sigue, avisa a quien administra el servidor.</p>'
+                . ($local
+                    ? '<pre style="background:#F2F5EF;padding:12px;border-radius:8px;font-size:12px;white-space:pre-wrap;color:#C0453F">'
+                      . htmlspecialchars($e->getMessage())
+                      . '</pre><p style="color:#6B7A72;font-size:12px">Comprueba que la base <code>' . htmlspecialchars(DB_NAME)
+                      . '</code> existe y que las credenciales de <code>includes/config.local.php</code> son correctas.</p>'
+                    : '')
+                . '</div>');
         }
     }
     return $pdo;
