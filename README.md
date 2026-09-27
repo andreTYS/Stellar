@@ -110,6 +110,7 @@ aulas de su colegio.
 - [`docs/asistente.md`](docs/asistente.md) — el asistente de estudio y cómo se guardan sus claves
 - [`docs/sin-conexion.md`](docs/sin-conexion.md) — la cola de envíos cuando se cae internet
 - [`docs/github-pages.md`](docs/github-pages.md) — el sitio público estático
+- [`docs/demo.md`](docs/demo.md) — poner la plataforma en línea como demostración
 
 ## Licencia y datos
 

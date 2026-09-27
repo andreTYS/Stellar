@@ -42,6 +42,15 @@ if (!defined('CHATBOT_CLAVE_MAESTRA')) {
     }
 }
 
+// Modo demostración. En una instalación pública de prueba, cualquiera
+// que entre con las cuentas de ejemplo puede cambiarles la contraseña o
+// desactivarlas, y a partir de ahí nadie más puede entrar hasta el
+// reinicio de la noche. Con esto activado, esas dos cosas se bloquean;
+// todo lo demás se puede tocar y el cron lo devuelve a su sitio.
+//
+// Se activa desde config.local.php:  define('MODO_DEMO', true);
+if (!defined('MODO_DEMO')) define('MODO_DEMO', false);
+
 define('UPLOAD_DIR', dirname(__DIR__) . '/uploads/');
 define('UPLOAD_URL', BASE_URL . '/uploads/');
 define('MAX_UPLOAD_MB', 5);

@@ -52,6 +52,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $nueva    = $_POST['password_nueva']    ?? '';
         $confirma = $_POST['password_confirma'] ?? '';
 
+        // En la instalación de demostración las cuentas son compartidas:
+        // el primero que cambiara la contraseña dejaría fuera a todos
+        // los demás hasta el reinicio de la madrugada.
+        if (MODO_DEMO) {
+            $errors[] = 'Esta es una instalación de demostración: las contraseñas de las cuentas de prueba no se pueden cambiar.';
+        }
+
         if ($actual === '')             $errors[] = 'Ingresa tu contraseña actual.';
         if (strlen($nueva) < 6)        $errors[] = 'La nueva contraseña debe tener al menos 6 caracteres.';
         if ($nueva !== $confirma)       $errors[] = 'Las contraseñas no coinciden.';

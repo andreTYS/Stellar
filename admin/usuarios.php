@@ -34,8 +34,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'crear
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'toggle') {
     $objetivo = (int)($_POST['usuario_id'] ?? 0);
 
+    // Igual que con las contraseñas: en el demo, desactivar la cuenta
+    // de la docente deja fuera al siguiente que abra el enlace.
+    if (MODO_DEMO) {
+        setFlash('error', 'Esta es una instalación de demostración: las cuentas de prueba no se pueden desactivar.');
+    }
     // Un admin no puede desactivarse a sí mismo y quedar fuera.
-    if ($objetivo > 0 && $objetivo !== currentUserId()) {
+    elseif ($objetivo > 0 && $objetivo !== currentUserId()) {
         $pdo->prepare('UPDATE usuarios SET activo = NOT activo WHERE id = ?')->execute([$objetivo]);
     } elseif ($objetivo === currentUserId()) {
         setFlash('error', 'No puedes desactivar tu propia cuenta.');
