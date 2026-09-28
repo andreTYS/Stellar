@@ -1,0 +1,53 @@
+# ============================================================
+# INNOVA-STEAM en Docker
+#
+#   cp .env.ejemplo .env     y edita las contraseñas
+#   docker compose up -d --build
+#
+# La plataforma queda en http://localhost:8080 . Para servirla en un
+# subdominio con HTTPS, ponle delante tu proxy (abajo, en el README de
+# docker/, están las etiquetas de Traefik y la config de nginx).
+# ============================================================
+services:
+
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASS:?falta DB_ROOT_PASS en .env}
+      MARIADB_DATABASE: ${DB_NAME:-innovasteam}
+      MARIADB_USER: ${DB_USER:-innovasteam}
+      MARIADB_PASSWORD: ${DB_PASS:?falta DB_PASS en .env}
+    volumes:
+      - datos_db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    # Sin puertos publicados: la base solo se ve desde la red interna
+    # de compose. Si la publicaras, quedaría expuesta a internet.
+
+  web:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_NAME: ${DB_NAME:-innovasteam}
+      DB_USER: ${DB_USER:-innovasteam}
+      DB_PASS: ${DB_PASS:?falta DB_PASS en .env}
+      BASE_URL: ""
+      MODO_DEMO: ${MODO_DEMO:-true}
+      CHATBOT_CLAVE_MAESTRA: ${CHATBOT_CLAVE_MAESTRA:-}
+    volumes:
+      # Lo que suben los estudiantes sobrevive a reconstruir la imagen.
+      - subidas:/var/www/html/uploads
+    ports:
+      - "${PUERTO:-8080}:80"
+
+volumes:
+  datos_db:
+  subidas:

@@ -294,7 +294,8 @@ location ~ ^/(includes/config\.local\.php|.*\.sql|migrations/|herramientas/|docs
 }
 ```
 
-### Actualizar después
+
+### Actualizar (sin Docker)
 
 ```bash
 cd /var/www/stellar
@@ -305,6 +306,124 @@ sudo -u www-data php herramientas/reiniciar_demo.php
 El reinicio aplica las migraciones nuevas, porque recrea la base entera
 desde `schema.sql` más `migrations/`. En un colegio de verdad **no** se
 hace así: ahí las migraciones se aplican una a una y no se borra nada.
+
+---
+
+## 4. Con Docker (lo más simple si ya lo usas)
+
+El repositorio trae `Dockerfile`, `docker-compose.yml` y `.env.ejemplo`.
+Probado de punta a punta: imagen construida, pila levantada, los seis
+roles entrando y el certificado en PDF descargándose.
+
+```bash
+git clone https://github.com/andreTYS/Stellar.git stellar
+cd stellar
+
+cp .env.ejemplo .env
+nano .env          # cambia DB_ROOT_PASS y DB_PASS
+
+docker compose up -d --build
+```
+
+Y ya está. En el primer arranque el contenedor espera a que MariaDB
+responda, crea `config.local.php` a partir del entorno y llena la base.
+A partir del segundo **no toca nada**: si ya hay usuarios, no se
+reinstala. Eso es lo que evita que un `docker compose restart` borre el
+trabajo de un colegio.
+
+La plataforma queda en `http://<tu-vps>:8080`. Compruébalo:
+
+```bash
+docker compose ps                 # los dos en «healthy»
+curl -I http://localhost:8080/
+```
+
+### Delante va tu proxy
+
+El contenedor solo habla HTTP por el puerto 8080; el subdominio y el
+certificado los pone lo que ya tengas corriendo.
+
+**Traefik** — añade al servicio `web` en `docker-compose.yml`:
+
+```yaml
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.stellar.rule=Host(`stellar.moqueguasoft.com`)"
+      - "traefik.http.routers.stellar.entrypoints=websecure"
+      - "traefik.http.routers.stellar.tls.certresolver=letsencrypt"
+      - "traefik.http.services.stellar.loadbalancer.server.port=80"
+    networks: [proxy, default]
+```
+
+**Nginx Proxy Manager** — nuevo Proxy Host: dominio
+`stellar.moqueguasoft.com`, destino `http://<ip-del-host>:8080`, y
+pídele el certificado desde la pestaña SSL.
+
+**Nginx a pelo** en el VPS:
+
+```nginx
+server {
+    server_name stellar.moqueguasoft.com;
+    client_max_body_size 12M;          # las fotos de los entregables
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+`proxy_set_header Host $host` no es opcional: el pie del certificado en
+PDF y los enlaces de verificación se arman con el dominio por el que
+entró la petición. Sin esa línea saldría `127.0.0.1:8080`.
+
+Después, `sudo certbot --nginx -d stellar.moqueguasoft.com`.
+
+### El reinicio diario
+
+En el cron del **host**, no dentro del contenedor:
+
+```
+0 4 * * *  cd /ruta/a/stellar && docker compose exec -T web php herramientas/reiniciar_demo.php >> /var/log/stellar-demo.log 2>&1
+```
+
+### Lo que hay que saber de la imagen
+
+- **Apache y no nginx dentro del contenedor**, a propósito:
+  `uploads/.htaccess` es lo que impide que un archivo subido se ejecute
+  como PHP, y solo Apache lo lee. Comprobado dentro del contenedor:
+  un `.php` dejado en `uploads/` se sirve como texto plano.
+- **`composer install` va en una etapa aparte**, así que la imagen final
+  no arrastra composer ni su caché. Esto hace que el **certificado en
+  PDF funcione**: necesita dompdf, y sin `vendor/` la descarga daba un
+  500 con «Falta instalar las dependencias».
+- **Sin `gd`.** El certificado es HTML y CSS sin una sola imagen, y
+  dompdf lo renderiza sin gd. La imagen base ya trae curl, dom,
+  fileinfo, mbstring y libxml; solo se añade `pdo_mysql`.
+- **La base no publica puertos.** Solo se ve desde la red interna de
+  compose. Si le pusieras `ports:`, quedaría expuesta a internet.
+- **Dos volúmenes con nombre**: `datos_db` y `subidas`. Reconstruir la
+  imagen no borra ni la base ni las fotos que subieron los estudiantes.
+
+### Actualizar
+
+```bash
+cd /ruta/a/stellar
+git pull
+docker compose up -d --build
+```
+
+La base no se toca: el arranque ve que ya hay usuarios y no reinstala.
+Si una versión nueva trae migraciones, aplícalas tú:
+
+```bash
+docker compose exec -T db sh -c 'mariadb -u"$MARIADB_USER" -p"$MARIADB_PASSWORD" "$MARIADB_DATABASE"' < migrations/0XX_lo_que_sea.sql
+```
+
+En el demo es más fácil: `reiniciar_demo.php` recrea la base entera con
+las migraciones nuevas incluidas.
 
 ---
 

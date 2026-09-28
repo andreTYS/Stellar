@@ -1,0 +1,14 @@
+# Nada de esto se usa dentro del contenedor.
+.git
+.github
+_site
+movil
+electron
+node_modules
+uploads/entregables/*
+!uploads/.htaccess
+!uploads/.gitkeep
+includes/config.local.php
+docs
+*.md
+!README.md

@@ -60,6 +60,16 @@ $estrellas = max(0, min(3, (int)$cert['estrellas_quiz']));
 $fecha     = formatDate($cert['emitido_en']);
 $numero    = str_pad((string)$cert['id'], 6, '0', STR_PAD_LEFT);
 
+// La dirección de verificación salía escrita a mano como
+// «innovasteam.pe/verificar», un dominio que no es de nadie: el
+// apoderado que quisiera comprobar el certificado de su hijo llegaba a
+// una página que no existe. Se arma con el dominio por el que se
+// descargó, que es el del colegio que lo emitió.
+$dominio = $_SERVER['HTTP_HOST'] ?? '';
+$verificar = $dominio !== ''
+    ? htmlspecialchars(rtrim($dominio, '/') . BASE_URL . '/verificar.php', ENT_QUOTES, 'UTF-8')
+    : 'la plataforma';
+
 // Dompdf no implementa flexbox ni grid, así que la maqueta va con
 // tablas y posicionamiento absoluto. DejaVu Sans es la fuente que trae
 // por defecto y cubre los acentos del español sin incrustar nada.
@@ -192,7 +202,7 @@ $html = <<<HTML
   </div>
 
   <div class="foot">
-    Verifica la autenticidad de este certificado en innovasteam.pe/verificar con el código {$codigo}
+    Verifica la autenticidad de este certificado en {$verificar} con el código {$codigo}
   </div>
 
 </body>
