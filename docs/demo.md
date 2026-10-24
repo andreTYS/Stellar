@@ -343,17 +343,39 @@ curl -I http://localhost:8080/
 El contenedor solo habla HTTP por el puerto 8080; el subdominio y el
 certificado los pone lo que ya tengas corriendo.
 
-**Traefik** — añade al servicio `web` en `docker-compose.yml`:
+**Traefik — ya viene puesto.** El `docker-compose.yml` trae las
+etiquetas y se engancha a tu red externa; solo tienes que decirle cómo
+se llaman las cosas en tu `.env`:
 
-```yaml
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.stellar.rule=Host(`stellar.moqueguasoft.com`)"
-      - "traefik.http.routers.stellar.entrypoints=websecure"
-      - "traefik.http.routers.stellar.tls.certresolver=letsencrypt"
-      - "traefik.http.services.stellar.loadbalancer.server.port=80"
-    networks: [proxy, default]
+```bash
+DOMINIO=innovasteam.moqueguasoft.com
+TRAEFIK_RED=proxy            # la red donde vive tu Traefik
+TRAEFIK_ENTRADA=websecure    # tu entrypoint de HTTPS
+TRAEFIK_RESOLVER=letsencrypt # tu resolver de certificados
 ```
+
+Comprueba esos tres nombres contra tu Traefik antes de levantar nada:
+
+```bash
+# La red
+docker inspect <tu-traefik> \
+  --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}'
+
+# El entrypoint y el resolver
+docker inspect <tu-traefik> --format '{{json .Config.Cmd}}' \
+  | tr ',' '\n' | grep -iE 'entrypoints|certificatesresolvers'
+```
+
+**Si el resolver no coincide, el dominio responde 404 y no es obvio por
+qué.** Traefik descarta el router entero y lo único que queda es una
+línea en SU log, no en el de la plataforma:
+
+```
+ERR Router uses a nonexistent certificate resolver  certificateResolver=letsencrypt
+```
+
+Si ves un 404 donde debería estar la plataforma, mira ahí primero:
+`docker logs <tu-traefik> | grep -i nonexistent`.
 
 **Nginx Proxy Manager** — nuevo Proxy Host: dominio
 `stellar.moqueguasoft.com`, destino `http://<ip-del-host>:8080`, y

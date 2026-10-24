@@ -1,12 +1,13 @@
 # ============================================================
-# INNOVA-STEAM en Docker
+# INNOVA-STEAM en Docker, detrás de Traefik
 #
-#   cp .env.ejemplo .env     y edita las contraseñas
+#   cp .env.ejemplo .env     y edita contraseñas y dominio
 #   docker compose up -d --build
 #
-# La plataforma queda en http://localhost:8080 . Para servirla en un
-# subdominio con HTTPS, ponle delante tu proxy (abajo, en el README de
-# docker/, están las etiquetas de Traefik y la config de nginx).
+# Traefik se encarga del subdominio y del certificado. Sin Traefik
+# (TRAEFIK_RED vacío en .env) la plataforma sale por el puerto 8080 y
+# le pones delante lo que quieras; docs/demo.md tiene la config de
+# nginx y de Nginx Proxy Manager.
 # ============================================================
 services:
 
@@ -25,8 +26,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-    # Sin puertos publicados: la base solo se ve desde la red interna
-    # de compose. Si la publicaras, quedaría expuesta a internet.
+    networks: [interna]
+    # Sin puertos publicados: la base solo se ve desde la red interna.
+    # Si la publicaras, quedaría expuesta a internet.
 
   web:
     build: .
@@ -45,8 +47,27 @@ services:
     volumes:
       # Lo que suben los estudiantes sobrevive a reconstruir la imagen.
       - subidas:/var/www/html/uploads
+    networks: [interna, publica]
+    # Solo en el loopback del VPS: sirve para comprobar con curl desde
+    # el propio servidor y NO queda expuesto a internet. Traefik llega
+    # por la red de docker, no por este puerto.
     ports:
-      - "${PUERTO:-8080}:80"
+      - "127.0.0.1:${PUERTO:-8080}:80"
+    labels:
+      - "traefik.enable=${TRAEFIK:-true}"
+      - "traefik.docker.network=${TRAEFIK_RED:-proxy}"
+      - "traefik.http.routers.innovasteam.rule=Host(`${DOMINIO:?falta DOMINIO en .env}`)"
+      - "traefik.http.routers.innovasteam.entrypoints=${TRAEFIK_ENTRADA:-websecure}"
+      - "traefik.http.routers.innovasteam.tls.certresolver=${TRAEFIK_RESOLVER:-letsencrypt}"
+      - "traefik.http.services.innovasteam.loadbalancer.server.port=80"
+
+networks:
+  # La red donde ya vive tu Traefik. Se declara externa: compose no la
+  # crea, se engancha a la que existe.
+  publica:
+    external: true
+    name: ${TRAEFIK_RED:-proxy}
+  interna:
 
 volumes:
   datos_db:
